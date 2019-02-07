@@ -119,6 +119,9 @@
     <string name="virtualpump">Virtual Pump</string>
     <string name="careportal">Careportal</string>
 
+    <string name="omnipod">Omnipod</string>
+    <string name="omnipod_shortname">PDM</string>
+    <string name="omnipod_description">Good old omnipod.</string>
 
     <string name="configbuilder_pump">Pump</string>
     <string name="configbuilder_pump_description">Which pump would you like to use with AndroidAPS?</string>
