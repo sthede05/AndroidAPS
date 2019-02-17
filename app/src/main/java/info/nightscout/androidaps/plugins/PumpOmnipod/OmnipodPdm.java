@@ -23,7 +23,6 @@ import info.nightscout.androidaps.plugins.Treatments.TreatmentsPlugin;
 public class OmnipodPdm {
 
     private Context _context;
-    private MqttHelper _mqttHelper;
 
     private Profile _profile;
 
@@ -46,11 +45,9 @@ public class OmnipodPdm {
     public OmnipodPdm(Context context)
     {
         _context = context;
-        _mqttHelper = new MqttHelper(context);
     }
 
     public void UpdateStatus() {
-        _lastCommandSucceeded = ParseStatus(_mqttHelper.SendAndGet("STATUS|||", 20));
     }
 
     private boolean ParseStatus(String[] r)
@@ -96,20 +93,11 @@ public class OmnipodPdm {
     public boolean VerifyProfile(Profile profile) {
         _profile = profile;
         return true;
-
-        /*
-        if (_profile == null)
-        {
-            _profile = profile;
-            return true;
-        }
-        return profile.getData().equals(_profile.getData());*/
     }
 
     public PumpEnactResult Bolus(DetailedBolusInfo detailedBolusInfo) {
         BigDecimal iuBolus = GetExactInsulinUnits(detailedBolusInfo.insulin);
-        String msg = String.format("BOLUS|%s||", iuBolus);
-        _lastCommandSucceeded = ParseStatus(_mqttHelper.SendAndGet(msg, 30));
+
         PumpEnactResult r = new PumpEnactResult();
         r.enacted = _lastCommandSucceeded;
         r.success = _lastCommandSucceeded;
@@ -125,7 +113,7 @@ public class OmnipodPdm {
     public double CancelBolus() {
 
         double deliveredBefore = _insulinDelivered;
-        _lastCommandSucceeded = ParseStatus(_mqttHelper.SendAndGet("CANCELBOLUS|||", 30));
+
         if (_lastCommandSucceeded) {
             _busyUntil = 0;
             return _insulinDelivered - deliveredBefore;
@@ -155,8 +143,7 @@ public class OmnipodPdm {
     public PumpEnactResult SetTempBasal(Double absoluteRate, Integer durationInMinutes, Profile profile, boolean enforceNew) {
         BigDecimal iuRate = GetExactInsulinUnits(absoluteRate);
         BigDecimal durationHours = GetExactHourUnits(durationInMinutes);
-        String msg = String.format("SETTEMPBASAL|%s|%s|", iuRate, durationHours);
-        _lastCommandSucceeded = ParseStatus(_mqttHelper.SendAndGet(msg, 30));
+
         PumpEnactResult r = new PumpEnactResult();
         r.enacted = _lastCommandSucceeded;
         r.success = _lastCommandSucceeded;
@@ -169,7 +156,7 @@ public class OmnipodPdm {
     }
 
     public PumpEnactResult CancelTempBasal(boolean enforceNew) {
-        _lastCommandSucceeded = ParseStatus(_mqttHelper.SendAndGet("CANCELTEMPBASAL|||", 30));
+
         PumpEnactResult r = new PumpEnactResult();
         r.enacted = _lastCommandSucceeded;
         r.success = _lastCommandSucceeded;
@@ -217,7 +204,7 @@ public class OmnipodPdm {
     }
 
     public boolean IsInitialized() {
-        return _mqttHelper.IsConnected();
+        return true;
     }
 
     public boolean IsSuspended() {
@@ -229,11 +216,11 @@ public class OmnipodPdm {
     }
 
     public boolean IsConnected() {
-        return _mqttHelper.IsConnected();
+        return true;
     }
 
     public boolean IsConnecting() {
-        return _mqttHelper.IsConnecting();
+        return false;
     }
 
     public boolean IsHandshakeInProgress() {
@@ -244,14 +231,12 @@ public class OmnipodPdm {
     }
 
     public void Connect() {
-        _mqttHelper.Connect();
+
     }
 
-    public void StopConnecting() {
-        _mqttHelper.Disconnect();
+    public void StopConnecting()
+    {
     }
     public void Disconnect() {
-        _mqttHelper.Disconnect();
-
     }
 }

@@ -3,12 +3,6 @@ package info.nightscout.androidaps.plugins.PumpOmnipod;
 import android.os.SystemClock;
 import android.util.Log;
 
-import org.eclipse.paho.android.service.MqttAndroidClient;
-import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions;
-import org.eclipse.paho.client.mqttv3.IMqttActionListener;
-import org.eclipse.paho.client.mqttv3.IMqttToken;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttException;
 import org.json.JSONObject;
 import org.mozilla.javascript.Context;
 import org.slf4j.Logger;
