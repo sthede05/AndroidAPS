@@ -1213,6 +1213,19 @@
     <string name="loop_openmode_min_change_summary">Loop will popup new change request only if change is bigger than this value. Default value is 20%</string>
     <string name="key_short_tabtitles" translatable="false">short_tabtitles</string>
     <string name="pairfirst">Please pair your pump with your phone!</string>
+    <string name="omnipod_settings">Omnipod Settings</string>
+    <string name="omnipod_connection_settings">Connection Settings</string>
+    <string name="omnipy_set_http_password">Set password</string>
+    <string name="omnipy_connection_settings">Omnipy Connection</string>
+    <string name="omnipy_auto_detect_host">Auto detect address</string>
+    <string name="omnipy_host_ip">Set address manually</string>
+    <string name="omnipy_pod_settings">Pod Settings</string>
+    <string name="omnipy_bolus_alerts">Bolus</string>
+    <string name="omnipod_temp_basal_alerts">Temp. Basal</string>
+    <string name="omnipod_notification_Settings">Omnipod Notifications</string>
+    <string name="omnipod_safety_limits">Omnipod Safety</string>
+    <string name="omniod_max_temp_basal">Set maximum Temp-Basal</string>
+    <string name="omniod_max_bolus">Set maximum Bolus</string>
 
     <plurals name="objective_days">
         <item quantity="one">%1$d day</item>
