@@ -1,10 +1,8 @@
 package info.nightscout.androidaps.plugins.PumpOmnipod;
 
+import android.content.Context;
 import android.os.SystemClock;
-import android.util.Log;
-
 import org.json.JSONObject;
-import org.mozilla.javascript.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,32 +16,26 @@ import info.nightscout.androidaps.data.PumpEnactResult;
 import info.nightscout.androidaps.db.ExtendedBolus;
 import info.nightscout.androidaps.db.Source;
 import info.nightscout.androidaps.db.TemporaryBasal;
-import info.nightscout.androidaps.events.EventPumpStatusChanged;
 import info.nightscout.androidaps.interfaces.PluginBase;
 import info.nightscout.androidaps.interfaces.PluginDescription;
 import info.nightscout.androidaps.interfaces.PluginType;
 import info.nightscout.androidaps.interfaces.PumpDescription;
 import info.nightscout.androidaps.interfaces.PumpInterface;
 import info.nightscout.androidaps.logging.L;
-import info.nightscout.androidaps.plugins.ConfigBuilder.ProfileFunctions;
-import info.nightscout.androidaps.plugins.Overview.events.EventNewNotification;
 import info.nightscout.androidaps.plugins.Overview.events.EventOverviewBolusProgress;
-import info.nightscout.androidaps.plugins.Overview.notifications.Notification;
 import info.nightscout.androidaps.plugins.PumpCommon.defs.PumpType;
 import info.nightscout.androidaps.plugins.PumpVirtual.events.EventVirtualPumpUpdateGui;
 import info.nightscout.androidaps.plugins.Treatments.TreatmentsPlugin;
 import info.nightscout.utils.DateUtil;
 import info.nightscout.utils.SP;
 
+
 import org.json.JSONException;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 
 public class OmnipodPlugin extends PluginBase implements PumpInterface {
-
-
     private Logger log = LoggerFactory.getLogger(L.PUMP);
+
 
     private static OmnipodPlugin instance = null;
     private PumpDescription pumpDescription = new PumpDescription();
@@ -68,13 +60,17 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
 
         pumpDescription.setPumpDescription(PumpType.Insulet_Omnipod);
         log.debug("omnipod plug initialized");
-        _pdm = new OmnipodPdm(MainApp.instance().getApplicationContext());
+        Context context = MainApp.instance().getApplicationContext();
+        _pdm = new OmnipodPdm(context);
+
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         MainApp.bus().register(this);
+        log.debug("onstart");
+        _pdm.OnStart();
     }
 
     @Override

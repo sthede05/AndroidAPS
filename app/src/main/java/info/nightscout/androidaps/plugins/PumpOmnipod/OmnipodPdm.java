@@ -3,6 +3,9 @@ package info.nightscout.androidaps.plugins.PumpOmnipod;
 import android.content.Context;
 import android.os.SystemClock;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -41,13 +44,61 @@ public class OmnipodPdm {
     private int[] _alarms;
 
     private long _busyUntil = 0;
+    private OmnipyNetworkDiscovery _omnipyNetworkDiscovery;
+    private OmnipyRestApi _omnipyRestApiCached;
+    private OmnipyApiSecret _omnipyApiSecretCached;
+    private Logger _log;
 
     public OmnipodPdm(Context context)
     {
         _context = context;
+        _log =  LoggerFactory.getLogger(L.PUMP);
+        _omnipyNetworkDiscovery = new OmnipyNetworkDiscovery(_context);
     }
 
     public void UpdateStatus() {
+    }
+
+    public void OnStart() {
+    }
+
+    public void InvalidateApiSecret()
+    {
+        _omnipyApiSecretCached = null;
+        _omnipyRestApiCached = null;
+    }
+
+    public void InvalidateOmnipyHost()
+    {
+        _omnipyNetworkDiscovery.ClearKnownAddress();
+        _omnipyRestApiCached = null;
+    }
+
+    private OmnipyRestApi getRestApi()
+    {
+        if (_omnipyRestApiCached == null) {
+            String hostName = getOmnipyHost();
+            OmnipyApiSecret apiSecret = getApiSecret();
+            if (hostName != null && apiSecret != null) {
+                _omnipyRestApiCached = new OmnipyRestApi("http://" + hostName + ":4444",
+                        apiSecret);
+            }
+        }
+        return _omnipyRestApiCached;
+    }
+
+    private String getOmnipyHost()
+    {
+        String omnipyHost = _omnipyNetworkDiscovery.GetLastKnownAddress();
+        if (omnipyHost == null)
+            _omnipyNetworkDiscovery.RunDiscovery();
+
+        return omnipyHost;
+    }
+
+    private OmnipyApiSecret getApiSecret()
+    {
+        return null;
     }
 
     private boolean ParseStatus(String[] r)

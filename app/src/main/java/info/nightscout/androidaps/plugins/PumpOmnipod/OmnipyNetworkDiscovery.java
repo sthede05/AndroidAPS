@@ -32,6 +32,7 @@ public class OmnipyNetworkDiscovery extends TimerTask {
     Context _context;
     private AsyncTask<Void, Void, String> _broadcastTask;
     private Timer _timer;
+    private Boolean _discovering = false;
 
     public OmnipyNetworkDiscovery(Context context)
     {
@@ -39,6 +40,16 @@ public class OmnipyNetworkDiscovery extends TimerTask {
         _context = context;
         _lastKnownAddress = null;
         _timer = new Timer("OmnipyNetworkDiscovery", true);
+    }
+
+    public String GetLastKnownAddress()
+    {
+        return _lastKnownAddress;
+    }
+
+    public void ClearKnownAddress()
+    {
+        _lastKnownAddress = null;
     }
 
     @Override
@@ -69,6 +80,7 @@ public class OmnipyNetworkDiscovery extends TimerTask {
                 {
                     _timer.cancel();
                     _lastKnownAddress = address;
+                    _discovering = false;
                 }
                 else
                 {
@@ -84,6 +96,10 @@ public class OmnipyNetworkDiscovery extends TimerTask {
 
     public void RunDiscovery()
     {
+        if (_discovering)
+            return;
+
+        _discovering = true;
         _timer.schedule(this, 500);
     }
 }

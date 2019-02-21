@@ -17,9 +17,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class OmnipyRestApi {
@@ -43,9 +41,9 @@ public class OmnipyRestApi {
     private OmnipyApiSecret _apiSecret;
 
 
-    public OmnipyRestApi(String baseUrl, String passphrase) {
+    public OmnipyRestApi(String baseUrl, OmnipyApiSecret apiSecret) {
         _baseUrl = baseUrl;
-        _apiSecret = OmnipyApiSecret.fromPassphrase(passphrase);
+        _apiSecret = apiSecret;
     }
 
 
