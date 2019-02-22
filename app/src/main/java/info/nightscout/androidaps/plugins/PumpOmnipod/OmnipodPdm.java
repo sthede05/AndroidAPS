@@ -22,6 +22,7 @@ import info.nightscout.androidaps.logging.L;
 import info.nightscout.androidaps.plugins.ConfigBuilder.ProfileFunctions;
 import info.nightscout.androidaps.plugins.PumpVirtual.events.EventVirtualPumpUpdateGui;
 import info.nightscout.androidaps.plugins.Treatments.TreatmentsPlugin;
+import info.nightscout.utils.SP;
 
 public class OmnipodPdm {
 
@@ -57,6 +58,11 @@ public class OmnipodPdm {
     }
 
     public void UpdateStatus() {
+        OmnipyRestApi rest = getRestApi();
+        if (rest != null)
+        {
+            String response = rest.Status();
+        }
     }
 
     public void OnStart() {
@@ -89,16 +95,28 @@ public class OmnipodPdm {
 
     private String getOmnipyHost()
     {
-        String omnipyHost = _omnipyNetworkDiscovery.GetLastKnownAddress();
-        if (omnipyHost == null)
-            _omnipyNetworkDiscovery.RunDiscovery();
+        String omnipyHost;
+        if (SP.getBoolean(R.string.key_omnipy_autodetect_host, true)) {
+            omnipyHost = _omnipyNetworkDiscovery.GetLastKnownAddress();
+            if (omnipyHost == null)
+                _omnipyNetworkDiscovery.RunDiscovery();
+        }
+        else
+        {
+            omnipyHost = SP.getString(R.string.key_omnipy_host, null);
+        }
 
         return omnipyHost;
     }
 
     private OmnipyApiSecret getApiSecret()
     {
-        return null;
+        if (_omnipyApiSecretCached == null)
+        {
+            _omnipyApiSecretCached = OmnipyApiSecret.fromPassphrase(
+                    SP.getString(R.string.key_omnipy_password, ""));
+        }
+        return _omnipyApiSecretCached;
     }
 
     private boolean ParseStatus(String[] r)

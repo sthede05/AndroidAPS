@@ -4,27 +4,29 @@
         <SwitchPreference
             android:defaultValue="1"
             android:title="@string/omnipy_auto_detect_host"
-            android:key="omnipy_autodetect_host"
+            android:key="@string/key_omnipy_autodetect_host"
             />
         <EditTextPreference
             android:title="@string/omnipy_host_ip"
             android:enabled="false"
-            android:key="omnipy_address"
+            android:key="@string/key_omnipy_host"
             />
         <EditTextPreference
             android:title="@string/omnipy_set_http_password"
-            android:key="omnipy_password"/>
+            android:key="@string/key_omnipy_password"/>
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/omnipod_notification_Settings">
         <SwitchPreference
-            android:defaultValue="1"
+            android:defaultValue="0"
             android:title="@string/omnipy_bolus_alerts"
             android:key="omnipod_bolus_notify"
+            android:enabled="false"
             />
         <SwitchPreference
-            android:defaultValue="1"
+            android:defaultValue="0"
             android:title="@string/omnipod_temp_basal_alerts"
             android:key="omnipod_tempbasal_notify"
+            android:enabled="false"
             />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/omnipod_safety_limits">

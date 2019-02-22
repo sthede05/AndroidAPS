@@ -1222,10 +1222,13 @@
     <string name="omnipy_pod_settings">Pod Settings</string>
     <string name="omnipy_bolus_alerts">Bolus</string>
     <string name="omnipod_temp_basal_alerts">Temp. Basal</string>
-    <string name="omnipod_notification_Settings">Omnipod Notifications</string>
-    <string name="omnipod_safety_limits">Omnipod Safety</string>
+    <string name="omnipod_notification_Settings">Pod beeps</string>
+    <string name="omnipod_safety_limits">Safety</string>
     <string name="omniod_max_temp_basal">Set maximum Temp-Basal</string>
     <string name="omniod_max_bolus">Set maximum Bolus</string>
+    <string name="key_omnipy_password">key_omnipy_password</string>
+    <string name="key_omnipy_autodetect_host">key_omnipy_autodetect_host</string>
+    <string name="key_omnipy_host">key_omnipy_host</string>
 
     <plurals name="objective_days">
         <item quantity="one">%1$d day</item>
