@@ -47,11 +47,11 @@ public class OmnipyRestApi {
     }
 
 
-    public String RestStatus(){
-        return RestStatus(0);
+    public String Status(){
+        return Status(0);
     }
 
-    public String RestStatus(int requestType)
+    public String Status(int requestType)
     {
         ArrayList<Pair<String,String>> parameters = getAuthenticationParameters();
         parameters.add(new Pair<>("type", Integer.toString(requestType)));
