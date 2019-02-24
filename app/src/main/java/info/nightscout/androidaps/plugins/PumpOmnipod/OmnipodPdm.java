@@ -123,6 +123,8 @@ public class OmnipodPdm {
     private boolean parseStatusResponse(String response)
     {
         try {
+            if (response == null)
+                return false;
             JSONObject jo = new JSONObject(response);
             if (!jo.getBoolean("success"))
                 return false;
