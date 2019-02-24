@@ -38,6 +38,7 @@ public class OmnipyRestApi {
     private String REST_URL_CANCEL_BOLUS = "/pdm/cancelbolus";
     private String REST_URL_SET_TEMP_BASAL = "/pdm/settempbasal";
     private String REST_URL_CANCEL_TEMP_BASAL = "/pdm/canceltempbasal";
+    private String REST_URL_PDM_BUSY = "/pdm/isbusy";
 
     private String _baseUrl;
     private OmnipyApiSecret _apiSecret;
@@ -148,6 +149,11 @@ public class OmnipyRestApi {
     {
         ArrayList<Pair<String,String>> parameters = getAuthenticationParameters();
         return getApiResult(REST_URL_CANCEL_TEMP_BASAL, parameters);
+    }
+
+    public String IsBusy()
+    {
+        return getApiResult(REST_URL_PDM_BUSY, null);
     }
 
     private ArrayList<Pair<String, String>> getAuthenticationParameters() {
