@@ -12,6 +12,8 @@ import android.view.ViewGroup;
 
 import com.squareup.otto.Subscribe;
 
+import java.util.Objects;
+
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.plugins.Common.SubscriberFragment;
 import info.nightscout.androidaps.plugins.PumpVirtual.events.EventVirtualPumpUpdateGui;
@@ -30,7 +32,7 @@ public class OmnipodFragment extends SubscriberFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Intent intent = getActivity().getIntent();
+        Intent intent = Objects.requireNonNull(getActivity()).getIntent();
         if (intent != null) {
 
             Bundle extras = intent.getExtras();

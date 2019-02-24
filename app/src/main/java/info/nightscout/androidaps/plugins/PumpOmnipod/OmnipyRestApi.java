@@ -64,7 +64,7 @@ public class OmnipyRestApi {
         String iv = Base64.encode(token.getIV());
         ArrayList<Pair<String,String>> parameters = new ArrayList<>();
         parameters.add(new Pair<>("auth", authToken));
-        parameters.add(new Pair<>("iv", iv));
+        parameters.add(new Pair<>("i", iv));
         return parameters;
     }
 
@@ -73,7 +73,8 @@ public class OmnipyRestApi {
         try {
             String response = getApiResult(REST_URL_TOKEN, null);
             JSONObject json = new JSONObject(response);
-            String tokenStr = json.getString("result");
+            JSONObject result = json.getJSONObject("result");
+            String tokenStr = result.getString("token");
             apiToken = new OmnipyApiToken(Base64.decode(tokenStr), _apiSecret);
         } catch (JSONException e) {
             e.printStackTrace();
