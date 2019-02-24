@@ -39,7 +39,6 @@ public class OmnipyNetworkDiscovery extends TimerTask {
         _log = LoggerFactory.getLogger(L.PUMP);
         _context = context;
         _lastKnownAddress = null;
-        _timer = new Timer("OmnipyNetworkDiscovery", true);
     }
 
     public String GetLastKnownAddress()
@@ -58,7 +57,7 @@ public class OmnipyNetworkDiscovery extends TimerTask {
         {
             _broadcastTask = new OmnipyUDPBroadcastTask(_context);
             _broadcastTask.execute();
-            _timer.schedule(this, 10000);
+            this.reschedule(10000);
         }
         else
         {
@@ -78,18 +77,17 @@ public class OmnipyNetworkDiscovery extends TimerTask {
 
                 if (address != null)
                 {
-                    _timer.cancel();
                     _lastKnownAddress = address;
                     _discovering = false;
                 }
                 else
                 {
-                    _timer.schedule(this, 60000);
+                    this.reschedule(60000);
                 }
             }
             else
             {
-                _timer.schedule(this, 5000);
+                this.reschedule(5000);
             }
         }
     }
@@ -100,7 +98,17 @@ public class OmnipyNetworkDiscovery extends TimerTask {
             return;
 
         _discovering = true;
-        _timer.schedule(this, 500);
+        this.reschedule(200);
+    }
+
+    private void reschedule(long delay)
+    {
+        return;
+//        if (_timer != null)
+//            _timer.cancel();
+//
+//        _timer = new Timer("OmnipyNetworkDiscovery", true);
+//        _timer.schedule(this, delay);
     }
 }
 class OmnipyUDPBroadcastTask extends AsyncTask<Void, Void, String> {
