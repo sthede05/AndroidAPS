@@ -14,6 +14,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -23,13 +24,14 @@ import java.util.concurrent.ExecutionException;
 public class OmnipyRestApi {
 
     private String REST_URL_TOKEN = "/omnipy/token";
-    private String REST_URL_TAKEOVER_EXISTING_POD = "/omnipy/takeover";
+    private String REST_URL_NEW_POD = "/omnipy/newpod";
+    private String REST_URL_GET_PDM_ADDRESS = "/omnipy/pdmspy";
     private String REST_URL_STATUS = "/pdm/status";
     private String REST_URL_GET_VERSION = "/omnipy/version";
     private String REST_URL_CHECK_PASSWORD = "/omnipy/pwcheck";
     private String REST_URL_SET_POD_PARAMETERS = "/omnipy/parameters";
     private String REST_URL_SET_LIMITS = "/omnipy/limits";
-    private String REST_URL_RL_BATTERY = "/rl/battery";
+    private String REST_URL_RL_INFO = "/rl/info";
     private String REST_URL_ACK_ALERTS = "/pdm/ack";
     private String REST_URL_DEACTIVATE_POD = "/pdm/deactivate";
     private String REST_URL_BOLUS = "/pdm/bolus";
@@ -56,6 +58,96 @@ public class OmnipyRestApi {
         ArrayList<Pair<String,String>> parameters = getAuthenticationParameters();
         parameters.add(new Pair<>("type", Integer.toString(requestType)));
         return getApiResult(REST_URL_STATUS, parameters);
+    }
+
+    public String GetVersion()
+    {
+        return getApiResult(REST_URL_GET_VERSION, null);
+    }
+
+    public String CheckAuthentication()
+    {
+        ArrayList<Pair<String,String>> parameters = getAuthenticationParameters();
+        return getApiResult(REST_URL_CHECK_PASSWORD, parameters);
+    }
+
+    public String GetAddressFromPdm(int timeout)
+    {
+        ArrayList<Pair<String,String>> parameters = getAuthenticationParameters();
+        parameters.add(new Pair<>("timeout", Integer.toString(timeout)));
+        return getApiResult(REST_URL_GET_PDM_ADDRESS, parameters);
+    }
+
+    public String CreateNewPod(int lot, int tid, int address)
+    {
+        ArrayList<Pair<String,String>> parameters = getAuthenticationParameters();
+        parameters.add(new Pair<>("lot", Integer.toString(lot)));
+        parameters.add(new Pair<>("tid", Integer.toString(tid)));
+        parameters.add(new Pair<>("address", Integer.toString(address)));
+        return getApiResult(REST_URL_NEW_POD, parameters);
+    }
+
+    public String UpdatePodParameters(int lot, int tid, int address)
+    {
+        ArrayList<Pair<String,String>> parameters = getAuthenticationParameters();
+        parameters.add(new Pair<>("lot", Integer.toString(lot)));
+        parameters.add(new Pair<>("tid", Integer.toString(tid)));
+        parameters.add(new Pair<>("address", Integer.toString(address)));
+        return getApiResult(REST_URL_SET_POD_PARAMETERS, parameters);
+    }
+
+    public String SetLimits(BigDecimal maxBolus, BigDecimal maxTempBasal)
+    {
+        ArrayList<Pair<String,String>> parameters = getAuthenticationParameters();
+        parameters.add(new Pair<>("maxbolus", maxBolus.toString() ));
+        parameters.add(new Pair<>("maxbasal", maxTempBasal.toString()));
+        return getApiResult(REST_URL_SET_LIMITS, parameters);
+    }
+
+    public String GetRLInfo()
+    {
+        ArrayList<Pair<String,String>> parameters = getAuthenticationParameters();
+        return getApiResult(REST_URL_RL_INFO, parameters);
+    }
+
+    public String AcknowledgeAlerts(int alertMask)
+    {
+        ArrayList<Pair<String,String>> parameters = getAuthenticationParameters();
+        parameters.add(new Pair<>("alertmask", Integer.toString(alertMask) ));
+        return getApiResult(REST_URL_ACK_ALERTS, parameters);
+    }
+
+    public String DeactivatePod()
+    {
+        ArrayList<Pair<String,String>> parameters = getAuthenticationParameters();
+        return getApiResult(REST_URL_DEACTIVATE_POD, parameters);
+    }
+
+    public String Bolus(BigDecimal bolusAmount)
+    {
+        ArrayList<Pair<String,String>> parameters = getAuthenticationParameters();
+        parameters.add(new Pair<>("amount", bolusAmount.toString() ));
+        return getApiResult(REST_URL_BOLUS, parameters);
+    }
+
+    public String CancelBolus()
+    {
+        ArrayList<Pair<String,String>> parameters = getAuthenticationParameters();
+        return getApiResult(REST_URL_CANCEL_BOLUS, parameters);
+    }
+
+    public String SetTempBasal(BigDecimal basalRate, BigDecimal durationInHours)
+    {
+        ArrayList<Pair<String,String>> parameters = getAuthenticationParameters();
+        parameters.add(new Pair<>("amount", basalRate.toString() ));
+        parameters.add(new Pair<>("hours", durationInHours.toString() ));
+        return getApiResult(REST_URL_SET_TEMP_BASAL, parameters);
+    }
+
+    public String CancelTempBasal()
+    {
+        ArrayList<Pair<String,String>> parameters = getAuthenticationParameters();
+        return getApiResult(REST_URL_CANCEL_TEMP_BASAL, parameters);
     }
 
     private ArrayList<Pair<String, String>> getAuthenticationParameters() {
