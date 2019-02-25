@@ -16,6 +16,7 @@ import info.nightscout.androidaps.data.PumpEnactResult;
 import info.nightscout.androidaps.db.ExtendedBolus;
 import info.nightscout.androidaps.db.Source;
 import info.nightscout.androidaps.db.TemporaryBasal;
+import info.nightscout.androidaps.events.EventPreferenceChange;
 import info.nightscout.androidaps.interfaces.PluginBase;
 import info.nightscout.androidaps.interfaces.PluginDescription;
 import info.nightscout.androidaps.interfaces.PluginType;
@@ -77,6 +78,14 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
         MainApp.bus().unregister(this);
     }
 
+    public void onStatusEvent(final EventPreferenceChange s) {
+        if (s.isChanged(R.string.key_omnipy_autodetect_host))
+            _pdm.InvalidateOmnipyHost();
+        if (s.isChanged(R.string.key_omnipy_host))
+            _pdm.InvalidateOmnipyHost();
+        if (s.isChanged(R.string.key_omnipy_password))
+            _pdm.InvalidateApiSecret();
+    }
     @Override
     public boolean isInitialized() {
         //log.debug("isInitialized()");
