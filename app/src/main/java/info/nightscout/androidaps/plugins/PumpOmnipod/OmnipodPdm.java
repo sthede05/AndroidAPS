@@ -40,6 +40,7 @@ public class OmnipodPdm {
     private OmnipyNetworkDiscovery _omnipyNetworkDiscovery;
     private OmnipyRestApi _omnipyRestApiCached;
     private OmnipyApiSecret _omnipyApiSecretCached;
+
     private OmnipodStatus _podStatus;
     private Logger _log;
 
@@ -84,7 +85,21 @@ public class OmnipodPdm {
                 _omnipyRestApiCached = new OmnipyRestApi("http://" + hostName + ":4444",
                         apiSecret);
             }
+        } else
+        {
+            int count = _omnipyRestApiCached.getConnectionTimeOutCount();
+            if (count > 0)
+            {
+                long timeDelta = _omnipyRestApiCached.getLastSuccessfulConnection() -
+                        SystemClock.elapsedRealtime();
+
+                if (timeDelta > 10*60*1000 || count > 3) {
+                    InvalidateApiSecret();
+                    InvalidateOmnipyHost();
+                }
+            }
         }
+
         return _omnipyRestApiCached;
     }
 
@@ -353,11 +368,14 @@ public class OmnipodPdm {
     }
 
     public void Connect() {
+        IsConnected();
     }
 
     public void StopConnecting()
     {
     }
+
     public void Disconnect() {
+        _omnipyRestApiCached = null;
     }
 }

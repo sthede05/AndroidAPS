@@ -25,13 +25,11 @@ import java.util.concurrent.TimeoutException;
 
 import info.nightscout.androidaps.logging.L;
 
-public class OmnipyNetworkDiscovery extends TimerTask {
+public class OmnipyNetworkDiscovery {
 
     private Logger _log;
     private String _lastKnownAddress;
     Context _context;
-    private AsyncTask<Void, Void, String> _broadcastTask;
-    private Timer _timer;
     private Boolean _discovering = false;
 
     public OmnipyNetworkDiscovery(Context context)
@@ -49,6 +47,40 @@ public class OmnipyNetworkDiscovery extends TimerTask {
     public void ClearKnownAddress()
     {
         _lastKnownAddress = null;
+    }
+
+    public void SetAddress(String address) {
+        _lastKnownAddress = address;
+        _discovering = false;
+//        Intent intent = new Intent(_context, OmnipodFragment.class);
+//        intent.getExtras().putString("omnipy_address", address);
+//        _context.startActivity(intent);
+//        ((Activity) _context).finish();
+    }
+
+    public void RunDiscovery()
+    {
+        if (_discovering)
+            return;
+
+        _discovering = true;
+        Timer timer = new Timer("OmnipyNetworkDiscovery", true);
+        timer.schedule(new OmnipyNetworkDiscoveryTask(null, _context, this) , 200);
+    }
+}
+
+class OmnipyNetworkDiscoveryTask extends TimerTask {
+
+    private OmnipyUDPBroadcastTask _broadcastTask;
+    private Context _context;
+    private OmnipyNetworkDiscovery _mainDiscovery;
+
+    public OmnipyNetworkDiscoveryTask(OmnipyUDPBroadcastTask broadcastTask, Context context,
+                                      OmnipyNetworkDiscovery mainDiscovery)
+    {
+        _broadcastTask = broadcastTask;
+        _context = context;
+        _mainDiscovery = mainDiscovery;
     }
 
     @Override
@@ -77,8 +109,7 @@ public class OmnipyNetworkDiscovery extends TimerTask {
 
                 if (address != null)
                 {
-                    _lastKnownAddress = address;
-                    _discovering = false;
+                    _mainDiscovery.SetAddress(address);
                 }
                 else
                 {
@@ -92,25 +123,14 @@ public class OmnipyNetworkDiscovery extends TimerTask {
         }
     }
 
-    public void RunDiscovery()
-    {
-        if (_discovering)
-            return;
-
-        _discovering = true;
-        this.reschedule(200);
-    }
-
     private void reschedule(long delay)
     {
-        return;
-//        if (_timer != null)
-//            _timer.cancel();
-//
-//        _timer = new Timer("OmnipyNetworkDiscovery", true);
-//        _timer.schedule(this, delay);
+        Timer timer = new Timer("OmnipyNetworkDiscovery", true);
+        timer.schedule(new OmnipyNetworkDiscoveryTask(_broadcastTask, _context, _mainDiscovery) , delay);
     }
+
 }
+
 class OmnipyUDPBroadcastTask extends AsyncTask<Void, Void, String> {
 
     Context _context;
@@ -167,16 +187,5 @@ class OmnipyUDPBroadcastTask extends AsyncTask<Void, Void, String> {
             e.printStackTrace();
         }
         return address;
-    }
-
-    @Override
-    protected void onPostExecute(String address) {
-        super.onPostExecute(address);
-        if (address != null) {
-            Intent intent = new Intent(_context, OmnipodFragment.class);
-            intent.getExtras().putString("omnipy_address", address);
-            _context.startActivity(intent);
-            ((Activity) _context).finish();
-        }
     }
 }

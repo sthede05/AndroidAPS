@@ -2,6 +2,7 @@ package info.nightscout.androidaps.plugins.PumpOmnipod;
 
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.SystemClock;
 import android.util.JsonReader;
 import android.util.Log;
 import android.util.Pair;
@@ -20,6 +21,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class OmnipyRestApi {
 
@@ -42,6 +45,8 @@ public class OmnipyRestApi {
 
     private String _baseUrl;
     private OmnipyApiSecret _apiSecret;
+    private int _connectionTimedOutCount = 0;
+    private long _lastSuccessfulConnection = 0;
 
 
     public OmnipyRestApi(String baseUrl, OmnipyApiSecret apiSecret) {
@@ -49,6 +54,14 @@ public class OmnipyRestApi {
         _apiSecret = apiSecret;
     }
 
+    public int getConnectionTimeOutCount() {
+        return _connectionTimedOutCount;
+    }
+
+    public long getLastSuccessfulConnection()
+    {
+        return _lastSuccessfulConnection;
+    }
 
     public String Status(){
         return Status(0);
@@ -63,13 +76,15 @@ public class OmnipyRestApi {
 
     public String GetVersion()
     {
-        return getApiResult(REST_URL_GET_VERSION, null);
+        return getApiResult(REST_URL_GET_VERSION, null,
+                5000);
     }
 
     public String CheckAuthentication()
     {
         ArrayList<Pair<String,String>> parameters = getAuthenticationParameters();
-        return getApiResult(REST_URL_CHECK_PASSWORD, parameters);
+        return getApiResult(REST_URL_CHECK_PASSWORD, parameters,
+                10000);
     }
 
     public String GetAddressFromPdm(int timeout)
@@ -182,6 +197,12 @@ public class OmnipyRestApi {
 
     private String getApiResult(String path, ArrayList<Pair<String, String>> parameters)
     {
+        return getApiResult(path, parameters, 0);
+    }
+
+    private String getApiResult(String path, ArrayList<Pair<String, String>> parameters,
+                                int timeout)
+    {
         String response = null;
         try
         {
@@ -200,14 +221,24 @@ public class OmnipyRestApi {
                 }
             }
             RestApiTask task = (RestApiTask) new RestApiTask().execute(stringParams);
-            response = task.get();
+            if (timeout == 0) {
+                response = task.get();
+                _connectionTimedOutCount = 0;
+                _lastSuccessfulConnection = SystemClock.elapsedRealtime();
+            } else {
+                response = task.get(timeout, TimeUnit.MILLISECONDS);
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
             e.printStackTrace();
+        } catch (TimeoutException e) {
+            _connectionTimedOutCount += 1;
+            e.printStackTrace();
         }
         return response;
     }
+
 }
 
 class RestApiTask extends AsyncTask<String, Void,String> {
