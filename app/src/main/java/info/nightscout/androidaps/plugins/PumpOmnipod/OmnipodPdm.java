@@ -343,17 +343,37 @@ public class OmnipodPdm {
         if ( SystemClock.elapsedRealtime() - _lastConnected < 30000)
             return true;
 
-        String response = rest.CheckAuthentication();
-        try {
-            JSONObject jo = new JSONObject(response);
-            if (!jo.getBoolean("success"))
-                return false;
-        } catch (JSONException e) {
-            e.printStackTrace();
+        int[] version = GetOmnipyVersion();
+        if (version == null)
             return false;
-        }
+
         _lastConnected = SystemClock.elapsedRealtime();
         return true;
+    }
+
+    public int[] GetOmnipyVersion() {
+        int[] version = null;
+        OmnipyRestApi rest = getRestApi();
+
+        if (rest != null) {
+            String response = rest.GetVersion();
+            if (response != null)
+            {
+                try {
+                    JSONObject jo = new JSONObject(response);
+                    if (jo.getBoolean("success"))
+                    {
+                        JSONObject joResult = jo.getJSONObject("result");
+                        version = new int[2];
+                        version[0] = joResult.getInt("version_major");
+                        version[1] = joResult.getInt("version_minor");
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return version;
     }
 
     public boolean IsConnecting() {
