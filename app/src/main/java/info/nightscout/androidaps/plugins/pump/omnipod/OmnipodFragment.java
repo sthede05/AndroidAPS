@@ -12,8 +12,7 @@ import com.squareup.otto.Subscribe;
 import java.util.Objects;
 
 import info.nightscout.androidaps.R;
-import info.nightscout.androidaps.plugins.Common.SubscriberFragment;
-import info.nightscout.androidaps.plugins.PumpVirtual.events.EventVirtualPumpUpdateGui;
+import info.nightscout.androidaps.plugins.common.SubscriberFragment;
 
 public class OmnipodFragment extends SubscriberFragment {
 
@@ -43,7 +42,7 @@ public class OmnipodFragment extends SubscriberFragment {
     }
 
     @Subscribe
-    public void onStatusEvent(final EventVirtualPumpUpdateGui ev) {
+    public void onStatusEvent(final EventOmnipodUpdateGui ev) {
         updateGUI();
     }
 
