@@ -1233,7 +1233,7 @@
     <string name="omnipod_pdm_header">Omnipod PDM</string>
     <string name="omnipy_connection">Omnipy Connection</string>
     <string name="omnipod_pod_status">Pod Status</string>
-    <string name="omnipod_pod_actions">Actions</string>
+    <string name="omnipod_pod_actions">Pod Actions</string>
     <string name="omnipy_host_text">Host:</string>
     <string name="omnipy_last_conn">Last connection:</string>
     <string name="omnipy_auth_status">Authentication:</string>
@@ -1247,6 +1247,8 @@
     <string name="omnipod_cmd_deactivate_pod">Deactivate Pod</string>
     <string name="omnipy_cmd_clear_alerts">Clear Alerts</string>
     <string name="omnipy_history">History</string>
+    <string name="omnipy_restart_remote">Restart Remote Host</string>
+    <string name="omnipy_shutdown_remote">Shutdown Remote Host</string>
 
     <plurals name="objective_days">
         <item quantity="one">%1$d day</item>
