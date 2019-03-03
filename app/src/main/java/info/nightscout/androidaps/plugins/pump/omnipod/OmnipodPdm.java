@@ -314,6 +314,8 @@ public class OmnipodPdm {
         if (rest == null)
             return false;
         String response = rest.IsBusy();
+        if (response == null)
+            return false;
         try {
             JSONObject jo = new JSONObject(response);
             if (!jo.getBoolean("success"))
