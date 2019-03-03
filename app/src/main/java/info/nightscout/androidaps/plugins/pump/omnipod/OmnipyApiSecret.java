@@ -1,10 +1,9 @@
-package info.nightscout.androidaps.plugins.PumpOmnipod;
+package info.nightscout.androidaps.plugins.pump.omnipod;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 public class OmnipyApiSecret {

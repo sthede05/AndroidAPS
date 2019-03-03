@@ -1,4 +1,4 @@
-package info.nightscout.androidaps.plugins.PumpOmnipod;
+package info.nightscout.androidaps.plugins.pump.omnipod;
 
 import android.content.Context;
 import android.os.SystemClock;
@@ -23,11 +23,11 @@ import info.nightscout.androidaps.interfaces.PluginType;
 import info.nightscout.androidaps.interfaces.PumpDescription;
 import info.nightscout.androidaps.interfaces.PumpInterface;
 import info.nightscout.androidaps.logging.L;
-import info.nightscout.androidaps.plugins.Overview.events.EventOverviewBolusProgress;
-import info.nightscout.androidaps.plugins.PumpCommon.defs.PumpType;
-import info.nightscout.androidaps.plugins.Treatments.TreatmentsPlugin;
-import info.nightscout.utils.DateUtil;
-import info.nightscout.utils.SP;
+import info.nightscout.androidaps.plugins.general.overview.events.EventOverviewBolusProgress;
+import info.nightscout.androidaps.plugins.pump.common.defs.PumpType;
+import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
+import info.nightscout.androidaps.utils.DateUtil;
+import info.nightscout.androidaps.utils.SP;
 
 
 import org.json.JSONException;
@@ -180,6 +180,18 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
     }
 
     @Override
+    public double getReservoirLevel() {
+        // TODO: return from podstatus
+        return 50.0;
+    }
+
+    @Override
+    public int getBatteryLevel() {
+        // TODO: return from api
+        return 50;
+    }
+
+    @Override
     public PumpEnactResult deliverTreatment(DetailedBolusInfo detailedBolusInfo) {
 
         log.debug("omnipod plugin DeliverTreatment()");
@@ -239,11 +251,13 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
         Double supposedToDeliver = _runningBolusInfo.insulin;
         if (canceled <= 0d)
         {
-            bolusingEvent.status = String.format("Couldn't stop bolus in time, delivered: %f.2u", supposedToDeliver);
+            if (bolusingEvent != null)
+                bolusingEvent.status = String.format("Couldn't stop bolus in time, delivered: %f.2u", supposedToDeliver);
         }
         else
         {
-            bolusingEvent.status = String.format(MainApp.gs(R.string.bolusstopped));
+            if (bolusingEvent != null)
+                bolusingEvent.status = String.format(MainApp.gs(R.string.bolusstopped));
             _runningBolusInfo.insulin = supposedToDeliver - canceled;
         }
         if (bolusingEvent != null)

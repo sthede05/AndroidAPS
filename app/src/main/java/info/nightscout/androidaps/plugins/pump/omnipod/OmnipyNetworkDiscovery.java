@@ -1,8 +1,6 @@
-package info.nightscout.androidaps.plugins.PumpOmnipod;
+package info.nightscout.androidaps.plugins.pump.omnipod;
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
@@ -20,8 +18,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import info.nightscout.androidaps.logging.L;
 

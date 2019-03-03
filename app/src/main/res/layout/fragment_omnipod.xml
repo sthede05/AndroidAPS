@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/cardColorBackground"
-    tools:context=".plugins.PumpOmnipod.OmnipodFragment">
+    tools:context=".plugins.pump.omnipod.OmnipodFragment">
 
     <ScrollView
         android:layout_width="match_parent"

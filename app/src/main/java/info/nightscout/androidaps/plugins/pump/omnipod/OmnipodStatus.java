@@ -1,4 +1,4 @@
-package info.nightscout.androidaps.plugins.PumpOmnipod;
+package info.nightscout.androidaps.plugins.pump.omnipod;
 
 import org.json.JSONException;
 import org.json.JSONObject;

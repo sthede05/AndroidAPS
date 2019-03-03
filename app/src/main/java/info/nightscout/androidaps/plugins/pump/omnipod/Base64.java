@@ -1,4 +1,4 @@
-package info.nightscout.androidaps.plugins.PumpOmnipod;
+package info.nightscout.androidaps.plugins.pump.omnipod;
 
 // credits: @EmilHernvall
 // https://gist.githubusercontent.com/EmilHernvall/953733/raw/de6f6a4c2600dba7d835d43180bfdf55210c9ec0/Base64.java

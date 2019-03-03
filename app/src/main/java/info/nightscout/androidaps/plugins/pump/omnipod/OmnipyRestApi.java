@@ -1,16 +1,13 @@
-package info.nightscout.androidaps.plugins.PumpOmnipod;
+package info.nightscout.androidaps.plugins.pump.omnipod;
 
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.SystemClock;
-import android.util.JsonReader;
-import android.util.Log;
 import android.util.Pair;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
