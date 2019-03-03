@@ -9,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import com.squareup.otto.Subscribe;
 
@@ -54,7 +55,18 @@ public class OmnipodFragment extends SubscriberFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_omnipod, container, false);
+        View view = inflater.inflate(R.layout.fragment_omnipod, container, false);
+
+//        View.OnClickListener onc = new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//
+//            }
+//        }
+
+//        ((Button)view.findViewById(R.id.omnipy_btn_check_connection)).setOnClickListener(this.onClick(view));
+
+        return view;
     }
 
     @Override
