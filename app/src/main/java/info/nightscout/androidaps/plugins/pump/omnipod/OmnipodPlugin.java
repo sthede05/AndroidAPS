@@ -2,6 +2,9 @@ package info.nightscout.androidaps.plugins.pump.omnipod;
 
 import android.content.Context;
 import android.os.SystemClock;
+
+import com.squareup.otto.Subscribe;
+
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +19,7 @@ import info.nightscout.androidaps.data.PumpEnactResult;
 import info.nightscout.androidaps.db.ExtendedBolus;
 import info.nightscout.androidaps.db.Source;
 import info.nightscout.androidaps.db.TemporaryBasal;
+import info.nightscout.androidaps.events.EventNetworkChange;
 import info.nightscout.androidaps.events.EventPreferenceChange;
 import info.nightscout.androidaps.interfaces.PluginBase;
 import info.nightscout.androidaps.interfaces.PluginDescription;
@@ -62,7 +66,6 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
         log.debug("omnipod plug initialized");
         Context context = MainApp.instance().getApplicationContext();
         _pdm = new OmnipodPdm(context);
-
     }
 
     @Override
@@ -75,9 +78,12 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
 
     @Override
     protected void onStop() {
+        super.onStop();
+        _pdm.OnStop();
         MainApp.bus().unregister(this);
     }
 
+    @Subscribe
     public void onStatusEvent(final EventPreferenceChange s) {
         if (s.isChanged(R.string.key_omnipy_autodetect_host))
             _pdm.InvalidateOmnipyHost();
@@ -86,15 +92,19 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
         if (s.isChanged(R.string.key_omnipy_password))
             _pdm.InvalidateApiSecret();
     }
+
+    @Subscribe
+    public void onStatusEvent(final EventNetworkChange enc) {
+        _pdm.InvalidateOmnipyHost();
+    }
+
     @Override
     public boolean isInitialized() {
-        //log.debug("isInitialized()");
         return _pdm.IsInitialized();
     }
 
     @Override
     public boolean isSuspended() {
-        //log.debug("isSuspended()");
         return _pdm.IsSuspended();
     }
 
@@ -297,6 +307,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
     public PumpEnactResult setTempBasalPercent(Integer percent, Integer durationInMinutes, Profile profile, boolean enforceNew) {
         log.debug("omnipod plugin SetTempBasalPercent()");
         PumpEnactResult per = new PumpEnactResult();
+        per.enacted = false;
         per.success = false;
         return per;
     }
@@ -305,6 +316,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
     public PumpEnactResult setExtendedBolus(Double insulin, Integer durationInMinutes) {
         log.debug("omnipod plugin SetExtendedBolus()");
         PumpEnactResult per = new PumpEnactResult();
+        per.enacted = false;
         per.success = false;
         return per;
     }
@@ -313,7 +325,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
     public PumpEnactResult cancelTempBasal(boolean enforceNew) {
         log.debug("CancelTempBasal()");
         PumpEnactResult result = _pdm.CancelTempBasal(enforceNew);
-        if (result.enacted) {
+        if (result.enacted && result.success) {
             if (TreatmentsPlugin.getPlugin().isTempBasalInProgress()) {
                 TemporaryBasal tempStop = new TemporaryBasal().date(_pdm.GetLastUpdated()).source(Source.USER);
                 TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempStop);
@@ -327,7 +339,8 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
     public PumpEnactResult cancelExtendedBolus() {
         log.debug("CancelExtendedBolus()");
         PumpEnactResult per = new PumpEnactResult();
-        per.success = true;
+        per.enacted = false;
+        per.success = false;
         return per;
     }
 
@@ -403,6 +416,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
     public PumpEnactResult loadTDDs() {
         log.debug("loadTDDs()");
         PumpEnactResult per = new PumpEnactResult();
+        per.enacted = false;
         per.success = false;
         return per;
     }

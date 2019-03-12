@@ -19,20 +19,24 @@ import info.nightscout.androidaps.logging.L;
 import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;
 import info.nightscout.androidaps.utils.SP;
 
+import static info.nightscout.androidaps.R2.string.result;
+
 public class OmnipodPdm {
 
     private Context _context;
 
     private Profile _profile;
 
-    private long _lastConnected = 0;
-    private boolean _lastCommandSucceeded = false;
-
-    private OmnipyNetworkDiscovery _omnipyNetworkDiscovery;
-    private OmnipyRestApi _omnipyRestApiCached;
     private OmnipyApiSecret _omnipyApiSecretCached;
+    private OmnipyNetworkDiscovery _omnipyNetworkDiscovery;
 
-    private OmnipodStatus _podStatus;
+    private OmnipyRestApi _omnipyRestApiCached;
+    private OmnipyRestApiResult _lastResult;
+    private OmnipodStatus _lastStatus;
+
+    private boolean _initialized;
+    private boolean _suspended;
+
     private Logger _log;
 
     public OmnipodPdm(Context context)
@@ -40,19 +44,25 @@ public class OmnipodPdm {
         _context = context;
         _log =  LoggerFactory.getLogger(L.PUMP);
         _omnipyNetworkDiscovery = new OmnipyNetworkDiscovery(_context);
-        _podStatus = new OmnipodStatus(SP.getString(R.string.key_omnipod_status, null));
+        //_lastStatus = OmnipodStatus.fromJson(SP.getString(R.string.key_omnipod_status, null));
+    }
+
+    private boolean processResult(OmnipyRestApiResult result)
+    {
+        _lastResult = result;
+        if (result.status != null) {
+            _lastStatus = result.status;
+            //SP.putString(R.string.key_omnipod_status, result.status.asJson());
+        }
+        return result.success;
     }
 
     public void UpdateStatus() {
         OmnipyRestApi rest = getRestApi();
         if (rest != null)
         {
-            String response = rest.Status();
-            _lastCommandSucceeded = parseStatusResponse(response);
+            processResult(rest.Status());
         }
-    }
-
-    public void OnStart() {
     }
 
     public void InvalidateApiSecret()
@@ -126,58 +136,32 @@ public class OmnipodPdm {
         return _omnipyApiSecretCached;
     }
 
-    private boolean parseStatusResponse(String response)
-    {
-        try {
-            if (response == null)
-                return false;
-            JSONObject jo = new JSONObject(response);
-            if (!jo.getBoolean("success"))
-                return false;
-            JSONObject result = jo.getJSONObject("result");
-            boolean ret = _podStatus.Update(result);
-            if (ret) {
-                SP.putString(R.string.key_omnipod_status, result.toString());
-            }
-            return ret;
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
     public PumpEnactResult SetProfile(Profile profile) {
-
         _profile = profile;
-        return CreateResult(true);
+        PumpEnactResult r = new PumpEnactResult();
+        r.enacted = false;
+        r.success = false;
+        return r;
     }
 
     public boolean VerifyProfile(Profile profile) {
-        _profile = profile;
-        return true;
+        return false;
     }
 
     public PumpEnactResult Bolus(DetailedBolusInfo detailedBolusInfo) {
         BigDecimal iuBolus = GetExactInsulinUnits(detailedBolusInfo.insulin);
 
+        PumpEnactResult r = new PumpEnactResult();
+        r.enacted = false;
+        r.success = false;
+
         OmnipyRestApi rest = getRestApi();
         if (rest != null)
         {
-            _lastCommandSucceeded = parseStatusResponse(rest.Bolus(iuBolus));
-        }
-        else
-        {
-            _lastCommandSucceeded = false;
-        }
-
-        PumpEnactResult r = new PumpEnactResult();
-        r.enacted = _lastCommandSucceeded;
-        r.success = _lastCommandSucceeded;
-        if (r.enacted)
-        {
-            r.success = true;
-            r.bolusDelivered = Double.parseDouble(iuBolus.toString());
-            //_busyUntil = SystemClock.elapsedRealtime() + (long)(r.bolusDelivered * 40000d);
+            r.enacted = true;
+            r.success = processResult(rest.Bolus(iuBolus));
+            if (r.success)
+               r.bolusDelivered = Double.parseDouble(iuBolus.toString());
         }
         return r;
     }
@@ -186,16 +170,8 @@ public class OmnipodPdm {
         OmnipyRestApi rest = getRestApi();
         if (rest != null)
         {
-            _lastCommandSucceeded = parseStatusResponse(rest.CancelBolus());
-        }
-        else
-        {
-            _lastCommandSucceeded = false;
-        }
-
-        if (_lastCommandSucceeded) {
-            //_busyUntil = 0;
-            return _podStatus._insulinCanceled;
+            _lastResult = rest.CancelBolus();
+            return _lastResult.status.insulin_canceled;
         }
         else
         {
@@ -216,75 +192,62 @@ public class OmnipodPdm {
     }
 
     public long GetLastUpdated() {
-        return  _podStatus._statusDate;
+        if (_lastStatus != null)
+            return  (long)_lastStatus.state_last_updated * 1000;
+        else
+            return 0;
     }
 
     public PumpEnactResult SetTempBasal(Double absoluteRate, Integer durationInMinutes, Profile profile, boolean enforceNew) {
         BigDecimal iuRate = GetExactInsulinUnits(absoluteRate);
         BigDecimal durationHours = GetExactHourUnits(durationInMinutes);
 
+        PumpEnactResult r = new PumpEnactResult();
+        r.enacted = false;
+        r.success = false;
+
         OmnipyRestApi rest = getRestApi();
         if (rest != null)
         {
-            _lastCommandSucceeded = parseStatusResponse(rest.SetTempBasal(iuRate, durationHours));
-        }
-        else
-        {
-            _lastCommandSucceeded = false;
-        }
-
-        PumpEnactResult r = new PumpEnactResult();
-        r.enacted = _lastCommandSucceeded;
-        r.success = _lastCommandSucceeded;
-        if (r.enacted)
-        {
+            _lastResult = rest.SetTempBasal(iuRate, durationHours);
+            r.success = _lastResult.success;
+            r.enacted = true;
             r.duration = durationInMinutes;
             r.absolute = Double.parseDouble(iuRate.toString());
         }
+
         return r;
     }
 
     public PumpEnactResult CancelTempBasal(boolean enforceNew) {
 
+        PumpEnactResult r = new PumpEnactResult();
+        r.enacted = false;
+        r.success = false;
+
         OmnipyRestApi rest = getRestApi();
         if (rest != null)
         {
-            _lastCommandSucceeded = parseStatusResponse(rest.CancelTempBasal());
-        }
-        else
-        {
-            _lastCommandSucceeded = false;
-        }
-
-        PumpEnactResult r = new PumpEnactResult();
-        r.enacted = _lastCommandSucceeded;
-        r.success = _lastCommandSucceeded;
-        if (r.enacted)
-        {
+            _lastResult = rest.CancelTempBasal();
+            r.success = _lastResult.success;
+            r.enacted = true;
             r.isTempCancel = true;
         }
         return r;
     }
 
     public String GetPodId() {
-        return String.format("L%dT%d", _podStatus._lot, _podStatus._tid);
+        return String.format("L%dT%d", _lastStatus.id_lot, _lastStatus.id_t);
     }
 
     public String GetStatusShort() {
-        if (_podStatus._faulted)
+        if (_lastStatus.state_faulted)
             return "FAULT";
-        if (_podStatus._podProgress == 9)
-            return "INSULIN <50";
-        if (_podStatus._podProgress == 8)
+        if (_lastStatus.state_progress == 9)
+            return "IU<50";
+        if (_lastStatus.state_progress == 8)
             return "OK";
         return "UNKNOWN";
-    }
-
-    private PumpEnactResult CreateResult(boolean enacted)
-    {
-        PumpEnactResult r = new PumpEnactResult();
-        r.enacted = enacted;
-        return r;
     }
 
     private BigDecimal GetExactInsulinUnits(double iu)
@@ -300,6 +263,26 @@ public class OmnipodPdm {
         return new BigDecimal(minutes).divide(big30).setScale(0, RoundingMode.HALF_UP).setScale(1).divide(new BigDecimal(2));
     }
 
+    public int[] GetOmnipyVersion() {
+        int[] version = null;
+        OmnipyRestApi rest = getRestApi();
+
+        if (rest != null) {
+            _lastResult = rest.Ping();
+            version = new int[2];
+            version[0] = _lastResult.api.get("version_major").getAsInt();
+            version[1] = _lastResult.api.get("version_minor").getAsInt();
+        }
+        return version;
+    }
+
+    public void OnStart() {
+
+    }
+
+    public void OnStop() {
+    }
+
     public boolean IsInitialized() {
         OmnipyRestApi rest = getRestApi();
         return rest != null;
@@ -313,19 +296,11 @@ public class OmnipodPdm {
         OmnipyRestApi rest = getRestApi();
         if (rest == null)
             return false;
-        String response = rest.IsBusy();
-        if (response == null)
+        _lastResult = rest.IsBusy();
+        if (!_lastResult.success)
             return false;
-        try {
-            JSONObject jo = new JSONObject(response);
-            if (!jo.getBoolean("success"))
-                return false;
-            JSONObject result = jo.getJSONObject("result");
-            return !result.getBoolean("busy");
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return false;
-        }
+        else
+            return _lastResult.response.get("busy").getAsBoolean();
     }
 
     public boolean IsConnected() {
@@ -333,40 +308,11 @@ public class OmnipodPdm {
         if (rest == null)
             return false;
 
-        if ( SystemClock.elapsedRealtime() - _lastConnected < 30000)
+        if ( SystemClock.elapsedRealtime() - rest.getLastSuccessfulConnection() < 30000)
             return true;
 
-        int[] version = GetOmnipyVersion();
-        if (version == null)
-            return false;
-
-        _lastConnected = SystemClock.elapsedRealtime();
-        return true;
-    }
-
-    public int[] GetOmnipyVersion() {
-        int[] version = null;
-        OmnipyRestApi rest = getRestApi();
-
-        if (rest != null) {
-            String response = rest.GetVersion();
-            if (response != null)
-            {
-                try {
-                    JSONObject jo = new JSONObject(response);
-                    if (jo.getBoolean("success"))
-                    {
-                        JSONObject joResult = jo.getJSONObject("result");
-                        version = new int[2];
-                        version[0] = joResult.getInt("version_major");
-                        version[1] = joResult.getInt("version_minor");
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return version;
+        _lastResult = rest.Ping();
+        return _lastResult.success;
     }
 
     public boolean IsConnecting() {

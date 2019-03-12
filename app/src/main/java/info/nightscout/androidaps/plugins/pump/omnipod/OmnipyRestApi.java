@@ -23,22 +23,23 @@ import java.util.concurrent.TimeoutException;
 
 public class OmnipyRestApi {
 
+    private String REST_URL_PING = "/omnipy/ping";
     private String REST_URL_TOKEN = "/omnipy/token";
     private String REST_URL_NEW_POD = "/omnipy/newpod";
     private String REST_URL_GET_PDM_ADDRESS = "/omnipy/pdmspy";
-    private String REST_URL_STATUS = "/pdm/status";
-    private String REST_URL_GET_VERSION = "/omnipy/version";
     private String REST_URL_CHECK_PASSWORD = "/omnipy/pwcheck";
     private String REST_URL_SET_POD_PARAMETERS = "/omnipy/parameters";
-    private String REST_URL_SET_LIMITS = "/omnipy/limits";
-    private String REST_URL_RL_INFO = "/rl/info";
+
+    private String REST_URL_STATUS = "/pdm/status";
+    private String REST_URL_PDM_BUSY = "/pdm/isbusy";
     private String REST_URL_ACK_ALERTS = "/pdm/ack";
     private String REST_URL_DEACTIVATE_POD = "/pdm/deactivate";
     private String REST_URL_BOLUS = "/pdm/bolus";
     private String REST_URL_CANCEL_BOLUS = "/pdm/cancelbolus";
     private String REST_URL_SET_TEMP_BASAL = "/pdm/settempbasal";
     private String REST_URL_CANCEL_TEMP_BASAL = "/pdm/canceltempbasal";
-    private String REST_URL_PDM_BUSY = "/pdm/isbusy";
+
+    private String REST_URL_RL_INFO = "/rl/info";
 
     private String _baseUrl;
     private OmnipyApiSecret _apiSecret;
@@ -60,38 +61,38 @@ public class OmnipyRestApi {
         return _lastSuccessfulConnection;
     }
 
-    public String Status(){
+    public OmnipyRestApiResult Status(){
         return Status(0);
     }
 
-    public String Status(int requestType)
+    public OmnipyRestApiResult Status(int requestType)
     {
         ArrayList<Pair<String,String>> parameters = getAuthenticationParameters();
         parameters.add(new Pair<>("type", Integer.toString(requestType)));
         return getApiResult(REST_URL_STATUS, parameters);
     }
 
-    public String GetVersion()
+    public OmnipyRestApiResult Ping()
     {
-        return getApiResult(REST_URL_GET_VERSION, null,
+        return getApiResult(REST_URL_PING, null,
                 5000);
     }
 
-    public String CheckAuthentication()
+    public OmnipyRestApiResult CheckAuthentication()
     {
         ArrayList<Pair<String,String>> parameters = getAuthenticationParameters();
         return getApiResult(REST_URL_CHECK_PASSWORD, parameters,
                 10000);
     }
 
-    public String GetAddressFromPdm(int timeout)
+    public OmnipyRestApiResult GetAddressFromPdm(int timeout)
     {
         ArrayList<Pair<String,String>> parameters = getAuthenticationParameters();
         parameters.add(new Pair<>("timeout", Integer.toString(timeout)));
         return getApiResult(REST_URL_GET_PDM_ADDRESS, parameters);
     }
 
-    public String CreateNewPod(int lot, int tid, int address)
+    public OmnipyRestApiResult CreateNewPod(int lot, int tid, int address)
     {
         ArrayList<Pair<String,String>> parameters = getAuthenticationParameters();
         parameters.add(new Pair<>("lot", Integer.toString(lot)));
@@ -100,7 +101,7 @@ public class OmnipyRestApi {
         return getApiResult(REST_URL_NEW_POD, parameters);
     }
 
-    public String UpdatePodParameters(int lot, int tid, int address)
+    public OmnipyRestApiResult UpdatePodParameters(int lot, int tid, int address)
     {
         ArrayList<Pair<String,String>> parameters = getAuthenticationParameters();
         parameters.add(new Pair<>("lot", Integer.toString(lot)));
@@ -109,47 +110,39 @@ public class OmnipyRestApi {
         return getApiResult(REST_URL_SET_POD_PARAMETERS, parameters);
     }
 
-    public String SetLimits(BigDecimal maxBolus, BigDecimal maxTempBasal)
-    {
-        ArrayList<Pair<String,String>> parameters = getAuthenticationParameters();
-        parameters.add(new Pair<>("maxbolus", maxBolus.toString() ));
-        parameters.add(new Pair<>("maxbasal", maxTempBasal.toString()));
-        return getApiResult(REST_URL_SET_LIMITS, parameters);
-    }
-
-    public String GetRLInfo()
+    public OmnipyRestApiResult GetRLInfo()
     {
         ArrayList<Pair<String,String>> parameters = getAuthenticationParameters();
         return getApiResult(REST_URL_RL_INFO, parameters);
     }
 
-    public String AcknowledgeAlerts(int alertMask)
+    public OmnipyRestApiResult AcknowledgeAlerts(int alertMask)
     {
         ArrayList<Pair<String,String>> parameters = getAuthenticationParameters();
         parameters.add(new Pair<>("alertmask", Integer.toString(alertMask) ));
         return getApiResult(REST_URL_ACK_ALERTS, parameters);
     }
 
-    public String DeactivatePod()
+    public OmnipyRestApiResult DeactivatePod()
     {
         ArrayList<Pair<String,String>> parameters = getAuthenticationParameters();
         return getApiResult(REST_URL_DEACTIVATE_POD, parameters);
     }
 
-    public String Bolus(BigDecimal bolusAmount)
+    public OmnipyRestApiResult Bolus(BigDecimal bolusAmount)
     {
         ArrayList<Pair<String,String>> parameters = getAuthenticationParameters();
         parameters.add(new Pair<>("amount", bolusAmount.toString() ));
         return getApiResult(REST_URL_BOLUS, parameters);
     }
 
-    public String CancelBolus()
+    public OmnipyRestApiResult CancelBolus()
     {
         ArrayList<Pair<String,String>> parameters = getAuthenticationParameters();
         return getApiResult(REST_URL_CANCEL_BOLUS, parameters);
     }
 
-    public String SetTempBasal(BigDecimal basalRate, BigDecimal durationInHours)
+    public OmnipyRestApiResult SetTempBasal(BigDecimal basalRate, BigDecimal durationInHours)
     {
         ArrayList<Pair<String,String>> parameters = getAuthenticationParameters();
         parameters.add(new Pair<>("amount", basalRate.toString() ));
@@ -157,13 +150,13 @@ public class OmnipyRestApi {
         return getApiResult(REST_URL_SET_TEMP_BASAL, parameters);
     }
 
-    public String CancelTempBasal()
+    public OmnipyRestApiResult CancelTempBasal()
     {
         ArrayList<Pair<String,String>> parameters = getAuthenticationParameters();
         return getApiResult(REST_URL_CANCEL_TEMP_BASAL, parameters);
     }
 
-    public String IsBusy()
+    public OmnipyRestApiResult IsBusy()
     {
         return getApiResult(REST_URL_PDM_BUSY, null);
     }
@@ -180,27 +173,22 @@ public class OmnipyRestApi {
 
     private OmnipyApiToken getToken() {
         OmnipyApiToken apiToken = null;
-        try {
-            String response = getApiResult(REST_URL_TOKEN, null);
-            JSONObject json = new JSONObject(response);
-            JSONObject result = json.getJSONObject("result");
-            String tokenStr = result.getString("token");
-            apiToken = new OmnipyApiToken(Base64.decode(tokenStr), _apiSecret);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        OmnipyRestApiResult result = getApiResult(REST_URL_TOKEN, null);
+
+        String tokenStr = result.response.get("token").getAsString();
+        apiToken = new OmnipyApiToken(Base64.decode(tokenStr), _apiSecret);
         return apiToken;
     }
 
-    private String getApiResult(String path, ArrayList<Pair<String, String>> parameters)
+    private OmnipyRestApiResult getApiResult(String path, ArrayList<Pair<String, String>> parameters)
     {
         return getApiResult(path, parameters, 0);
     }
 
-    private String getApiResult(String path, ArrayList<Pair<String, String>> parameters,
+    private OmnipyRestApiResult getApiResult(String path, ArrayList<Pair<String, String>> parameters,
                                 int timeout)
     {
-        String response = null;
+        OmnipyRestApiResult result = null;
         try
         {
             int parameterCount = 1;
@@ -219,11 +207,11 @@ public class OmnipyRestApi {
             }
             RestApiTask task = (RestApiTask) new RestApiTask().execute(stringParams);
             if (timeout == 0) {
-                response = task.get();
+                result = task.get();
                 _connectionTimedOutCount = 0;
                 _lastSuccessfulConnection = SystemClock.elapsedRealtime();
             } else {
-                response = task.get(timeout, TimeUnit.MILLISECONDS);
+                result = task.get(timeout, TimeUnit.MILLISECONDS);
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -233,15 +221,16 @@ public class OmnipyRestApi {
             _connectionTimedOutCount += 1;
             e.printStackTrace();
         }
-        return response;
+
+        return result;
     }
 
 }
 
-class RestApiTask extends AsyncTask<String, Void,String> {
+class RestApiTask extends AsyncTask<String, Void,OmnipyRestApiResult> {
     @Override
-    protected String doInBackground(String... strings) {
-        String response = null;
+    protected OmnipyRestApiResult doInBackground(String... strings) {
+        OmnipyRestApiResult result = null;
         try {
             Uri.Builder ub = Uri.parse(strings[0]).buildUpon();
             if (strings.length > 1)
@@ -260,7 +249,8 @@ class RestApiTask extends AsyncTask<String, Void,String> {
             int responseCode = urlConnection.getResponseCode();
 
             if (responseCode == HttpURLConnection.HTTP_OK) {
-                response = readStream(urlConnection.getInputStream());
+                String response = readStream(urlConnection.getInputStream());
+                result = OmnipyRestApiResult.fromJson(response);
             }
 
         } catch (MalformedURLException e) {
@@ -268,7 +258,7 @@ class RestApiTask extends AsyncTask<String, Void,String> {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return response;
+        return result;
     }
 
     private String readStream(InputStream in) {
