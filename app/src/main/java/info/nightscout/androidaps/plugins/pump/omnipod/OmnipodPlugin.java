@@ -91,11 +91,18 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
             _pdm.InvalidateOmnipyHost();
         if (s.isChanged(R.string.key_omnipy_password))
             _pdm.InvalidateApiSecret();
+        MainApp.bus().post(new EventOmnipodUpdateGui());
     }
 
     @Subscribe
     public void onStatusEvent(final EventNetworkChange enc) {
         _pdm.InvalidateOmnipyHost();
+        MainApp.bus().post(new EventOmnipodUpdateGui());
+    }
+
+    public OmnipodPdm getPdm()
+    {
+        return _pdm;
     }
 
     @Override
@@ -141,6 +148,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
     public void connect(String reason) {
         //log.debug("omnipod plugin connect()");
         _pdm.Connect();
+        MainApp.bus().post(new EventOmnipodUpdateGui());
     }
 
     @Override

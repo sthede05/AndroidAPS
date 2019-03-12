@@ -118,6 +118,7 @@ public class OmnipodStatus {
 
     public int id_lot;
     public int id_t;
+    public int radio_address;
 
     public int state_active_minutes;
     public int state_alert;
@@ -127,11 +128,9 @@ public class OmnipodStatus {
     public double state_last_updated;
     public int state_progress;
 
-    public int radio_address;
-
-    double insulin_canceled;
-    double insulin_delivered;
-    double insulin_reservoir;
+    public double insulin_canceled;
+    public double insulin_delivered;
+    public double insulin_reservoir;
 
 
     public static OmnipodStatus fromJson(String json) {

@@ -10,7 +10,10 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.DateFormat;
+import java.util.Date;
 
+import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.DetailedBolusInfo;
 import info.nightscout.androidaps.data.Profile;
@@ -53,6 +56,7 @@ public class OmnipodPdm {
         if (result.status != null) {
             _lastStatus = result.status;
             //SP.putString(R.string.key_omnipod_status, result.status.asJson());
+            MainApp.bus().post(new EventOmnipodUpdateGui());
         }
         return result.success;
     }
@@ -102,6 +106,102 @@ public class OmnipodPdm {
         }
 
         return _omnipyRestApiCached;
+    }
+
+    public String getPodStatusText()
+    {
+        if (_lastStatus == null)
+            return "Status unknown";
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Lot: ").append(_lastStatus.id_lot).append(" TID: ").append(_lastStatus.id_t)
+                .append(" Radio address: ")
+                .append(String.format("%08X", _lastStatus.radio_address));
+
+        sb.append("\n\nStatus: ");
+        if (_lastStatus.state_progress < 8)
+        {
+            sb.append("Not yet running");
+        }
+        else if (_lastStatus.state_progress == 8)
+        {
+            sb.append("Running");
+        }
+        else if (_lastStatus.state_progress == 9)
+        {
+            sb.append("Running with low insulin (<50U)");
+        }
+        else if (_lastStatus.state_progress > 9)
+        {
+            sb.append("Inactive");
+        }
+
+        if (_lastStatus.state_faulted)
+        {
+            sb.append("\nPOD FAULTED");
+        }
+
+        int minutes = _lastStatus.state_active_minutes;
+        int days = minutes / 60 / 24;
+        minutes -= days * 60 * 24;
+        int hours = minutes / 60;
+        minutes -= hours * 60;
+
+        sb.append("\n\nTotal insulin delivered: ").append(String.format("%3.2f",
+                _lastStatus.insulin_delivered)).append("U");
+        sb.append("\nReservoir: ");
+        if (_lastStatus.insulin_reservoir > 50)
+            sb.append("more than 50U");
+        else
+            sb.append(String.format("%2.2f", _lastStatus.insulin_reservoir)).append("U");
+
+        sb.append("\n\nPod age: ").append(String.format("%dd%dh%dm", days, hours, minutes));
+
+        Date date = new Date((long)_lastStatus.state_last_updated * 1000);
+        DateFormat dateFormat = android.text.format.DateFormat.getTimeFormat(_context);
+        sb.append("\n\nStatus updated: ").append(dateFormat.format(date));
+
+        return sb.toString();
+    }
+
+    public String getConnectionStatusText()
+    {
+        StringBuilder sb = new StringBuilder();
+
+        if (SP.getBoolean(R.string.key_omnipy_autodetect_host, true)) {
+            String result = _omnipyNetworkDiscovery.GetLastKnownAddress();
+            if (result != null)
+                sb.append("Discovered Host Address: ").append(result);
+            else
+                sb.append("Host address autodiscovery in progress..");
+        }
+        else
+        {
+            String result = SP.getString(R.string.key_omnipy_host, null);
+            if (result != null && result.length() == 0)
+                sb.append("Host address not configured in pump preferences");
+            else
+                sb.append("Configured address: ").append(result);
+        }
+
+        if (_omnipyRestApiCached != null)
+        {
+            sb.append("\nLast successful connection: ");
+            long tx = _omnipyRestApiCached.getLastSuccessfulConnection();
+            if (tx == 0)
+            {
+                sb.append("Never");
+            }
+            else
+            {
+                long delta = SystemClock.elapsedRealtime() - tx;
+                Date date = new Date(System.currentTimeMillis() - delta);
+                DateFormat dateFormat = android.text.format.DateFormat.getTimeFormat(_context);
+                sb.append(dateFormat.format(date));
+            }
+        }
+
+        return sb.toString();
     }
 
     private String getOmnipyHost()
