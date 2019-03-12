@@ -27,7 +27,9 @@ import info.nightscout.androidaps.interfaces.PluginType;
 import info.nightscout.androidaps.interfaces.PumpDescription;
 import info.nightscout.androidaps.interfaces.PumpInterface;
 import info.nightscout.androidaps.logging.L;
+import info.nightscout.androidaps.plugins.general.overview.events.EventNewNotification;
 import info.nightscout.androidaps.plugins.general.overview.events.EventOverviewBolusProgress;
+import info.nightscout.androidaps.plugins.general.overview.notifications.Notification;
 import info.nightscout.androidaps.plugins.pump.common.defs.PumpType;
 import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
 import info.nightscout.androidaps.utils.DateUtil;
@@ -172,10 +174,9 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
     @Override
     public PumpEnactResult setNewBasalProfile(Profile profile) {
         log.debug("omnipod plugin setNewBasalProfile()");
-        PumpEnactResult ret = new PumpEnactResult();
-        ret.success = false;
-        // Notification notification = new Notification(Notification.PROFILE_SET_OK, MainApp.gs(R.string.profile_set_ok), Notification.INFO, 60);
-        // MainApp.bus().post(new EventNewNotification(notification));
+        PumpEnactResult ret = _pdm.SetProfile(profile);
+        Notification notification = new Notification(Notification.PROFILE_SET_OK, MainApp.gs(R.string.profile_set_ok), Notification.INFO, 60);
+        MainApp.bus().post(new EventNewNotification(notification));
         return ret;
     }
 

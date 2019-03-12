@@ -237,15 +237,18 @@ public class OmnipodPdm {
     }
 
     public PumpEnactResult SetProfile(Profile profile) {
+        // fake set profile
         _profile = profile;
         PumpEnactResult r = new PumpEnactResult();
-        r.enacted = false;
-        r.success = false;
+        r.enacted = true;
+        r.success = true;
         return r;
     }
 
     public boolean VerifyProfile(Profile profile) {
-        return false;
+        // fake verify
+        _profile = profile;
+        return true;
     }
 
     public PumpEnactResult Bolus(DetailedBolusInfo detailedBolusInfo) {

@@ -222,6 +222,10 @@ public class OmnipyRestApi {
             e.printStackTrace();
         }
 
+        if (result == null) {
+            result = new OmnipyRestApiResult();
+            result.success = false;
+        }
         return result;
     }
 
