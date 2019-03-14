@@ -15,6 +15,7 @@ import java.util.Objects;
 
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.plugins.common.SubscriberFragment;
+import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipodUpdateGui;
 
 public class OmnipodFragment extends SubscriberFragment {
 

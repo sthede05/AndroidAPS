@@ -3,8 +3,8 @@ package info.nightscout.androidaps.plugins.pump.omnipod;
 import android.content.Context;
 import android.os.SystemClock;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.squareup.otto.Subscribe;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,11 +18,23 @@ import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.DetailedBolusInfo;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.data.PumpEnactResult;
+import info.nightscout.androidaps.events.EventPumpStatusChanged;
+import info.nightscout.androidaps.plugins.general.overview.events.EventNewNotification;
+import info.nightscout.androidaps.plugins.general.overview.notifications.Notification;
+import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmnipyCallback;
+import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipyApiResult;
 import info.nightscout.androidaps.logging.L;
 import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;
+import info.nightscout.androidaps.plugins.pump.omnipod.api.OmnipyRestApi;
+import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipodUpdateGui;
+import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipyConfigurationComplete;
+import info.nightscout.androidaps.plugins.pump.omnipod.exceptions.OmnipyConnectionException;
+import info.nightscout.androidaps.plugins.pump.omnipod.exceptions.OmnipyTimeoutException;
 import info.nightscout.androidaps.utils.SP;
+import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmnipyResult;
 
-import static info.nightscout.androidaps.R2.string.result;
+import static info.nightscout.androidaps.plugins.general.overview.notifications.Notification.NORMAL;
+import static info.nightscout.androidaps.plugins.general.overview.notifications.Notification.URGENT;
 
 public class OmnipodPdm {
 
@@ -30,11 +42,8 @@ public class OmnipodPdm {
 
     private Profile _profile;
 
-    private OmnipyApiSecret _omnipyApiSecretCached;
-    private OmnipyNetworkDiscovery _omnipyNetworkDiscovery;
-
-    private OmnipyRestApi _omnipyRestApiCached;
-    private OmnipyRestApiResult _lastResult;
+    private OmnipyRestApi _restApi;
+    private OmnipyResult _lastResult;
     private OmnipodStatus _lastStatus;
 
     private boolean _initialized;
@@ -46,66 +55,166 @@ public class OmnipodPdm {
     {
         _context = context;
         _log =  LoggerFactory.getLogger(L.PUMP);
-        _omnipyNetworkDiscovery = new OmnipyNetworkDiscovery(_context);
-        //_lastStatus = OmnipodStatus.fromJson(SP.getString(R.string.key_omnipod_status, null));
     }
 
-    private boolean processResult(OmnipyRestApiResult result)
+    public void OnStart() {
+        _restApi = new OmnipyRestApi(_context);
+        MainApp.bus().register(this);
+        MainApp.bus().register(_restApi);
+        _lastStatus = OmnipodStatus.fromJson(SP.getString(R.string.key_omnipod_status, null));
+        _initialized = false;
+        _restApi.StartConfiguring();
+    }
+
+    public void OnStop() {
+        MainApp.bus().unregister(_restApi);
+        MainApp.bus().unregister(this);
+        _restApi.StopConfiguring();
+        _restApi = null;
+    }
+
+    private void pingOmnipy()
     {
-        _lastResult = result;
-        if (result.status != null) {
-            _lastStatus = result.status;
-            //SP.putString(R.string.key_omnipod_status, result.status.asJson());
-            MainApp.bus().post(new EventOmnipodUpdateGui());
-        }
-        return result.success;
-    }
-
-    public void UpdateStatus() {
-        OmnipyRestApi rest = getRestApi();
-        if (rest != null)
-        {
-            processResult(rest.Status());
-        }
-    }
-
-    public void InvalidateApiSecret()
-    {
-        _omnipyApiSecretCached = null;
-        _omnipyRestApiCached = null;
-    }
-
-    public void InvalidateOmnipyHost()
-    {
-        _omnipyNetworkDiscovery.ClearKnownAddress();
-        _omnipyRestApiCached = null;
-    }
-
-    private OmnipyRestApi getRestApi()
-    {
-        if (_omnipyRestApiCached == null) {
-            String hostName = getOmnipyHost();
-            OmnipyApiSecret apiSecret = getApiSecret();
-            if (hostName != null && apiSecret != null) {
-                _omnipyRestApiCached = new OmnipyRestApi("http://" + hostName + ":4444",
-                        apiSecret);
-            }
-        } else
-        {
-            int count = _omnipyRestApiCached.getConnectionTimeOutCount();
-            if (count > 0)
+        _restApi.Ping(result -> {
+            if (!result.canceled && !result.success)
             {
-                long timeDelta = _omnipyRestApiCached.getLastSuccessfulConnection() -
-                        SystemClock.elapsedRealtime();
+                handleDisconnect();
+            }
+        });
+    }
 
-                if (timeDelta > 10*60*1000 || count > 3) {
-                    InvalidateApiSecret();
-                    InvalidateOmnipyHost();
-                }
+    private void handleDisconnect()
+    {
+        _initialized = false;
+    }
+
+    public boolean IsInitialized() { return _initialized; }
+
+    public boolean IsSuspended() {
+        return _suspended;
+    }
+
+    public boolean IsBusy() {
+        _lastResult = _restApi.IsBusy();
+
+        if (_lastResult.success)
+        {
+            return _lastResult.response.get("busy").getAsBoolean();
+        }
+        else
+            return true;
+    }
+
+    public boolean IsConnected() {
+        if (_restApi.isConnectable()) {
+            pingOmnipy();
+            return true;
+        }
+        return false;
+    }
+
+    public void Connect() {
+        if (_restApi.isConfigured())
+        {
+            if (_restApi.isConnectable())
+            {
+                pingOmnipy();
+                return;
             }
         }
+        _restApi.StartConfiguring();
+    }
 
-        return _omnipyRestApiCached;
+    public boolean IsConnecting() {
+        return !_restApi.isConfigured();
+    }
+
+    public void StopConnecting() {
+        _restApi.StopConfiguring();
+    }
+
+    public void FinishHandshaking() { }
+
+    public boolean IsHandshakeInProgress() {
+        return false;
+    }
+
+    public void Disconnect() {}
+
+
+    @Subscribe
+    public synchronized void onResultReceived(final EventOmnipyApiResult or) {
+        OmnipyResult result = or.getResult();
+        if (!result.canceled) {
+            _lastResult = result;
+            if (_lastResult.status != null) {
+                _lastStatus = result.status;
+                SP.putString(R.string.key_omnipod_status, result.status.asJson());
+                MainApp.bus().post(new EventOmnipodUpdateGui());
+            }
+        }
+    }
+
+    @Subscribe
+    public void onConfigurationComplete(final EventOmnipyConfigurationComplete confResult) {
+        MainApp.bus().post(new EventOmnipodUpdateGui());
+        String errorMessage = null;
+        if (!confResult.isConnectable)
+        {
+            _initialized = false;
+            if (confResult.isDiscovered)
+            {
+                errorMessage = "Omnipy located at network address " + confResult.hostName +
+                        " but connection cannot be established";
+            }
+            else
+            {
+                errorMessage = "Connection cannot be established with the configured address: " + confResult.hostName;
+            }
+            Notification notification = new Notification(Notification.PUMP_UNREACHABLE, errorMessage, Notification.NORMAL);
+            MainApp.bus().post(new EventNewNotification(notification));
+//            MainApp.bus().post(new EventPumpStatusChanged(errorMessage));
+//            MainApp.bus().post(new EventPumpStatusChanged(EventPumpStatusChanged.DISCONNECTING));
+//            MainApp.bus().post(new EventPumpStatusChanged(EventPumpStatusChanged.DISCONNECTED));
+        }
+        else if (!confResult.isAuthenticated)
+        {
+            _initialized = false;
+            errorMessage = "Connection established to address " + confResult.hostName +
+                    " but authentication failed. Please verify your password in settings.";
+            Notification notification = new Notification(Notification.PUMP_UNREACHABLE, errorMessage, Notification.NORMAL);
+            MainApp.bus().post(new EventNewNotification(notification));
+//            MainApp.bus().post(new EventPumpStatusChanged(errorMessage));
+//            MainApp.bus().post(new EventPumpStatusChanged(EventPumpStatusChanged.DISCONNECTING));
+//            MainApp.bus().post(new EventPumpStatusChanged(EventPumpStatusChanged.DISCONNECTED));
+
+        }
+        else
+        {
+
+            _restApi.UpdateStatus(result -> {
+                if (result.success)
+                {
+                    _initialized = true;
+                    _lastStatus = result.status;
+                }
+            });
+
+            MainApp.bus().post(new EventPumpStatusChanged(
+                    EventPumpStatusChanged.CONNECTED));
+        }
+
+    }
+
+    public void GetPumpStatus() {
+        _restApi.UpdateStatus(null);
+    }
+
+    public long GetLastUpdated() {
+        if (_lastStatus != null)
+            return  (long)_lastStatus.state_last_updated * 1000;
+        else
+            return 0;
     }
 
     public String getPodStatusText()
@@ -131,7 +240,7 @@ public class OmnipodPdm {
         {
             sb.append("Running with low insulin (<50U)");
         }
-        else if (_lastStatus.state_progress > 9)
+        else
         {
             sb.append("Inactive");
         }
@@ -167,122 +276,84 @@ public class OmnipodPdm {
     public String getConnectionStatusText()
     {
         StringBuilder sb = new StringBuilder();
-
-        if (SP.getBoolean(R.string.key_omnipy_autodetect_host, true)) {
-            String result = _omnipyNetworkDiscovery.GetLastKnownAddress();
-            if (result != null)
-                sb.append("Discovered Host Address: ").append(result);
-            else
-                sb.append("Host address autodiscovery in progress..");
+        if (!_restApi.isConfigured())
+        {
+            sb.append("Address configuration in progress..");
         }
         else
         {
-            String result = SP.getString(R.string.key_omnipy_host, null);
-            if (result != null && result.length() == 0)
-                sb.append("Host address not configured in pump preferences");
+            if (_restApi.isDiscovered())
+                sb.append("Discovered Address: ").append(_restApi.getHost());
             else
-                sb.append("Configured address: ").append(result);
+                sb.append("Configured Address: ").append(_restApi.getHost());
+
+            if (!_restApi.isConnectable())
+                sb.append("\nConnectable: No");
+            else
+            {
+                sb.append("\nConnectable: Yes");
+                if (_restApi.isAuthenticated())
+                    sb.append("\nAuthentication: Verified");
+                else
+                    sb.append("\nAuthentication: Failed");
+            }
         }
 
-        if (_omnipyRestApiCached != null)
+        sb.append("\n\nLast successful connection: ");
+        long tx = _restApi.getLastSuccessfulConnection();
+        if (tx == 0)
         {
-            sb.append("\nLast successful connection: ");
-            long tx = _omnipyRestApiCached.getLastSuccessfulConnection();
-            if (tx == 0)
-            {
-                sb.append("Never");
-            }
-            else
-            {
-                long delta = SystemClock.elapsedRealtime() - tx;
-                Date date = new Date(System.currentTimeMillis() - delta);
-                DateFormat dateFormat = android.text.format.DateFormat.getTimeFormat(_context);
-                sb.append(dateFormat.format(date));
-            }
+            sb.append("N/A");
+        }
+        else
+        {
+            Date date = new Date(tx);
+            DateFormat dateFormat = android.text.format.DateFormat.getTimeFormat(_context);
+            sb.append(dateFormat.format(date));
         }
 
         return sb.toString();
     }
 
-    private String getOmnipyHost()
-    {
-        String omnipyHost;
-        if (SP.getBoolean(R.string.key_omnipy_autodetect_host, true)) {
-            omnipyHost = _omnipyNetworkDiscovery.GetLastKnownAddress();
-            if (omnipyHost == null)
-                _omnipyNetworkDiscovery.RunDiscovery();
-        }
-        else
-        {
-            omnipyHost = SP.getString(R.string.key_omnipy_host, null);
-            if (omnipyHost != null && omnipyHost.length() == 0)
-                return null;
-        }
+    public PumpEnactResult SetNewBasalProfile(Profile profile) {
+        BigDecimal[] basalSchedule = getBasalScheduleFromProfile(profile);
+        _restApi.setBasalSchedule(basalSchedule, result -> {
+            if (result.success)
+            {
 
-        return omnipyHost;
-    }
+            }
+            else
+            {
 
-    private OmnipyApiSecret getApiSecret()
-    {
-        if (_omnipyApiSecretCached == null)
-        {
-            String secret = SP.getString(R.string.key_omnipy_password, "");
-            if (secret == null || secret.length() == 0)
-                return null;
-
-            _omnipyApiSecretCached = OmnipyApiSecret.fromPassphrase(
-                    SP.getString(R.string.key_omnipy_password, ""));
-        }
-        return _omnipyApiSecretCached;
-    }
-
-    public PumpEnactResult SetProfile(Profile profile) {
-        // fake set profile
-        _profile = profile;
+            }
+        });
         PumpEnactResult r = new PumpEnactResult();
         r.enacted = true;
-        r.success = true;
+        r.queued = true;
         return r;
     }
 
-    public boolean VerifyProfile(Profile profile) {
-        // fake verify
-        _profile = profile;
-        return true;
-    }
-
-    public PumpEnactResult Bolus(DetailedBolusInfo detailedBolusInfo) {
-        BigDecimal iuBolus = GetExactInsulinUnits(detailedBolusInfo.insulin);
-
-        PumpEnactResult r = new PumpEnactResult();
-        r.enacted = false;
-        r.success = false;
-
-        OmnipyRestApi rest = getRestApi();
-        if (rest != null)
+    public boolean IsProfileSet(Profile profile) {
+        if (_lastStatus != null)
         {
-            r.enacted = true;
-            r.success = processResult(rest.Bolus(iuBolus));
-            if (r.success)
-               r.bolusDelivered = Double.parseDouble(iuBolus.toString());
-        }
-        return r;
-    }
+            if (_lastStatus.var_basal_schedule == null)
+                return false;
 
-    public double CancelBolus() {
-        OmnipyRestApi rest = getRestApi();
-        if (rest != null)
-        {
-            _lastResult = rest.CancelBolus();
-            return _lastResult.status.insulin_canceled;
+            BigDecimal[] scheduleToVerify = getBasalScheduleFromProfile(profile);
+            for(int i=0; i<48; i++)
+                if (!_lastStatus.var_basal_schedule[i].equals(scheduleToVerify[i]))
+                    return false;
+
+            return true;
         }
         else
         {
-            return -1d;
+            // or else?
+            return false;
         }
     }
 
-    public double GetBasalRate() {
+    public double GetBaseBasalRate() {
         if (_profile == null)
         {
             _profile = ProfileFunctions.getInstance().getProfile();
@@ -294,11 +365,31 @@ public class OmnipodPdm {
             return _profile.getBasal();
     }
 
-    public long GetLastUpdated() {
-        if (_lastStatus != null)
-            return  (long)_lastStatus.state_last_updated * 1000;
-        else
-            return 0;
+    public PumpEnactResult Bolus(DetailedBolusInfo detailedBolusInfo) {
+        BigDecimal iuBolus = GetExactInsulinUnits(detailedBolusInfo.insulin);
+
+        PumpEnactResult r = new PumpEnactResult();
+        r.enacted = true;
+        r.success = true;
+        r.queued = true;
+        r.bolusDelivered = iuBolus.doubleValue();
+
+        _restApi.Bolus(iuBolus, result -> {
+            if (result.success)
+            {
+
+            }
+            else
+            {
+
+            }
+        });
+
+        return r;
+    }
+
+    public void CancelBolus(OmnipyCallback cb) {
+        _restApi.CancelBolus(cb);
     }
 
     public PumpEnactResult SetTempBasal(Double absoluteRate, Integer durationInMinutes, Profile profile, boolean enforceNew) {
@@ -306,18 +397,23 @@ public class OmnipodPdm {
         BigDecimal durationHours = GetExactHourUnits(durationInMinutes);
 
         PumpEnactResult r = new PumpEnactResult();
-        r.enacted = false;
-        r.success = false;
+        r.enacted = true;
+        r.success = true;
+        r.queued = true;
+        r.duration = durationInMinutes;
+        r.absolute = iuRate.doubleValue();
 
-        OmnipyRestApi rest = getRestApi();
-        if (rest != null)
-        {
-            _lastResult = rest.SetTempBasal(iuRate, durationHours);
-            r.success = _lastResult.success;
-            r.enacted = true;
-            r.duration = durationInMinutes;
-            r.absolute = Double.parseDouble(iuRate.toString());
-        }
+        _restApi.SetTempBasal(iuRate, durationHours, result -> {
+            if (result.success)
+            {
+
+            }
+            else
+            {
+
+            }
+
+        });
 
         return r;
     }
@@ -325,17 +421,22 @@ public class OmnipodPdm {
     public PumpEnactResult CancelTempBasal(boolean enforceNew) {
 
         PumpEnactResult r = new PumpEnactResult();
-        r.enacted = false;
-        r.success = false;
+        r.enacted = true;
+        r.success = true;
+        r.queued = true;
+        r.isTempCancel = true;
 
-        OmnipyRestApi rest = getRestApi();
-        if (rest != null)
-        {
-            _lastResult = rest.CancelTempBasal();
-            r.success = _lastResult.success;
-            r.enacted = true;
-            r.isTempCancel = true;
-        }
+        _restApi.CancelTempBasal(result -> {
+            if (result.success)
+            {
+
+            }
+            else
+            {
+
+            }
+
+        });
         return r;
     }
 
@@ -366,78 +467,16 @@ public class OmnipodPdm {
         return new BigDecimal(minutes).divide(big30).setScale(0, RoundingMode.HALF_UP).setScale(1).divide(new BigDecimal(2));
     }
 
-    public int[] GetOmnipyVersion() {
-        int[] version = null;
-        OmnipyRestApi rest = getRestApi();
-
-        if (rest != null) {
-            _lastResult = rest.Ping();
-            version = new int[2];
-            version[0] = _lastResult.api.get("version_major").getAsInt();
-            version[1] = _lastResult.api.get("version_minor").getAsInt();
-        }
-        return version;
-    }
-
-    public void OnStart() {
-
-    }
-
-    public void OnStop() {
-    }
-
-    public boolean IsInitialized() {
-        OmnipyRestApi rest = getRestApi();
-        return rest != null;
-    }
-
-    public boolean IsSuspended() {
-        return false;
-    }
-
-    public boolean AcceptsCommands() {
-        OmnipyRestApi rest = getRestApi();
-        if (rest == null)
-            return false;
-        _lastResult = rest.IsBusy();
-        if (!_lastResult.success)
-            return false;
-        else
-            return _lastResult.response.get("busy").getAsBoolean();
-    }
-
-    public boolean IsConnected() {
-        OmnipyRestApi rest = getRestApi();
-        if (rest == null)
-            return false;
-
-        if ( SystemClock.elapsedRealtime() - rest.getLastSuccessfulConnection() < 30000)
-            return true;
-
-        _lastResult = rest.Ping();
-        return _lastResult.success;
-    }
-
-    public boolean IsConnecting() {
-        return false;
-    }
-
-    public boolean IsHandshakeInProgress() {
-        return false;
-    }
-
-    public void FinishHandshaking() {
-    }
-
-    public void Connect() {
-        IsConnected();
-    }
-
-    public void StopConnecting()
+    private BigDecimal[] getBasalScheduleFromProfile(Profile profile)
     {
-    }
+        BigDecimal[] basalSchedule = new BigDecimal[48];
 
-    public void Disconnect() {
-        _omnipyRestApiCached = null;
+        long secondsSinceMidnight = 0;
+        for(int i=0; i<48; i++)
+        {
+            basalSchedule[i] = GetExactInsulinUnits(profile.getBasal(secondsSinceMidnight));
+            secondsSinceMidnight += 60*30;
+        }
+        return basalSchedule;
     }
 }

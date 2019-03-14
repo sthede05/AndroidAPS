@@ -31,6 +31,7 @@ import info.nightscout.androidaps.plugins.general.overview.events.EventNewNotifi
 import info.nightscout.androidaps.plugins.general.overview.events.EventOverviewBolusProgress;
 import info.nightscout.androidaps.plugins.general.overview.notifications.Notification;
 import info.nightscout.androidaps.plugins.pump.common.defs.PumpType;
+import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipodUpdateGui;
 import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
 import info.nightscout.androidaps.utils.DateUtil;
 import info.nightscout.androidaps.utils.SP;
@@ -64,8 +65,12 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
                 .description(R.string.omnipod_description)
         );
 
+        // explicitly disable aaps interfering with bluetooth connections
+        // as it assumes all pumps connect via bluetooth
+        SP.putBoolean(R.string.key_btwatchdog, false);
+
         pumpDescription.setPumpDescription(PumpType.Omnipy_Omnipod);
-        log.debug("omnipod plug initialized");
+        log.debug("omnipod plugin initialized");
         Context context = MainApp.instance().getApplicationContext();
         _pdm = new OmnipodPdm(context);
     }
@@ -86,19 +91,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
     }
 
     @Subscribe
-    public void onStatusEvent(final EventPreferenceChange s) {
-        if (s.isChanged(R.string.key_omnipy_autodetect_host))
-            _pdm.InvalidateOmnipyHost();
-        if (s.isChanged(R.string.key_omnipy_host))
-            _pdm.InvalidateOmnipyHost();
-        if (s.isChanged(R.string.key_omnipy_password))
-            _pdm.InvalidateApiSecret();
-        MainApp.bus().post(new EventOmnipodUpdateGui());
-    }
-
-    @Subscribe
     public void onStatusEvent(final EventNetworkChange enc) {
-        _pdm.InvalidateOmnipyHost();
         MainApp.bus().post(new EventOmnipodUpdateGui());
     }
 
@@ -118,63 +111,44 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
     }
 
     @Override
-    public boolean isBusy() {
-        return !_pdm.AcceptsCommands();
-    }
+    public boolean isBusy() { return _pdm.IsBusy(); }
 
     @Override
-    public boolean isConnected() {
-        //log.debug("isConnected()");
-        return _pdm.IsConnected();
-    }
+    public boolean isConnected() { return _pdm.IsConnected(); }
 
     @Override
-    public boolean isConnecting() {
-        //log.debug("isConnecting()");
-        return _pdm.IsConnecting();
-    }
+    public boolean isConnecting() { return _pdm.IsConnecting(); }
 
     @Override
-    public boolean isHandshakeInProgress() {
-        //log.debug("isHandshakeInProgress()");
-        return _pdm.IsHandshakeInProgress();
-    }
+    public boolean isHandshakeInProgress() { return _pdm.IsHandshakeInProgress();  }
 
     @Override
-    public void finishHandshaking() {
-        //log.debug("finishHandshaking()");
-        _pdm.FinishHandshaking();
-    }
+    public void finishHandshaking() { _pdm.FinishHandshaking(); }
 
     @Override
     public void connect(String reason) {
-        //log.debug("omnipod plugin connect()");
         _pdm.Connect();
         MainApp.bus().post(new EventOmnipodUpdateGui());
     }
 
     @Override
     public void disconnect(String reason) {
-        //log.debug("omnipod plugin disconnect() reason: " + reason);
         _pdm.Disconnect();
     }
 
     @Override
     public void stopConnecting() {
-        //log.debug("omnipod plugin stopConnecting()");
         _pdm.StopConnecting();
     }
 
     @Override
     public void getPumpStatus() {
-        //log.debug("omnipod plugin getPumpStatus()");
-        _pdm.UpdateStatus();
+        _pdm.GetPumpStatus();
     }
 
     @Override
     public PumpEnactResult setNewBasalProfile(Profile profile) {
-        log.debug("omnipod plugin setNewBasalProfile()");
-        PumpEnactResult ret = _pdm.SetProfile(profile);
+        PumpEnactResult ret = _pdm.SetNewBasalProfile(profile);
         Notification notification = new Notification(Notification.PROFILE_SET_OK, MainApp.gs(R.string.profile_set_ok), Notification.INFO, 60);
         MainApp.bus().post(new EventNewNotification(notification));
         return ret;
@@ -183,7 +157,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
     @Override
     public boolean isThisProfileSet(Profile profile) {
         log.debug("omnipod plugin isThisProfileSet()");
-        return _pdm.VerifyProfile(profile);
+        return _pdm.IsProfileSet(profile);
     }
 
     @Override
@@ -195,7 +169,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
     @Override
     public double getBaseBasalRate() {
         log.debug("omnipod plugin GetBaseBasalRate()");
-        return _pdm.GetBasalRate();
+        return _pdm.GetBaseBasalRate();
     }
 
     @Override
@@ -253,41 +227,42 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
     @Override
     public void stopBolusDelivering() {
         log.debug("omnipod plugin StopBolusDelivering()");
-        if (_runningBolusInfo == null)
-            return;
+        if (_runningBolusInfo != null) {
+            _pdm.CancelBolus(result ->
+            {
+                double canceled = -1d;
+                if (result.success) {
+                    canceled = result.status.insulin_canceled;
+                }
 
+                EventOverviewBolusProgress bolusingEvent = EventOverviewBolusProgress.getInstance();
 
-        EventOverviewBolusProgress bolusingEvent = EventOverviewBolusProgress.getInstance();
-        if (bolusingEvent != null)
-        {
-            bolusingEvent.status = String.format(MainApp.gs(R.string.bolusstopping));
-            MainApp.bus().post(bolusingEvent);
-            MainApp.bus().post(new EventOmnipodUpdateGui());
-        }
+                Double supposedToDeliver = _runningBolusInfo.insulin;
+                if (canceled <= 0d) {
+                    if (bolusingEvent != null)
+                        bolusingEvent.status = String.format("Couldn't stop bolus in time, delivered: %f.2u", supposedToDeliver);
+                } else {
+                    if (bolusingEvent != null)
+                        bolusingEvent.status = String.format(MainApp.gs(R.string.bolusstopped));
+                    _runningBolusInfo.insulin = supposedToDeliver - canceled;
+                }
+                if (bolusingEvent != null) {
+                    MainApp.bus().post(bolusingEvent);
+                    MainApp.bus().post(new EventOmnipodUpdateGui());
+                }
+                SystemClock.sleep(100);
+                if (canceled > 0d)
+                    _runningBolusInfo.notes = String.format("Delivery stopped at %f.2u. Original bolus request was: %f.2u", supposedToDeliver - canceled, supposedToDeliver);
+                TreatmentsPlugin.getPlugin().addToHistoryTreatment(_runningBolusInfo, true);
+            });
 
-        Double canceled = _pdm.CancelBolus();
-
-        Double supposedToDeliver = _runningBolusInfo.insulin;
-        if (canceled <= 0d)
-        {
-            if (bolusingEvent != null)
-                bolusingEvent.status = String.format("Couldn't stop bolus in time, delivered: %f.2u", supposedToDeliver);
+            EventOverviewBolusProgress bolusingEvent = EventOverviewBolusProgress.getInstance();
+            if (bolusingEvent != null) {
+                bolusingEvent.status = String.format(MainApp.gs(R.string.bolusstopping));
+                MainApp.bus().post(bolusingEvent);
+                MainApp.bus().post(new EventOmnipodUpdateGui());
+            }
         }
-        else
-        {
-            if (bolusingEvent != null)
-                bolusingEvent.status = String.format(MainApp.gs(R.string.bolusstopped));
-            _runningBolusInfo.insulin = supposedToDeliver - canceled;
-        }
-        if (bolusingEvent != null)
-        {
-            MainApp.bus().post(bolusingEvent);
-            MainApp.bus().post(new EventOmnipodUpdateGui());
-        }
-        SystemClock.sleep(100);
-        if (canceled > 0d)
-            _runningBolusInfo.notes = String.format("Delivery stopped at %f.2u. Original bolus request was: %f.2u", supposedToDeliver-canceled, supposedToDeliver);
-        TreatmentsPlugin.getPlugin().addToHistoryTreatment(_runningBolusInfo, true);
     }
 
     @Override

@@ -5,6 +5,8 @@ import com.google.gson.Gson;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.math.BigDecimal;
+
 public class OmnipodStatus {
 
 
@@ -131,6 +133,8 @@ public class OmnipodStatus {
     public double insulin_canceled;
     public double insulin_delivered;
     public double insulin_reservoir;
+
+    public BigDecimal[] var_basal_schedule;
 
 
     public static OmnipodStatus fromJson(String json) {

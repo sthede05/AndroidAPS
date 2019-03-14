@@ -1,4 +1,4 @@
-package info.nightscout.androidaps.plugins.pump.omnipod;
+package info.nightscout.androidaps.plugins.pump.omnipod.api;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
