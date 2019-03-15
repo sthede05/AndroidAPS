@@ -12,12 +12,12 @@ public class EventOmnipyConfigurationComplete extends Event {
     public boolean isAuthenticated;
 
     public EventOmnipyConfigurationComplete(String host,
-                                            OmnipyApiSecret apiSecret,
+                                            OmnipyApiSecret secret,
                                             boolean discovered,
                                             boolean connectable, boolean authenticated)
     {
         hostName = host;
-        apiSecret = apiSecret;
+        apiSecret = secret;
         isDiscovered = discovered;
         isConnectable = connectable;
         isAuthenticated = authenticated;
