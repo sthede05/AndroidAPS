@@ -60,6 +60,7 @@ public class OmnipyRestApi {
     private RestApiConfigurationTask _configurationTask = null;
     private Context _context;
     private boolean _configured;
+    private boolean _configuring;
     private boolean _discovered;
     private boolean _connectable;
     private boolean _authenticated;
@@ -77,9 +78,8 @@ public class OmnipyRestApi {
         _requestQueue = new LinkedBlockingDeque<OmnipyRequest>(10);
     }
 
-    public boolean isConfigured() {
-        return _configured;
-    }
+    public boolean isConfigured() { return _configured; }
+    public boolean isConfiguring() { return _configuring; }
     public boolean isDiscovered() {
         return _discovered;
     }
@@ -252,6 +252,10 @@ public class OmnipyRestApi {
     }
 
     public void StartConfiguring()  {
+        if (_configuring)
+            return;
+
+        _configuring = true;
         StopConfiguring();
         _configurationTask = new RestApiConfigurationTask(_context);
         _configurationTask.execute();
@@ -271,6 +275,7 @@ public class OmnipyRestApi {
         _connectable = confResult.isConnectable;
 
         _configurationTask = null;
+        _configuring = false;
         _configured = true;
     }
 

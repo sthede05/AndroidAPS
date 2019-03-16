@@ -73,19 +73,24 @@ public class OmnipodPdm {
         _restApi = null;
     }
 
+    private long _lastPing = 0;
     private void pingOmnipy()
     {
-        _restApi.Ping(result -> {
-            if (!result.canceled && !result.success)
-            {
-                handleDisconnect();
-            }
-        });
+        long t0 = System.currentTimeMillis();
+        if (t0 - _lastPing > 5000) {
+            _lastPing = t0;
+            _restApi.Ping(result -> {
+                if (!result.canceled && !result.success) {
+                    handleDisconnect();
+                }
+            });
+        }
     }
 
     private void handleDisconnect()
     {
         _initialized = false;
+        this.Connect();
     }
 
     public boolean IsInitialized() { return _initialized; }
@@ -106,7 +111,7 @@ public class OmnipodPdm {
     }
 
     public boolean IsConnected() {
-        if (_restApi.isConnectable()) {
+        if (_restApi.isConfigured() && _restApi.isConnectable()) {
             pingOmnipy();
             return true;
         }
@@ -122,7 +127,9 @@ public class OmnipodPdm {
                 return;
             }
         }
-        _restApi.StartConfiguring();
+        else {
+            _restApi.StartConfiguring();
+        }
     }
 
     public boolean IsConnecting() {
@@ -173,9 +180,8 @@ public class OmnipodPdm {
             }
             Notification notification = new Notification(Notification.PUMP_UNREACHABLE, errorMessage, Notification.NORMAL);
             MainApp.bus().post(new EventNewNotification(notification));
-//            MainApp.bus().post(new EventPumpStatusChanged(errorMessage));
-//            MainApp.bus().post(new EventPumpStatusChanged(EventPumpStatusChanged.DISCONNECTING));
-//            MainApp.bus().post(new EventPumpStatusChanged(EventPumpStatusChanged.DISCONNECTED));
+            MainApp.bus().post(new EventPumpStatusChanged(EventPumpStatusChanged.DISCONNECTING));
+            MainApp.bus().post(new EventPumpStatusChanged(EventPumpStatusChanged.DISCONNECTED));
         }
         else if (!confResult.isAuthenticated)
         {
@@ -184,21 +190,13 @@ public class OmnipodPdm {
                     " but authentication failed. Please verify your password in settings.";
             Notification notification = new Notification(Notification.PUMP_UNREACHABLE, errorMessage, Notification.NORMAL);
             MainApp.bus().post(new EventNewNotification(notification));
-//            MainApp.bus().post(new EventPumpStatusChanged(errorMessage));
-//            MainApp.bus().post(new EventPumpStatusChanged(EventPumpStatusChanged.DISCONNECTING));
-//            MainApp.bus().post(new EventPumpStatusChanged(EventPumpStatusChanged.DISCONNECTED));
+            MainApp.bus().post(new EventPumpStatusChanged(EventPumpStatusChanged.DISCONNECTING));
+            MainApp.bus().post(new EventPumpStatusChanged(EventPumpStatusChanged.DISCONNECTED));
 
         }
         else
         {
-
-            _restApi.UpdateStatus(result -> {
-                if (result.success)
-                {
-                    _initialized = true;
-                    _lastStatus = result.status;
-                }
-            });
+            _initialized = true;
 
             MainApp.bus().post(new EventPumpStatusChanged(
                     EventPumpStatusChanged.CONNECTED));
@@ -479,4 +477,5 @@ public class OmnipodPdm {
         }
         return basalSchedule;
     }
+
 }
