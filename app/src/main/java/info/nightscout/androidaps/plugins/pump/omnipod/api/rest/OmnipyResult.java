@@ -10,7 +10,7 @@ import info.nightscout.androidaps.plugins.pump.omnipod.OmnipodStatus;
 
 public class OmnipyResult {
 
-    public OmnipyRequest originalRequest;
+    public transient OmnipyRequest originalRequest;
 
     public boolean canceled;
     public boolean success;
@@ -23,7 +23,6 @@ public class OmnipyResult {
     public static OmnipyResult fromJson(String jsonResponse, OmnipyRequest request) {
         try {
             Gson gson = new Gson();
-            gson.serializeNulls();
             OmnipyResult result = gson.fromJson(jsonResponse, OmnipyResult.class);
             result.originalRequest = request;
             return result;
