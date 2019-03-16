@@ -341,6 +341,7 @@ public class OmnipyRestApi {
         }
 
         _requestQueue.addAll(requeuedList);
+        _requestQueue.add(request);
 
         runNext();
         return request;
