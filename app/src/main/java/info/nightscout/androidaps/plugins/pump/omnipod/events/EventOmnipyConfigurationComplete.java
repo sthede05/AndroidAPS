@@ -5,11 +5,11 @@ import info.nightscout.androidaps.plugins.pump.omnipod.api.OmnipyApiSecret;
 
 public class EventOmnipyConfigurationComplete extends Event {
 
-    public String hostName;
-    public OmnipyApiSecret apiSecret;
-    public boolean isDiscovered;
-    public boolean isConnectable;
-    public boolean isAuthenticated;
+    public final String hostName;
+    public final OmnipyApiSecret apiSecret;
+    public final boolean isDiscovered;
+    public final boolean isConnectable;
+    public final boolean isAuthenticated;
 
     public EventOmnipyConfigurationComplete(String host,
                                             OmnipyApiSecret secret,

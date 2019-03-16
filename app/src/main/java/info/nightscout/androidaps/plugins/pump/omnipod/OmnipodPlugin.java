@@ -20,16 +20,13 @@ import info.nightscout.androidaps.db.ExtendedBolus;
 import info.nightscout.androidaps.db.Source;
 import info.nightscout.androidaps.db.TemporaryBasal;
 import info.nightscout.androidaps.events.EventNetworkChange;
-import info.nightscout.androidaps.events.EventPreferenceChange;
 import info.nightscout.androidaps.interfaces.PluginBase;
 import info.nightscout.androidaps.interfaces.PluginDescription;
 import info.nightscout.androidaps.interfaces.PluginType;
 import info.nightscout.androidaps.interfaces.PumpDescription;
 import info.nightscout.androidaps.interfaces.PumpInterface;
 import info.nightscout.androidaps.logging.L;
-import info.nightscout.androidaps.plugins.general.overview.events.EventNewNotification;
 import info.nightscout.androidaps.plugins.general.overview.events.EventOverviewBolusProgress;
-import info.nightscout.androidaps.plugins.general.overview.notifications.Notification;
 import info.nightscout.androidaps.plugins.pump.common.defs.PumpType;
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipodUpdateGui;
 import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
@@ -41,11 +38,11 @@ import org.json.JSONException;
 
 
 public class OmnipodPlugin extends PluginBase implements PumpInterface {
-    private Logger log = LoggerFactory.getLogger(L.PUMP);
+    private final Logger log = LoggerFactory.getLogger(L.PUMP);
 
 
     private static OmnipodPlugin instance = null;
-    private PumpDescription pumpDescription = new PumpDescription();
+    private final PumpDescription pumpDescription = new PumpDescription();
     private final OmnipodPdm _pdm;
     private DetailedBolusInfo _runningBolusInfo;
 
@@ -143,14 +140,12 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
 
     @Override
     public void getPumpStatus() {
-        _pdm.GetPumpStatus();
+        _pdm.UpdateStatus();
     }
 
     @Override
     public PumpEnactResult setNewBasalProfile(Profile profile) {
         PumpEnactResult ret = _pdm.SetNewBasalProfile(profile);
-        Notification notification = new Notification(Notification.PROFILE_SET_OK, MainApp.gs(R.string.profile_set_ok), Notification.INFO, 60);
-        MainApp.bus().post(new EventNewNotification(notification));
         return ret;
     }
 
@@ -243,7 +238,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
                         bolusingEvent.status = String.format("Couldn't stop bolus in time, delivered: %f.2u", supposedToDeliver);
                 } else {
                     if (bolusingEvent != null)
-                        bolusingEvent.status = String.format(MainApp.gs(R.string.bolusstopped));
+                        bolusingEvent.status = MainApp.gs(R.string.bolusstopped);
                     _runningBolusInfo.insulin = supposedToDeliver - canceled;
                 }
                 if (bolusingEvent != null) {
@@ -258,7 +253,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
 
             EventOverviewBolusProgress bolusingEvent = EventOverviewBolusProgress.getInstance();
             if (bolusingEvent != null) {
-                bolusingEvent.status = String.format(MainApp.gs(R.string.bolusstopping));
+                bolusingEvent.status = MainApp.gs(R.string.bolusstopping);
                 MainApp.bus().post(bolusingEvent);
                 MainApp.bus().post(new EventOmnipodUpdateGui());
             }

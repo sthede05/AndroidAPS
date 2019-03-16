@@ -18,7 +18,6 @@ import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
 import info.nightscout.androidaps.MainApp;
@@ -58,7 +57,7 @@ public class OmnipyRestApi {
     private String _baseUrl;
     private OmnipyApiSecret _apiSecret;
     private RestApiConfigurationTask _configurationTask = null;
-    private Context _context;
+    private final Context _context;
     private boolean _configured;
     private boolean _configuring;
     private boolean _discovered;
@@ -67,9 +66,9 @@ public class OmnipyRestApi {
     private long _lastSuccessfulConnection = 0;
 
     private String _host;
-    private Logger _log;
+    private final Logger _log;
 
-    private LinkedBlockingDeque<OmnipyRequest> _requestQueue;
+    private final LinkedBlockingDeque<OmnipyRequest> _requestQueue;
 
 
     public OmnipyRestApi(Context context) {
@@ -341,11 +340,7 @@ public class OmnipyRestApi {
             }
         }
 
-        _requestQueue.add(request);
-
-        for (OmnipyRequest requeued: requeuedList) {
-            _requestQueue.add(requeued);
-        }
+        _requestQueue.addAll(requeuedList);
 
         runNext();
         return request;
@@ -362,8 +357,8 @@ public class OmnipyRestApi {
 
 class RestApiConfigurationTask extends AsyncTask<Void, Void, String> {
 
-    private Context _context;
-    private Logger _log;
+    private final Context _context;
+    private final Logger _log;
     private boolean _canceled = false;
 
     public RestApiConfigurationTask(Context context)

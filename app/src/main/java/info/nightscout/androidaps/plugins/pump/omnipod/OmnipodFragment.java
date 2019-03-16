@@ -33,17 +33,17 @@ public class OmnipodFragment extends SubscriberFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Intent intent = Objects.requireNonNull(getActivity()).getIntent();
-        if (intent != null) {
-
-            Bundle extras = intent.getExtras();
-            if (extras != null) {
-                String address = extras.getString("omnipy_address");
-                if (address != null) {
-                    //
-                }
-            }
-        }
+//        Intent intent = Objects.requireNonNull(getActivity()).getIntent();
+//        if (intent != null) {
+//
+//            Bundle extras = intent.getExtras();
+//            if (extras != null) {
+//                String address = extras.getString("omnipy_address");
+//                if (address != null) {
+//                    //
+//                }
+//            }
+//        }
 
         OmnipodPlugin op = OmnipodPlugin.getPlugin();
         _pdm = op.getPdm();

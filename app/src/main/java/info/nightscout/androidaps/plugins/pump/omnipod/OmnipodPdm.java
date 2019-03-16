@@ -1,7 +1,6 @@
 package info.nightscout.androidaps.plugins.pump.omnipod;
 
 import android.content.Context;
-import android.os.SystemClock;
 
 import com.squareup.otto.Subscribe;
 
@@ -12,6 +11,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
@@ -19,28 +20,23 @@ import info.nightscout.androidaps.data.DetailedBolusInfo;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.data.PumpEnactResult;
 import info.nightscout.androidaps.events.EventPumpStatusChanged;
+import info.nightscout.androidaps.plugins.general.overview.events.EventDismissNotification;
 import info.nightscout.androidaps.plugins.general.overview.events.EventNewNotification;
 import info.nightscout.androidaps.plugins.general.overview.notifications.Notification;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmnipyCallback;
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipyApiResult;
 import info.nightscout.androidaps.logging.L;
-import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.OmnipyRestApi;
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipodUpdateGui;
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipyConfigurationComplete;
-import info.nightscout.androidaps.plugins.pump.omnipod.exceptions.OmnipyConnectionException;
-import info.nightscout.androidaps.plugins.pump.omnipod.exceptions.OmnipyTimeoutException;
 import info.nightscout.androidaps.utils.SP;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmnipyResult;
 
-import static info.nightscout.androidaps.plugins.general.overview.notifications.Notification.NORMAL;
-import static info.nightscout.androidaps.plugins.general.overview.notifications.Notification.URGENT;
-
 public class OmnipodPdm {
 
-    private Context _context;
+    private final Context _context;
 
-    private Profile _profile;
+    //private Profile _profile;
 
     private OmnipyRestApi _restApi;
     private OmnipyResult _lastResult;
@@ -49,18 +45,22 @@ public class OmnipodPdm {
     private boolean _initialized;
     private boolean _suspended;
 
-    private Logger _log;
+    private final Timer _pingTimer;
+
+    private final Logger _log;
 
     public OmnipodPdm(Context context)
     {
         _context = context;
         _log =  LoggerFactory.getLogger(L.PUMP);
+        _pingTimer = new Timer(true);
     }
 
     public void OnStart() {
         _restApi = new OmnipyRestApi(_context);
         MainApp.bus().register(this);
         MainApp.bus().register(_restApi);
+        //_profile = ProfileFunctions.getInstance().getProfile();
         _lastStatus = OmnipodStatus.fromJson(SP.getString(R.string.key_omnipod_status, null));
         _initialized = false;
         _restApi.StartConfiguring();
@@ -90,7 +90,11 @@ public class OmnipodPdm {
     private void handleDisconnect()
     {
         _initialized = false;
-        this.Connect();
+        _pingTimer.cancel();
+        MainApp.bus().post(new Notification(Notification.PUMP_UNREACHABLE, "Omnipy disconnected", Notification.NORMAL));
+        MainApp.bus().post(new EventPumpStatusChanged(EventPumpStatusChanged.DISCONNECTING));
+        MainApp.bus().post(new EventPumpStatusChanged(EventPumpStatusChanged.DISCONNECTED));
+        _restApi.StartConfiguring();
     }
 
     public boolean IsInitialized() { return _initialized; }
@@ -124,7 +128,6 @@ public class OmnipodPdm {
             if (_restApi.isConnectable())
             {
                 pingOmnipy();
-                return;
             }
         }
         else {
@@ -133,7 +136,7 @@ public class OmnipodPdm {
     }
 
     public boolean IsConnecting() {
-        return !_restApi.isConfigured();
+        return _restApi.isConfiguring();
     }
 
     public void StopConnecting() {
@@ -165,7 +168,7 @@ public class OmnipodPdm {
     @Subscribe
     public void onConfigurationComplete(final EventOmnipyConfigurationComplete confResult) {
         MainApp.bus().post(new EventOmnipodUpdateGui());
-        String errorMessage = null;
+        String errorMessage;
         if (!confResult.isConnectable)
         {
             _initialized = false;
@@ -176,7 +179,8 @@ public class OmnipodPdm {
             }
             else
             {
-                errorMessage = "Connection cannot be established with the configured address: " + confResult.hostName;
+                errorMessage = "Omnipy connection cannot be established at the configured address: " + confResult.hostName
+                            + " Please verify the address in configuration.";
             }
             Notification notification = new Notification(Notification.PUMP_UNREACHABLE, errorMessage, Notification.NORMAL);
             MainApp.bus().post(new EventNewNotification(notification));
@@ -186,7 +190,7 @@ public class OmnipodPdm {
         else if (!confResult.isAuthenticated)
         {
             _initialized = false;
-            errorMessage = "Connection established to address " + confResult.hostName +
+            errorMessage = "Omnipy connection established at address " + confResult.hostName +
                     " but authentication failed. Please verify your password in settings.";
             Notification notification = new Notification(Notification.PUMP_UNREACHABLE, errorMessage, Notification.NORMAL);
             MainApp.bus().post(new EventNewNotification(notification));
@@ -198,14 +202,31 @@ public class OmnipodPdm {
         {
             _initialized = true;
 
+            MainApp.bus().post(new EventDismissNotification(Notification.PUMP_UNREACHABLE));
+            Notification notification = new Notification(100, "Connected to omnipy running at " + confResult.hostName, Notification.INFO, 1);
+            MainApp.bus().post(new EventNewNotification(notification));
             MainApp.bus().post(new EventPumpStatusChanged(
                     EventPumpStatusChanged.CONNECTED));
+
+            UpdateStatus();
+
+            _pingTimer.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    pingOmnipy();
+                }
+            }, 30000, 30000);
         }
 
     }
 
-    public void GetPumpStatus() {
-        _restApi.UpdateStatus(null);
+    private long _lastStatusRequest = 0;
+    public void UpdateStatus() {
+        long t0 = System.currentTimeMillis();
+        if (t0 - _lastStatusRequest > 10000) {
+            _lastStatusRequest = t0;
+            _restApi.UpdateStatus(null);
+        }
     }
 
     public long GetLastUpdated() {
@@ -314,75 +335,87 @@ public class OmnipodPdm {
     }
 
     public PumpEnactResult SetNewBasalProfile(Profile profile) {
-        BigDecimal[] basalSchedule = getBasalScheduleFromProfile(profile);
-        _restApi.setBasalSchedule(basalSchedule, result -> {
-            if (result.success)
-            {
-
-            }
-            else
-            {
-
-            }
-        });
         PumpEnactResult r = new PumpEnactResult();
-        r.enacted = true;
-        r.queued = true;
+        r.enacted = false;
+        r.success = false;
+        if (_initialized) {
+            BigDecimal[] basalSchedule = getBasalScheduleFromProfile(profile);
+            OmnipyResult result = _restApi.setBasalSchedule(basalSchedule, null).waitForResult();
+            r.enacted = !result.canceled;
+            r.success = result.success;
+            if (result.success) {
+                Notification notification = new Notification(Notification.PROFILE_SET_OK, MainApp.gs(R.string.profile_set_ok), Notification.INFO, 60);
+                MainApp.bus().post(new EventNewNotification(notification));
+            } else {
+                Notification notification = new Notification(Notification.PROFILE_SET_FAILED, MainApp.gs(R.string.profile_set_ok), Notification.NORMAL, 60);
+                MainApp.bus().post(new EventNewNotification(notification));
+            }
+        }
         return r;
     }
 
     public boolean IsProfileSet(Profile profile) {
-        if (_lastStatus != null)
-        {
-            if (_lastStatus.var_basal_schedule == null)
-                return false;
-
-            BigDecimal[] scheduleToVerify = getBasalScheduleFromProfile(profile);
-            for(int i=0; i<48; i++)
-                if (!_lastStatus.var_basal_schedule[i].equals(scheduleToVerify[i]))
-                    return false;
-
-            return true;
-        }
-        else
-        {
-            // or else?
+        if (!_initialized) {
             return false;
         }
+
+        if (_lastStatus == null)
+        {
+            OmnipyResult result = _restApi.UpdateStatus(null).waitForResult();
+            if (result.success && result.status.var_basal_schedule != null
+                    && result.status.var_basal_schedule.length != 0)
+            {
+                return verifySchedule(result.status.var_basal_schedule, profile);
+            }
+
+            return false;
+        }
+
+        if (_lastStatus.var_basal_schedule == null || _lastStatus.var_basal_schedule.length == 0)
+        {
+            return false;
+        }
+
+        return verifySchedule(_lastStatus.var_basal_schedule, profile);
+    }
+
+    private boolean verifySchedule(BigDecimal[] podSchedule, Profile profile)
+    {
+        BigDecimal[] scheduleToVerify = getBasalScheduleFromProfile(profile);
+        for(int i=0; i<48; i++)
+            if (!_lastStatus.var_basal_schedule[i].equals(scheduleToVerify[i]))
+                return false;
+        return true;
     }
 
     public double GetBaseBasalRate() {
-        if (_profile == null)
-        {
-            _profile = ProfileFunctions.getInstance().getProfile();
-        }
+        if (!_initialized || _lastStatus == null || _lastStatus.var_basal_schedule == null
+                || _lastStatus.var_basal_schedule.length == 0)
+            return -1d;
 
-        if (_profile == null)
-            return 0d;
-        else
-            return _profile.getBasal();
+        long t = System.currentTimeMillis();
+        t+= _lastStatus.var_utc_offset;
+        Date dt = new Date(t);
+        int h = dt.getHours();
+        int m = dt.getMinutes();
+
+        int index = h * 2;
+        if (m >= 30)
+            index++;
+
+        return _lastStatus.var_basal_schedule[index].doubleValue();
     }
 
     public PumpEnactResult Bolus(DetailedBolusInfo detailedBolusInfo) {
         BigDecimal iuBolus = GetExactInsulinUnits(detailedBolusInfo.insulin);
-
+        OmnipyResult result = _restApi.Bolus(iuBolus, null).waitForResult();
         PumpEnactResult r = new PumpEnactResult();
-        r.enacted = true;
-        r.success = true;
-        r.queued = true;
-        r.bolusDelivered = iuBolus.doubleValue();
-
-        _restApi.Bolus(iuBolus, result -> {
-            if (result.success)
-            {
-
-            }
-            else
-            {
-
-            }
-        });
-
+        r.enacted = !result.canceled;
+        r.success = result.success;
+        if (result.success)
+        {
+            r.bolusDelivered = iuBolus.doubleValue();
+        }
         return r;
     }
 
@@ -394,47 +427,30 @@ public class OmnipodPdm {
         BigDecimal iuRate = GetExactInsulinUnits(absoluteRate);
         BigDecimal durationHours = GetExactHourUnits(durationInMinutes);
 
+        OmnipyResult result = _restApi.SetTempBasal(iuRate, durationHours, null).waitForResult();
         PumpEnactResult r = new PumpEnactResult();
-        r.enacted = true;
-        r.success = true;
-        r.queued = true;
-        r.duration = durationInMinutes;
-        r.absolute = iuRate.doubleValue();
-
-        _restApi.SetTempBasal(iuRate, durationHours, result -> {
-            if (result.success)
-            {
-
-            }
-            else
-            {
-
-            }
-
-        });
-
+        r.enacted = !result.canceled;
+        r.success = result.success;
+        if (result.success)
+        {
+            r.absolute = iuRate.doubleValue();
+            r.duration = durationInMinutes;
+            r.isPercent = false;
+        }
         return r;
     }
 
     public PumpEnactResult CancelTempBasal(boolean enforceNew) {
 
         PumpEnactResult r = new PumpEnactResult();
-        r.enacted = true;
-        r.success = true;
-        r.queued = true;
-        r.isTempCancel = true;
 
-        _restApi.CancelTempBasal(result -> {
-            if (result.success)
-            {
-
-            }
-            else
-            {
-
-            }
-
-        });
+        OmnipyResult result = _restApi.CancelTempBasal(null).waitForResult();
+        r.enacted = !result.canceled;
+        r.success = result.success;
+        if (result.success)
+        {
+            r.isTempCancel = true;
+        }
         return r;
     }
 

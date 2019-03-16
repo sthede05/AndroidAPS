@@ -25,12 +25,12 @@ import info.nightscout.androidaps.plugins.pump.omnipod.util.Base64;
 
 public class OmnipyRequest {
 
-    private String _baseUrl;
-    private OmnipyRequestType _requestType;
+    private final String _baseUrl;
+    private final OmnipyRequestType _requestType;
     private OmnipyApiSecret _apiSecret;
-    private ArrayList<Pair<String,String>> _parameters;
+    private final ArrayList<Pair<String,String>> _parameters;
     private OmnipyCallback _callback;
-    private OmnipyRequestTask _task;
+    private final OmnipyRequestTask _task;
 
     private int _versionRequiredMajor = 0;
     private int _versionRequiredMinor = 0;
@@ -94,7 +94,6 @@ public class OmnipyRequest {
     public OmnipyResult waitForResult()
     {
         try {
-            _task.wait();
             return _task.get();
         } catch (InterruptedException | ExecutionException e) {
             OmnipyResult res = new OmnipyResult();
@@ -109,8 +108,7 @@ public class OmnipyRequest {
 
     public OmnipyRequest executeAsync()
     {
-        OmnipyRequestTask task = new OmnipyRequestTask(this);
-        task.execute();
+        _task.execute();
         return this;
     }
 
@@ -166,7 +164,7 @@ public class OmnipyRequest {
 
 class OmnipyRequestTask extends AsyncTask<String, Void, OmnipyResult> {
 
-    private OmnipyRequest _request;
+    private final OmnipyRequest _request;
     public OmnipyRequestTask(OmnipyRequest request)
     {
         _request = request;
@@ -177,7 +175,7 @@ class OmnipyRequestTask extends AsyncTask<String, Void, OmnipyResult> {
         OmnipyResult result = new OmnipyResult();
         result.originalRequest = _request;
         OmnipyApiSecret apiSecret = _request.getSecret();
-        OmnipyApiToken apiToken = null;
+        OmnipyApiToken apiToken;
 
         if (apiSecret != null) {
             try {

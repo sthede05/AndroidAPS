@@ -8,7 +8,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class OmnipyApiSecret {
 
-    private byte[] _key;
+    private final byte[] _key;
 
     private OmnipyApiSecret(byte[] key){
         _key = key;
