@@ -98,35 +98,35 @@ public class OmnipyRestApi {
 
 
 
-    public void UpdateStatus(OmnipyCallback callback)
+    public OmnipyRequest UpdateStatus(OmnipyCallback callback)
     {
-        UpdateStatus(0, callback);
+        return UpdateStatus(0, callback);
     }
 
-    public void UpdateStatus(int requestType, OmnipyCallback callback)
+    public OmnipyRequest UpdateStatus(int requestType, OmnipyCallback callback)
     {
-        queue(new OmnipyRequest(OmnipyRequestType.Status, _baseUrl)
+        return queue(new OmnipyRequest(OmnipyRequestType.Status, _baseUrl)
                 .withAuthentication(_apiSecret)
                 .withParameter(OmnipyConstants.OMNIPY_PARAM_STATUS_TYPE,
                         Integer.toString(requestType))
                 .withCallback(callback));
     }
 
-    public void Ping(OmnipyCallback callback) {
-        new OmnipyRequest(OmnipyRequestType.Ping, _baseUrl)
+    public OmnipyRequest Ping(OmnipyCallback callback) {
+        return new OmnipyRequest(OmnipyRequestType.Ping, _baseUrl)
                 .withCallback(callback)
                 .executeAsync();
     }
 
-    public void CheckAuthentication(OmnipyCallback callback) {
-        new OmnipyRequest(OmnipyRequestType.CheckPassword, _baseUrl)
+    public OmnipyRequest CheckAuthentication(OmnipyCallback callback) {
+        return new OmnipyRequest(OmnipyRequestType.CheckPassword, _baseUrl)
                 .withAuthentication(_apiSecret)
                 .withCallback(callback)
                 .executeAsync();
     }
 
-    public void GetAddressFromPdm(int timeout, OmnipyCallback callback) {
-        new OmnipyRequest(OmnipyRequestType.ReadPdmAddress, _baseUrl)
+    public OmnipyRequest GetAddressFromPdm(int timeout, OmnipyCallback callback) {
+        return new OmnipyRequest(OmnipyRequestType.ReadPdmAddress, _baseUrl)
                 .withAuthentication(_apiSecret)
                 .withCallback(callback)
                 .withParameter(OmnipyConstants.OMNIPY_PARAM_PDM_ADDRESS_TIMEOUT,
@@ -134,8 +134,8 @@ public class OmnipyRestApi {
                 .executeAsync();
     }
 
-    public void CreateNewPod(int lot, int tid, int address, OmnipyCallback callback) {
-        queue(new OmnipyRequest(OmnipyRequestType.NewPod, _baseUrl)
+    public OmnipyRequest CreateNewPod(int lot, int tid, int address, OmnipyCallback callback) {
+        return queue(new OmnipyRequest(OmnipyRequestType.NewPod, _baseUrl)
                 .withAuthentication(_apiSecret)
                 .withCallback(callback)
                 .withParameter(OmnipyConstants.OMNIPY_PARAM_NEW_POD_LOT,
@@ -146,52 +146,52 @@ public class OmnipyRestApi {
                         Integer.toString(address)));
     }
 
-    public void UpdatePodParameter(String parameter, String value, OmnipyCallback callback)
+    public OmnipyRequest UpdatePodParameter(String parameter, String value, OmnipyCallback callback)
     {
-        queue(new OmnipyRequest(OmnipyRequestType.SetPodParameters, _baseUrl)
+        return queue(new OmnipyRequest(OmnipyRequestType.SetPodParameters, _baseUrl)
                 .withAuthentication(_apiSecret)
                 .withCallback(callback)
                 .withParameter(parameter, value));
     }
 
-    public void GetRLInfo(OmnipyCallback callback) {
-        queue(new OmnipyRequest(OmnipyRequestType.RLInfo, _baseUrl)
+    public OmnipyRequest GetRLInfo(OmnipyCallback callback) {
+        return queue(new OmnipyRequest(OmnipyRequestType.RLInfo, _baseUrl)
                 .withAuthentication(_apiSecret)
                 .withCallback(callback));
     }
 
-    public void AcknowledgeAlerts(int alertMask, OmnipyCallback callback) {
-        queue(new OmnipyRequest(OmnipyRequestType.AckAlerts, _baseUrl)
+    public OmnipyRequest AcknowledgeAlerts(int alertMask, OmnipyCallback callback) {
+        return queue(new OmnipyRequest(OmnipyRequestType.AckAlerts, _baseUrl)
                 .withAuthentication(_apiSecret)
                 .withCallback(callback)
                 .withParameter(OmnipyConstants.OMNIPY_PARAM_ACK_ALERT_MASK,
                         Integer.toString(alertMask)));
     }
 
-    public void DeactivatePod(OmnipyCallback callback) {
-        queue(new OmnipyRequest(OmnipyRequestType.DeactivatePod, _baseUrl)
+    public OmnipyRequest DeactivatePod(OmnipyCallback callback) {
+        return queue(new OmnipyRequest(OmnipyRequestType.DeactivatePod, _baseUrl)
                 .withAuthentication(_apiSecret)
                 .withCallback(callback));
     }
 
-    public void Bolus(BigDecimal bolusAmount, OmnipyCallback callback) {
-        queue(new OmnipyRequest(OmnipyRequestType.Bolus, _baseUrl)
+    public OmnipyRequest Bolus(BigDecimal bolusAmount, OmnipyCallback callback) {
+        return queue(new OmnipyRequest(OmnipyRequestType.Bolus, _baseUrl)
                 .withAuthentication(_apiSecret)
                 .withCallback(callback)
                 .withParameter(OmnipyConstants.OMNIPY_PARAM_BOLUS_AMOUNT,
                         bolusAmount.toString()));
     }
 
-    public void CancelBolus(OmnipyCallback callback) {
-        queue(new OmnipyRequest(OmnipyRequestType.CancelBolus, _baseUrl)
+    public OmnipyRequest CancelBolus(OmnipyCallback callback) {
+        return queue(new OmnipyRequest(OmnipyRequestType.CancelBolus, _baseUrl)
                 .withAuthentication(_apiSecret)
                 .withCallback(callback));
     }
 
-    public void SetTempBasal(BigDecimal basalRate, BigDecimal durationInHours,
+    public OmnipyRequest SetTempBasal(BigDecimal basalRate, BigDecimal durationInHours,
                              OmnipyCallback callback)
     {
-        queue(new OmnipyRequest(OmnipyRequestType.TempBasal, _baseUrl)
+        return queue(new OmnipyRequest(OmnipyRequestType.TempBasal, _baseUrl)
                 .withAuthentication(_apiSecret)
                 .withCallback(callback)
                 .withParameter(OmnipyConstants.OMNIPY_PARAM_TEMPBASAL_RATE,
@@ -200,13 +200,13 @@ public class OmnipyRestApi {
                         durationInHours.toString()));
     }
 
-    public void CancelTempBasal(OmnipyCallback callback) {
-        queue(new OmnipyRequest(OmnipyRequestType.CancelTempBasal, _baseUrl)
+    public OmnipyRequest CancelTempBasal(OmnipyCallback callback) {
+        return queue(new OmnipyRequest(OmnipyRequestType.CancelTempBasal, _baseUrl)
                 .withAuthentication(_apiSecret)
                 .withCallback(callback));
     }
 
-    public void setBasalSchedule(BigDecimal[] basalSchedule, OmnipyCallback callback) {
+    public OmnipyRequest setBasalSchedule(BigDecimal[] basalSchedule, OmnipyCallback callback) {
         OmnipyRequest request = new OmnipyRequest(OmnipyRequestType.SetBasalSchedule, _baseUrl)
                 .withAuthentication(_apiSecret)
                 .withCallback(callback);
@@ -214,7 +214,7 @@ public class OmnipyRestApi {
         for(int i=0; i<48; i++)
             request.withParameter("h" + Integer.toString(i), basalSchedule[i].toString());
 
-        queue(request);
+        return queue(request);
     }
 
 
@@ -223,8 +223,8 @@ public class OmnipyRestApi {
                 .execute(10000);
     }
 
-    public void IsBusy(OmnipyCallback callback) {
-        new OmnipyRequest(OmnipyRequestType.IsBusy, _baseUrl)
+    public OmnipyRequest IsBusy(OmnipyCallback callback) {
+        return new OmnipyRequest(OmnipyRequestType.IsBusy, _baseUrl)
                 .withCallback(callback);
     }
 
@@ -239,24 +239,38 @@ public class OmnipyRestApi {
     }
 
     public void StopConfiguring() {
+        if (!_configuring)
+            return;
+
         if (_configurationTask != null)
             _configurationTask.cancel();
+
+        _configurationTask = null;
 
         _baseUrl = null;
         _host = null;
         _configured = false;
+        _configuring = false;
         _connectable = false;
         _authenticated = false;
         _discovered = false;
-        _configurationTask = null;
     }
 
     public void StartConfiguring()  {
         if (_configuring)
             return;
 
+        if (_configurationTask != null)
+            _configurationTask.cancel();
+
+        _configured = false;
+        _baseUrl = null;
+        _host = null;
+        _connectable = false;
+        _authenticated = false;
+        _discovered = false;
+
         _configuring = true;
-        StopConfiguring();
         _configurationTask = new RestApiConfigurationTask(_context);
         _configurationTask.execute();
     }
@@ -286,7 +300,7 @@ public class OmnipyRestApi {
         runNext();
     }
 
-    private synchronized void queue(OmnipyRequest request)
+    private synchronized OmnipyRequest queue(OmnipyRequest request)
     {
         Iterator<OmnipyRequest> iterator = _requestQueue.iterator();
         ArrayList<OmnipyRequest> requeuedList = new ArrayList<>();
@@ -334,6 +348,7 @@ public class OmnipyRestApi {
         }
 
         runNext();
+        return request;
     }
 
     private synchronized void runNext()

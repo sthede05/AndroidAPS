@@ -30,6 +30,7 @@ public class OmnipyRequest {
     private OmnipyApiSecret _apiSecret;
     private ArrayList<Pair<String,String>> _parameters;
     private OmnipyCallback _callback;
+    private OmnipyRequestTask _task;
 
     private int _versionRequiredMajor = 0;
     private int _versionRequiredMinor = 0;
@@ -41,6 +42,7 @@ public class OmnipyRequest {
         _baseUrl = baseUrl;
         _requestType = requestType;
         _parameters = new ArrayList<>();
+        _task = new OmnipyRequestTask(this);
     }
 
     public OmnipyRequest withAuthentication(OmnipyApiSecret apiSecret)
@@ -76,12 +78,11 @@ public class OmnipyRequest {
     public OmnipyResult execute(long timeout)
     {
         OmnipyResult result = new OmnipyResult();
-        OmnipyRequestTask task = new OmnipyRequestTask(this);
         try {
             if (timeout == 0)
-                result = task.execute().get();
+                result = _task.execute().get();
             else
-                result = task.execute().get(timeout, TimeUnit.MILLISECONDS);
+                result = _task.execute().get(timeout, TimeUnit.MILLISECONDS);
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
             result.exception = e;
@@ -90,12 +91,27 @@ public class OmnipyRequest {
         return result;
     }
 
+    public OmnipyResult waitForResult()
+    {
+        try {
+            _task.wait();
+            return _task.get();
+        } catch (InterruptedException | ExecutionException e) {
+            OmnipyResult res = new OmnipyResult();
+            res.success = false;
+            res.exception = e;
+            res.originalRequest = this;
+            return res;
+        }
+    }
+
     public OmnipyRequestType getRequestType() { return _requestType; }
 
-    public void executeAsync()
+    public OmnipyRequest executeAsync()
     {
         OmnipyRequestTask task = new OmnipyRequestTask(this);
         task.execute();
+        return this;
     }
 
     public void cancel()
