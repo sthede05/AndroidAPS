@@ -184,7 +184,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
         log.debug("omnipod plugin DeliverTreatment()");
         PumpEnactResult result = _pdm.Bolus(detailedBolusInfo);
 
-        if (!result.enacted) {
+        if (!result.success) {
             result.bolusDelivered = 0;
             return result;
         }
@@ -263,7 +263,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
     public PumpEnactResult setTempBasalAbsolute(Double absoluteRate, Integer durationInMinutes, Profile profile, boolean enforceNew) {
         log.debug("omnipod plugin SetTempBasalAbsolute()");
         PumpEnactResult result = _pdm.SetTempBasal(absoluteRate, durationInMinutes, profile, enforceNew);
-        if (result.enacted) {
+        if (result.success) {
             result.absolute = absoluteRate;
             result.duration = durationInMinutes;
             result.comment = "";
@@ -303,7 +303,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
     public PumpEnactResult cancelTempBasal(boolean enforceNew) {
         log.debug("CancelTempBasal()");
         PumpEnactResult result = _pdm.CancelTempBasal(enforceNew);
-        if (result.enacted && result.success) {
+        if (result.success) {
             if (TreatmentsPlugin.getPlugin().isTempBasalInProgress()) {
                 TemporaryBasal tempStop = new TemporaryBasal().date(_pdm.GetLastUpdated()).source(Source.USER);
                 TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempStop);
