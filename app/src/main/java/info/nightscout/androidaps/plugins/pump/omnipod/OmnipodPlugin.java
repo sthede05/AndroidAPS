@@ -169,8 +169,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
 
     @Override
     public double getReservoirLevel() {
-        // TODO: return from podstatus
-        return 50.0;
+        return _pdm.GetReservoirLevel();
     }
 
     @Override

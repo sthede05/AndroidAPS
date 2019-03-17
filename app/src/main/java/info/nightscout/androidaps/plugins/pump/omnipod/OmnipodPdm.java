@@ -494,4 +494,10 @@ public class OmnipodPdm {
         return basalSchedule;
     }
 
+    public double GetReservoirLevel() {
+        if (_lastStatus != null)
+            return _lastStatus.insulin_reservoir;
+        else
+            return -1;
+    }
 }
