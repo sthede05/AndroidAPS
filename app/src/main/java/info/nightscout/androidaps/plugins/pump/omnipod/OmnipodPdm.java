@@ -341,7 +341,7 @@ public class OmnipodPdm {
         if (_initialized) {
             BigDecimal[] basalSchedule = getBasalScheduleFromProfile(profile);
             OmnipyResult result = _restApi.setBasalSchedule(basalSchedule, null).waitForResult();
-            r.enacted = !result.canceled;
+            r.enacted = result.success;
             r.success = result.success;
             if (result.success) {
                 Notification notification = new Notification(Notification.PROFILE_SET_OK, MainApp.gs(R.string.profile_set_ok), Notification.INFO, 60);
@@ -410,7 +410,7 @@ public class OmnipodPdm {
         BigDecimal iuBolus = GetExactInsulinUnits(detailedBolusInfo.insulin);
         OmnipyResult result = _restApi.Bolus(iuBolus, null).waitForResult();
         PumpEnactResult r = new PumpEnactResult();
-        r.enacted = !result.canceled;
+        r.enacted = result.success;
         r.success = result.success;
         if (result.success)
         {
@@ -429,7 +429,7 @@ public class OmnipodPdm {
 
         OmnipyResult result = _restApi.SetTempBasal(iuRate, durationHours, null).waitForResult();
         PumpEnactResult r = new PumpEnactResult();
-        r.enacted = !result.canceled;
+        r.enacted = result.success;
         r.success = result.success;
         if (result.success)
         {
@@ -445,7 +445,7 @@ public class OmnipodPdm {
         PumpEnactResult r = new PumpEnactResult();
 
         OmnipyResult result = _restApi.CancelTempBasal(null).waitForResult();
-        r.enacted = !result.canceled;
+        r.enacted = result.success;
         r.success = result.success;
         if (result.success)
         {
