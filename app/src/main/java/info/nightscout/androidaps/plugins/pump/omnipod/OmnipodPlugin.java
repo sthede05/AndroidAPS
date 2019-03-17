@@ -326,16 +326,14 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
     public JSONObject getJSONStatus(Profile profile, String profileName) {
         log.debug("GetJSONStatus()");
         long now = System.currentTimeMillis();
-        if (!SP.getBoolean("virtualpump_uploadstatus", false)) {
-            return null;
-        }
+
         JSONObject pump = new JSONObject();
         JSONObject battery = new JSONObject();
         JSONObject status = new JSONObject();
         JSONObject extended = new JSONObject();
         try {
-            battery.put("percent", 50);
-            status.put("status", "normal");
+            battery.put("percent", getBatteryLevel());
+            status.put("status", _pdm.getPodStatusText());
             extended.put("Version", BuildConfig.VERSION_NAME + "-" + BuildConfig.BUILDVERSION);
             try {
                 extended.put("ActiveProfile", profileName);
@@ -358,7 +356,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
             pump.put("battery", battery);
             pump.put("status", status);
             pump.put("extended", extended);
-            pump.put("reservoir", 50);
+            pump.put("reservoir", getReservoirLevel());
             pump.put("clock", DateUtil.toISOString(now));
         } catch (JSONException e) {
             log.error("Unhandled exception", e);
