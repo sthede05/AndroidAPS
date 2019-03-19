@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -370,7 +371,9 @@ public class OmnipodPdm {
         r.success = false;
         if (_pod_initialized) {
             BigDecimal[] basalSchedule = getBasalScheduleFromProfile(profile);
-            OmnipyResult result = _restApi.setBasalSchedule(basalSchedule, null).waitForResult();
+            Date ct = Calendar.getInstance().getTime();
+            OmnipyResult result = _restApi.setBasalSchedule(basalSchedule, ct.getHours(),
+                    ct.getMinutes(), ct.getSeconds(), null).waitForResult();
             r.enacted = result.success;
             r.success = result.success;
             if (result.success) {
