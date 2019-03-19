@@ -485,10 +485,10 @@ public class OmnipodPdm {
     {
         BigDecimal[] basalSchedule = new BigDecimal[48];
 
-        long secondsSinceMidnight = 0;
+        int secondsSinceMidnight = 0;
         for(int i=0; i<48; i++)
         {
-            basalSchedule[i] = GetExactInsulinUnits(profile.getBasal(secondsSinceMidnight));
+            basalSchedule[i] = GetExactInsulinUnits(profile.getBasalTimeFromMidnight(secondsSinceMidnight));
             secondsSinceMidnight += 60*30;
         }
         return basalSchedule;
