@@ -42,10 +42,10 @@ public class OmnipodPdm {
     private OmnipyResult _lastResult;
     private OmnipodStatus _lastStatus;
 
-    private boolean _initialized;
+    private boolean _pod_initialized;
     private boolean _suspended;
 
-    private final Timer _pingTimer;
+    private Timer _pingTimer;
 
     private final Logger _log;
 
@@ -53,7 +53,6 @@ public class OmnipodPdm {
     {
         _context = context;
         _log =  LoggerFactory.getLogger(L.PUMP);
-        _pingTimer = new Timer(true);
     }
 
     public void OnStart() {
@@ -62,7 +61,7 @@ public class OmnipodPdm {
         MainApp.bus().register(_restApi);
         //_profile = ProfileFunctions.getInstance().getProfile();
         _lastStatus = OmnipodStatus.fromJson(SP.getString(R.string.key_omnipod_status, null));
-        _initialized = false;
+        _pod_initialized = false;
         _restApi.StartConfiguring();
     }
 
@@ -89,15 +88,16 @@ public class OmnipodPdm {
 
     private void handleDisconnect()
     {
-        _initialized = false;
-        _pingTimer.cancel();
+        _pod_initialized = false;
+        if (_pingTimer != null) {
+            _pingTimer.cancel();
+            _pingTimer = null;
+        }
         MainApp.bus().post(new Notification(Notification.PUMP_UNREACHABLE, "Omnipy disconnected", Notification.NORMAL));
-        MainApp.bus().post(new EventPumpStatusChanged(EventPumpStatusChanged.DISCONNECTING));
-        MainApp.bus().post(new EventPumpStatusChanged(EventPumpStatusChanged.DISCONNECTED));
         _restApi.StartConfiguring();
     }
 
-    public boolean IsInitialized() { return _initialized; }
+    public boolean IsInitialized() { return _pod_initialized; }
 
     public boolean IsSuspended() {
         return _suspended;
@@ -115,32 +115,34 @@ public class OmnipodPdm {
     }
 
     public boolean IsConnected() {
-        if (_restApi.isConfigured() && _restApi.isConnectable()) {
-            pingOmnipy();
-            return true;
-        }
-        return false;
+        return _restApi.isConfigured() && _restApi.isConnectable()
+                && _restApi.isAuthenticated() && _pod_initialized;
     }
 
     public void Connect() {
-        if (_restApi.isConfigured())
-        {
-            if (_restApi.isConnectable())
-            {
-                pingOmnipy();
-            }
-        }
-        else {
-            _restApi.StartConfiguring();
-        }
+    }
+
+    public OmnipyRestApi GetRestApi()
+    {
+        return _restApi;
     }
 
     public boolean IsConnecting() {
-        return _restApi.isConfiguring();
+        if (!_restApi.isConfigured())
+            return true;
+        else
+        {
+            if (!_restApi.isConnectable())
+                return true;
+            if (!_restApi.isAuthenticated())
+                return true;
+            if (!_pod_initialized)
+                return true;
+            return false;
+        }
     }
 
     public void StopConnecting() {
-        _restApi.StopConfiguring();
     }
 
     public void FinishHandshaking() { }
@@ -157,9 +159,29 @@ public class OmnipodPdm {
         OmnipyResult result = or.getResult();
         if (!result.canceled) {
             _lastResult = result;
-            if (_lastResult.status != null) {
-                _lastStatus = result.status;
-                SP.putString(R.string.key_omnipod_status, result.status.asJson());
+            _pod_initialized = false;
+            if (result.status == null)
+            {
+                Notification notification = new Notification(Notification.PUMP_UNREACHABLE, "No active pod", Notification.NORMAL);
+                MainApp.bus().post(new EventNewNotification(notification));
+                return;
+            }
+            _lastStatus = result.status;
+            SP.putString(R.string.key_omnipod_status, result.status.asJson());
+            if (result.status.state_faulted)
+            {
+                Notification notification = new Notification(Notification.PUMP_UNREACHABLE, "Pod is faulted", Notification.NORMAL);
+                MainApp.bus().post(new EventNewNotification(notification));
+            }
+            else if (result.status.state_progress != 8 && result.status.state_progress != 9)
+            {
+                Notification notification = new Notification(Notification.PUMP_UNREACHABLE, "Pod is not running", Notification.NORMAL);
+                MainApp.bus().post(new EventNewNotification(notification));
+            }
+            else
+            {
+                _pod_initialized = true;
+                MainApp.bus().post(new EventDismissNotification(Notification.PUMP_UNREACHABLE));
                 MainApp.bus().post(new EventOmnipodUpdateGui());
             }
         }
@@ -169,9 +191,9 @@ public class OmnipodPdm {
     public void onConfigurationComplete(final EventOmnipyConfigurationComplete confResult) {
         MainApp.bus().post(new EventOmnipodUpdateGui());
         String errorMessage;
+        _pod_initialized = false;
         if (!confResult.isConnectable)
         {
-            _initialized = false;
             if (confResult.isDiscovered)
             {
                 errorMessage = "Omnipy located at network address " + confResult.hostName +
@@ -180,36 +202,44 @@ public class OmnipodPdm {
             else
             {
                 errorMessage = "Omnipy connection cannot be established at the configured address: " + confResult.hostName
-                            + " Please verify the address in configuration.";
+                        + " Please verify the address in configuration.";
             }
             Notification notification = new Notification(Notification.PUMP_UNREACHABLE, errorMessage, Notification.NORMAL);
             MainApp.bus().post(new EventNewNotification(notification));
-            MainApp.bus().post(new EventPumpStatusChanged(EventPumpStatusChanged.DISCONNECTING));
-            MainApp.bus().post(new EventPumpStatusChanged(EventPumpStatusChanged.DISCONNECTED));
+
+            _pingTimer = new Timer();
+            _pingTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    _restApi.StartConfiguring();
+                }
+            }, 30000);
+
         }
         else if (!confResult.isAuthenticated)
         {
-            _initialized = false;
             errorMessage = "Omnipy connection established at address " + confResult.hostName +
                     " but authentication failed. Please verify your password in settings.";
             Notification notification = new Notification(Notification.PUMP_UNREACHABLE, errorMessage, Notification.NORMAL);
             MainApp.bus().post(new EventNewNotification(notification));
-            MainApp.bus().post(new EventPumpStatusChanged(EventPumpStatusChanged.DISCONNECTING));
-            MainApp.bus().post(new EventPumpStatusChanged(EventPumpStatusChanged.DISCONNECTED));
 
+            _pingTimer = new Timer();
+            _pingTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    _restApi.StartConfiguring();
+                }
+            }, 30000);
         }
         else
         {
-            _initialized = true;
-
             MainApp.bus().post(new EventDismissNotification(Notification.PUMP_UNREACHABLE));
             Notification notification = new Notification(100, "Connected to omnipy running at " + confResult.hostName, Notification.INFO, 1);
             MainApp.bus().post(new EventNewNotification(notification));
-            MainApp.bus().post(new EventPumpStatusChanged(
-                    EventPumpStatusChanged.CONNECTED));
 
             UpdateStatus();
 
+            _pingTimer = new Timer();
             _pingTimer.scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
@@ -338,7 +368,7 @@ public class OmnipodPdm {
         PumpEnactResult r = new PumpEnactResult();
         r.enacted = false;
         r.success = false;
-        if (_initialized) {
+        if (_pod_initialized) {
             BigDecimal[] basalSchedule = getBasalScheduleFromProfile(profile);
             OmnipyResult result = _restApi.setBasalSchedule(basalSchedule, null).waitForResult();
             r.enacted = result.success;
@@ -347,7 +377,8 @@ public class OmnipodPdm {
                 Notification notification = new Notification(Notification.PROFILE_SET_OK, MainApp.gs(R.string.profile_set_ok), Notification.INFO, 60);
                 MainApp.bus().post(new EventNewNotification(notification));
             } else {
-                Notification notification = new Notification(Notification.PROFILE_SET_FAILED, MainApp.gs(R.string.profile_set_ok), Notification.NORMAL, 60);
+                r.comment = result.response.getAsString();
+                Notification notification = new Notification(Notification.PROFILE_SET_FAILED, "Basal profile not updated", Notification.NORMAL, 60);
                 MainApp.bus().post(new EventNewNotification(notification));
             }
         }
@@ -355,7 +386,7 @@ public class OmnipodPdm {
     }
 
     public boolean IsProfileSet(Profile profile) {
-        if (!_initialized) {
+        if (!_pod_initialized) {
             return false;
         }
 
@@ -389,7 +420,7 @@ public class OmnipodPdm {
     }
 
     public double GetBaseBasalRate() {
-        if (!_initialized || _lastStatus == null || _lastStatus.var_basal_schedule == null
+        if (!_pod_initialized || _lastStatus == null || _lastStatus.var_basal_schedule == null
                 || _lastStatus.var_basal_schedule.length == 0)
             return -1d;
 
@@ -484,7 +515,6 @@ public class OmnipodPdm {
     private BigDecimal[] getBasalScheduleFromProfile(Profile profile)
     {
         BigDecimal[] basalSchedule = new BigDecimal[48];
-
         int secondsSinceMidnight = 0;
         for(int i=0; i<48; i++)
         {

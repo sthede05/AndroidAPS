@@ -1351,8 +1351,8 @@
     <string name="omnipod_cmd_deactivate_pod">Deactivate Pod</string>
     <string name="omnipy_cmd_clear_alerts">Clear Alerts</string>
     <string name="omnipy_history">History</string>
-    <string name="omnipy_restart_remote">Restart Remote Host</string>
-    <string name="omnipy_shutdown_remote">Shutdown Remote Host</string>
+    <string name="omnipy_restart_remote">Restart Omnipy Host</string>
+    <string name="omnipy_shutdown_remote">Shutdown Omnipy Host</string>
 
     <plurals name="objective_days">
         <item quantity="one">%1$d day</item>

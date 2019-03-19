@@ -28,6 +28,31 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="right"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/omnipy_btn_shutdown_remote_host"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Shutdown" />
+
+                <Button
+                    android:id="@+id/omnipy_btn_restart_remote_host"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Restart" />
+
+                <Button
+                    android:id="@+id/omnipy_btn_check_connection"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Check Connection" />
+            </LinearLayout>
+
             <TextView
                 android:id="@+id/textviewPodStatus"
                 android:layout_width="match_parent"
@@ -41,6 +66,25 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="right"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/omnipy_btn_clear_alerts"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/omnipy_cmd_clear_alerts"/>
+
+                <Button
+                    android:id="@+id/omnipy_btn_update_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:text="@string/omnipod_cmd_update_status"/>
+            </LinearLayout>
+
             <TextView
                 android:id="@+id/textviewActions"
                 android:layout_width="match_parent"
@@ -49,54 +93,24 @@
                 android:text="@string/omnipod_pod_actions"
                 android:textAppearance="@android:style/TextAppearance.Material.Large" />
 
-            <Button
-                android:id="@+id/omnipy_btn_check_connection"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="@string/omnipy_check_conn"
-                android:visibility="gone" />
+                android:gravity="right"
+                android:orientation="horizontal">
 
-            <Button
-                android:id="@+id/omnipy_btn_restart_remote_host"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/omnipy_restart_remote"
-                android:visibility="gone" />
+                <Button
+                    android:id="@+id/omnipy_btn_deactivate_pod"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/omnipod_cmd_deactivate_pod"/>
 
-            <Button
-                android:id="@+id/omnipy_btn_shutdown_remote_host"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/omnipy_shutdown_remote"
-                android:visibility="gone" />
-
-            <Button
-                android:id="@+id/btnNewPod"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/omnipod_cmd_new_pod"
-                android:visibility="gone" />
-
-            <Button
-                android:id="@+id/btnUpdateStatus"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:text="@string/omnipod_cmd_update_status"
-                android:visibility="gone" />
-
-            <Button
-                android:id="@+id/btnClearAlerts"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/omnipy_cmd_clear_alerts"
-                android:visibility="gone" />
-
-            <Button
-                android:id="@+id/btnDeactivatePod"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/omnipod_cmd_deactivate_pod"
-                android:visibility="gone" />
+                <Button
+                    android:id="@+id/omnipy_btn_new_pod"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/omnipod_cmd_new_pod"/>
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/textviewHistory"
