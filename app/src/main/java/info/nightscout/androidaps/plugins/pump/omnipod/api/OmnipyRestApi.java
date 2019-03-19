@@ -1,7 +1,12 @@
 package info.nightscout.androidaps.plugins.pump.omnipod.api;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.ConnectivityManager.NetworkCallback;
 import android.net.DhcpInfo;
+import android.net.LinkProperties;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 
@@ -15,9 +20,14 @@ import java.math.BigDecimal;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.LinkedBlockingDeque;
 
 import info.nightscout.androidaps.MainApp;
@@ -32,6 +42,8 @@ import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmnipyResult;
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipyApiResult;
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipyConfigurationComplete;
 import info.nightscout.androidaps.utils.SP;
+
+import static java.net.NetworkInterface.getNetworkInterfaces;
 
 public class OmnipyRestApi {
 
@@ -354,6 +366,30 @@ public class OmnipyRestApi {
             request.executeAsync();
         }
     }
+
+    public void onAvailable(Network network) {
+
+    }
+
+    public void onLosing(Network network, int maxMsToLive) {
+    }
+
+    public void onLost(Network network) {
+
+    }
+
+    public void onUnavailable() {
+
+    }
+
+    public void onCapabilitiesChanged(Network network, NetworkCapabilities networkCapabilities) {
+
+    }
+
+    public void onLinkPropertiesChanged(Network network, LinkProperties linkProperties) {
+
+    }
+
 }
 
 class RestApiConfigurationTask extends AsyncTask<Void, Void, String> {
@@ -382,13 +418,33 @@ class RestApiConfigurationTask extends AsyncTask<Void, Void, String> {
         if (autodetect) {
             while (true)
             {
-                omnipyHost = discover();
-                if (omnipyHost != null) {
-                    break;
-                }
+
+                List<NetworkInterface> interfaces = null;
                 try {
-                    if (_canceled)
-                        return null;
+                    interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
+                    for (NetworkInterface intf : interfaces) {
+                        List<InetAddress> addrs = Collections.list(intf.getInetAddresses());
+                        for (InetAddress addr : addrs) {
+                            if (!addr.isLoopbackAddress()) {
+                                if (_canceled)
+                                    return null;
+                                byte[] addrBytes = addr.getAddress();
+                                if (addrBytes.length == 4) {
+                                    addrBytes[3] = (byte) 0xFF;
+                                    InetAddress broadcastAddress = InetAddress.getByAddress(addrBytes);
+                                    omnipyHost = discover(broadcastAddress);
+                                    if (omnipyHost != null) {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (SocketException | UnknownHostException e) {
+                e.printStackTrace();
+            }
+
+            try {
                     Thread.sleep(5000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -426,7 +482,7 @@ class RestApiConfigurationTask extends AsyncTask<Void, Void, String> {
                 apiSecret = OmnipyApiSecret.fromPassphrase(secret);
                 OmnipyResult result = new OmnipyRequest(OmnipyRequestType.CheckPassword, baseUrl)
                         .withAuthentication(apiSecret)
-                        .execute(30000);
+                        .execute(10000);
 
                 if (result.success) {
                     connectable = true;
@@ -452,7 +508,7 @@ class RestApiConfigurationTask extends AsyncTask<Void, Void, String> {
         }
     }
 
-    private String discover()
+    private String discover(InetAddress broadcastAddress)
     {
         DatagramSocket listenSocket = null;
         DatagramSocket sendSocket = null;
@@ -462,22 +518,13 @@ class RestApiConfigurationTask extends AsyncTask<Void, Void, String> {
             listenSocket = new DatagramSocket(6665);
             DatagramPacket listenPacket = new DatagramPacket(receive, receive.length);
             listenSocket.setSoTimeout(5000);
+            listenSocket.setBroadcast(true);
 
             sendSocket = new DatagramSocket();
             sendSocket.setSoTimeout(3000);
             sendSocket.setBroadcast(true);
             byte[] data = "Oh dear.".getBytes(StandardCharsets.US_ASCII);
 
-            WifiManager wifi = (WifiManager)
-                    _context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-            assert wifi != null;
-            DhcpInfo dhcp = wifi.getDhcpInfo();
-
-            int broadcast = (dhcp.ipAddress & dhcp.netmask) | ~dhcp.netmask;
-            byte[] quads = new byte[4];
-            for (int k = 0; k < 4; k++)
-                quads[k] = (byte) ((broadcast >> k * 8) & 0xFF);
-            InetAddress broadcastAddress = InetAddress.getByAddress(quads);
             DatagramPacket sendPacket = new DatagramPacket(data, data.length, broadcastAddress,
                     6664);
 
