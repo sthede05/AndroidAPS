@@ -199,6 +199,18 @@ public class OmnipyRestApi {
                 .withCallback(callback));
     }
 
+    public OmnipyRequest Shutdown(OmnipyCallback callback) {
+        return queue(new OmnipyRequest(OmnipyRequestType.Shutdown, _baseUrl)
+                .withAuthentication(_apiSecret)
+                .withCallback(callback));
+    }
+
+    public OmnipyRequest Restart(OmnipyCallback callback) {
+        return queue(new OmnipyRequest(OmnipyRequestType.Restart, _baseUrl)
+                .withAuthentication(_apiSecret)
+                .withCallback(callback));
+    }
+
     public OmnipyRequest SetTempBasal(BigDecimal basalRate, BigDecimal durationInHours,
                              OmnipyCallback callback)
     {

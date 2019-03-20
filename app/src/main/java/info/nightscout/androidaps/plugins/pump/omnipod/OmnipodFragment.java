@@ -139,6 +139,38 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
             Toast("Omnipy is not available", true);
     }
 
+    private void Shutdown(Button b){
+        OmnipyRestApi rest = _pdm.GetRestApi();
+        if (rest.isConfigured()) {
+            b.setEnabled(false);
+            rest.Shutdown (result -> {
+                b.setEnabled(true);
+                if (result.success) {
+                    Toast("Shutdown requested", true);
+                } else {
+                    Toast("Shutdown request failed", true);
+                }});
+        }
+        else
+            Toast("Omnipy is not available", true);
+    }
+
+    private void Restart(Button b){
+        OmnipyRestApi rest = _pdm.GetRestApi();
+        if (rest.isConfigured()) {
+            b.setEnabled(false);
+            rest.Restart(result -> {
+                b.setEnabled(true);
+                if (result.success) {
+                    Toast("Restart requested", true);
+                } else {
+                    Toast("Restart request failed", true);
+                }});
+        }
+        else
+            Toast("Omnipy is not available", true);
+    }
+
     private void ClearAlerts(Button b)
     {
         OmnipyRestApi rest = _pdm.GetRestApi();
@@ -209,6 +241,14 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
             case R.id.omnipy_btn_deactivate_pod:
                 Confirm("Are you sure you want to deactivate the pod?", () -> {
                   DeactivatePod((Button)view); });
+                break;
+            case R.id.omnipy_btn_restart_remote_host:
+                Confirm("Are you sure you want to restart the omnipy host?", () -> {
+                    Restart((Button)view); });
+                break;
+            case R.id.omnipy_btn_shutdown_remote_host:
+                Confirm("Are you sure you want to shut down the omnipy host?", () -> {
+                    Shutdown((Button)view); });
                 break;
             default:
                 break;
