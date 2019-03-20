@@ -428,13 +428,12 @@ class RestApiConfigurationTask extends AsyncTask<Void, Void, String> {
 
     @Override
     protected String doInBackground(Void... voids) {
-        String omnipyHost;
+        String omnipyHost = null;
 
         boolean autodetect = SP.getBoolean(R.string.key_omnipy_autodetect_host, true);
         if (autodetect) {
             while (true)
             {
-
                 List<NetworkInterface> interfaces = null;
                 try {
                     interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
@@ -455,6 +454,8 @@ class RestApiConfigurationTask extends AsyncTask<Void, Void, String> {
                                 }
                             }
                         }
+                        if (omnipyHost != null)
+                            break;
                     }
                 } catch (SocketException | UnknownHostException e) {
                 e.printStackTrace();
@@ -544,7 +545,7 @@ class RestApiConfigurationTask extends AsyncTask<Void, Void, String> {
             DatagramPacket sendPacket = new DatagramPacket(data, data.length, broadcastAddress,
                     6664);
 
-            _log.debug("Sending broadcast message to %s", broadcastAddress.toString());
+            _log.debug("Sending broadcast message to " + broadcastAddress.toString());
             sendSocket.send(sendPacket);
             _log.debug("Waiting for omnipy to respond");
             listenSocket.receive(listenPacket);
