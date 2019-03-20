@@ -74,9 +74,13 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
         View view = inflater.inflate(R.layout.fragment_omnipod, container, false);
 
         view.findViewById(R.id.omnipy_btn_check_connection).setOnClickListener(this);
+        view.findViewById(R.id.omnipy_btn_check_rl).setOnClickListener(this);
         view.findViewById(R.id.omnipy_btn_update_status).setOnClickListener(this);
         view.findViewById(R.id.omnipy_btn_clear_alerts).setOnClickListener(this);
         view.findViewById(R.id.omnipy_btn_deactivate_pod).setOnClickListener(this);
+        view.findViewById(R.id.omnipy_btn_shutdown_remote_host).setOnClickListener(this);
+        view.findViewById(R.id.omnipy_btn_restart_remote_host).setOnClickListener(this);
+        view.findViewById(R.id.omnipy_btn_new_pod).setOnClickListener(this);
         return view;
     }
 
@@ -171,6 +175,22 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
             Toast("Omnipy is not available", true);
     }
 
+    private void CheckRL(Button b) {
+        OmnipyRestApi rest = _pdm.GetRestApi();
+        if (rest.isConfigured()) {
+            b.setEnabled(false);
+            rest.GetRLInfo(result -> {
+                b.setEnabled(true);
+                if (result.success) {
+                    DisplayMessage(result.response.getAsString());
+                } else {
+                    Toast("RL info request failed", true);
+                }});
+        }
+        else
+            Toast("Omnipy is not available", true);
+    }
+
     private void ClearAlerts(Button b)
     {
         OmnipyRestApi rest = _pdm.GetRestApi();
@@ -238,6 +258,9 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
             case R.id.omnipy_btn_clear_alerts:
                 ClearAlerts((Button)view);
                 break;
+            case R.id.omnipy_btn_check_rl:
+                CheckRL((Button)view);
+                break;
             case R.id.omnipy_btn_deactivate_pod:
                 Confirm("Are you sure you want to deactivate the pod?", () -> {
                   DeactivatePod((Button)view); });
@@ -250,9 +273,16 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
                 Confirm("Are you sure you want to shut down the omnipy host?", () -> {
                     Shutdown((Button)view); });
                 break;
+            case R.id.omnipy_btn_new_pod:
+                break;
             default:
                 break;
         }
+    }
+
+    private void DisplayMessage(String text){
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setMessage(text).setPositiveButton("OK", null).show();
     }
 
     private void Confirm(String text, Runnable ifYes) {
