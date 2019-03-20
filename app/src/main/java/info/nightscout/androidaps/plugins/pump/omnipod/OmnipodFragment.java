@@ -125,15 +125,39 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
     {
         OmnipyRestApi rest = _pdm.GetRestApi();
         if (rest.isConfigured()) {
-//            b.setEnabled(false);
 
-//            rest.CheckAuthentication(result -> {
-//                b.setEnabled(true);
-//                if (result.success) {
-//                    Toast("Connection successful!", true);
-//                } else {
-//                    Toast("Connection failed", true);
-//                }});
+            b.setEnabled(false);
+
+            rest.UpdateStatus(result -> {
+                if (result.success)
+                {
+                    int alert = result.status.state_alert;
+                    if (alert != 0)
+                    {
+                        rest.AcknowledgeAlerts(alert, result2->
+                        {
+                            if(result2.success)
+                            {
+                                Toast("Alerts cleared", true);
+                            }
+                            else
+                            {
+                                Toast("Failed to clear alerts", true);
+                            }
+                        });
+                    }
+                    else
+                    {
+                        Toast("No alerts to clear", true);
+                    }
+                }
+                else
+                {
+                    Toast("Failed to update status", true);
+                }
+
+                b.setEnabled(true);
+            });
         }
         else
             Toast("Omnipy is not available", true);
