@@ -117,7 +117,7 @@ public class OmnipodStatus {
 
     public int id_lot;
     public int id_t;
-    public int radio_address;
+    public long radio_address;
 
     public int state_active_minutes;
     public int state_alert;
