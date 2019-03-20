@@ -1,8 +1,11 @@
 package info.nightscout.androidaps.plugins.pump.omnipod;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -118,7 +121,22 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
             }
         else
             Toast("Omnipy is not available", true);
+    }
 
+    private void DeactivatePod(Button b){
+        OmnipyRestApi rest = _pdm.GetRestApi();
+        if (rest.isConfigured()) {
+            b.setEnabled(false);
+            rest.DeactivatePod(result -> {
+                b.setEnabled(true);
+                if (result.success) {
+                    Toast("Deactivation successful", true);
+                } else {
+                    Toast("Deactivation failed", true);
+                }});
+        }
+        else
+            Toast("Omnipy is not available", true);
     }
 
     private void ClearAlerts(Button b)
@@ -189,10 +207,33 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
                 ClearAlerts((Button)view);
                 break;
             case R.id.omnipy_btn_deactivate_pod:
-                //_pdm.GetRestApi().DeactivatePod(null);
+                Confirm("Are you sure you want to deactivate the pod?", () -> {
+                  DeactivatePod((Button)view); });
                 break;
             default:
                 break;
         }
     }
+
+    private void Confirm(String text, Runnable ifYes) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                switch(i)
+                {
+                    case DialogInterface.BUTTON_POSITIVE:
+                        ifYes.run();
+                        break;
+
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        break;
+                }
+            }
+        };
+
+        builder.setMessage(text).setPositiveButton("Yes", listener)
+                .setNegativeButton("No", listener).show();
+    }
+
 }
