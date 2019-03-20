@@ -20,10 +20,10 @@ import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.DetailedBolusInfo;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.data.PumpEnactResult;
-import info.nightscout.androidaps.events.EventPumpStatusChanged;
 import info.nightscout.androidaps.plugins.general.overview.events.EventDismissNotification;
 import info.nightscout.androidaps.plugins.general.overview.events.EventNewNotification;
 import info.nightscout.androidaps.plugins.general.overview.notifications.Notification;
+import info.nightscout.androidaps.plugins.pump.omnipod.api.OmnipodStatus;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmnipyCallback;
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipyApiResult;
 import info.nightscout.androidaps.logging.L;
@@ -341,7 +341,8 @@ public class OmnipodPdm {
                 sb.append("\nConnectable: No");
             else
             {
-                sb.append("\nConnectable: Yes");
+                sb.append("\nConnectable: Yes  Omnipy API Version: v" + _lastResult.api.version_major
+                        + "." + _lastResult.api.version_minor);
                 if (_restApi.isAuthenticated())
                     sb.append("\nAuthentication: Verified");
                 else

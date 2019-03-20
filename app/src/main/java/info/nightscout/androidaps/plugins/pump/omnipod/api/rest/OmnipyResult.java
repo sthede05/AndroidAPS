@@ -6,7 +6,8 @@ import com.google.gson.JsonObject;
 import org.slf4j.LoggerFactory;
 
 import info.nightscout.androidaps.logging.L;
-import info.nightscout.androidaps.plugins.pump.omnipod.OmnipodStatus;
+import info.nightscout.androidaps.plugins.pump.omnipod.api.OmnipodStatus;
+import info.nightscout.androidaps.plugins.pump.omnipod.api.OmnipyApiVersion;
 
 public class OmnipyResult {
 
@@ -14,7 +15,7 @@ public class OmnipyResult {
 
     public boolean canceled;
     public boolean success;
-    public JsonObject api;
+    public OmnipyApiVersion api;
     public JsonObject response;
     public OmnipodStatus status;
     public Double datetime;

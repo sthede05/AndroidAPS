@@ -1,4 +1,4 @@
-package info.nightscout.androidaps.plugins.pump.omnipod;
+package info.nightscout.androidaps.plugins.pump.omnipod.api;
 
 import com.google.gson.Gson;
 
