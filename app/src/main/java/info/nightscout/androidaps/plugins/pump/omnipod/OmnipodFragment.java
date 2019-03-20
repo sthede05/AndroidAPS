@@ -63,8 +63,9 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
     @Subscribe
     public void onStatusEvent(final EventOmnipodUpdateGui ev) {
         Activity activity = getActivity();
-        if (activity != null)
-            activity.runOnUiThread(() -> updateGUI() );
+        if (activity != null) {
+            activity.runOnUiThread(() -> updateGUI());
+        }
     }
 
     @Override
@@ -99,12 +100,14 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
             Toast("Requesting status update", true);
 
             rest.UpdateStatus(result -> {
-                b.setEnabled(true);
                 if (result.success) {
                     Toast("Status updated", true);
                 } else {
                     Toast("Status update failed", true);
                 }
+                b.setEnabled(true);
+                updateGUI();
+
             });
         }
         else
@@ -116,12 +119,14 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
         if (rest.isConfigured()) {
             b.setEnabled(false);
             rest.CheckAuthentication(result -> {
-                b.setEnabled(true);
                 if (result.success) {
                     Toast("Connection successful!", true);
                 } else {
                     Toast("Connection failed", true);
-                }});
+                }
+                b.setEnabled(true);
+                updateGUI();
+            });
             }
         else
             Toast("Omnipy is not available", true);
@@ -132,12 +137,14 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
         if (rest.isConfigured()) {
             b.setEnabled(false);
             rest.DeactivatePod(result -> {
-                b.setEnabled(true);
-                if (result.success) {
+                 if (result.success) {
                     Toast("Deactivation successful", true);
                 } else {
                     Toast("Deactivation failed", true);
-                }});
+                }
+                b.setEnabled(true);
+                updateGUI();
+            });
         }
         else
             Toast("Omnipy is not available", true);
@@ -148,12 +155,14 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
         if (rest.isConfigured()) {
             b.setEnabled(false);
             rest.Shutdown (result -> {
-                b.setEnabled(true);
                 if (result.success) {
                     Toast("Shutdown requested", true);
                 } else {
                     Toast("Shutdown request failed", true);
-                }});
+                }
+                b.setEnabled(true);
+                updateGUI();
+            });
         }
         else
             Toast("Omnipy is not available", true);
@@ -164,12 +173,14 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
         if (rest.isConfigured()) {
             b.setEnabled(false);
             rest.Restart(result -> {
-                b.setEnabled(true);
                 if (result.success) {
                     Toast("Restart requested", true);
                 } else {
                     Toast("Restart request failed", true);
-                }});
+                }
+                b.setEnabled(true);
+                updateGUI();
+            });
         }
         else
             Toast("Omnipy is not available", true);
@@ -180,12 +191,14 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
         if (rest.isConfigured()) {
             b.setEnabled(false);
             rest.GetRLInfo(result -> {
-                b.setEnabled(true);
                 if (result.success) {
                     DisplayMessage(result.response.getAsString());
                 } else {
                     Toast("RL info request failed", true);
-                }});
+                }
+                b.setEnabled(true);
+                updateGUI();
+            });
         }
         else
             Toast("Omnipy is not available", true);
@@ -227,6 +240,7 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
                 }
 
                 b.setEnabled(true);
+                updateGUI();
             });
         }
         else
