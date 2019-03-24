@@ -25,6 +25,7 @@ import info.nightscout.androidaps.plugins.general.overview.events.EventNewNotifi
 import info.nightscout.androidaps.plugins.general.overview.notifications.Notification;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.OmnipodStatus;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmnipyCallback;
+import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmnipyRequestType;
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipyApiResult;
 import info.nightscout.androidaps.logging.L;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.OmnipyRestApi;
@@ -163,6 +164,7 @@ public class OmnipodPdm {
             _pod_initialized = false;
             if (result.status == null)
             {
+                OmnipyRequestType reqType = result.originalRequest.getRequestType();
                 Notification notification = new Notification(Notification.PUMP_UNREACHABLE, "No active pod", Notification.NORMAL);
                 MainApp.bus().post(new EventNewNotification(notification));
                 return;

@@ -298,12 +298,11 @@ public class OmnipyRestApi {
         _discovered = false;
 
         _configuring = true;
-        _configurationTask = new RestApiConfigurationTask(_context);
+        _configurationTask = new RestApiConfigurationTask(_context, this);
         _configurationTask.execute();
     }
 
-    @Subscribe
-    public void onConfigurationComplete(final EventOmnipyConfigurationComplete confResult) {
+    public void setConfigurationComplete(final EventOmnipyConfigurationComplete confResult) {
         _host = confResult.hostName;
         if (_host != null)
             _baseUrl = "http://" + _host + ":4444";
@@ -318,6 +317,8 @@ public class OmnipyRestApi {
         _configurationTask = null;
         _configuring = false;
         _configured = true;
+
+        MainApp.bus().post(confResult);
     }
 
     @Subscribe
@@ -413,12 +414,13 @@ class RestApiConfigurationTask extends AsyncTask<Void, Void, String> {
     private final Context _context;
     private final Logger _log;
     private boolean _canceled = false;
+    private OmnipyRestApi _restApi;
 
-    public RestApiConfigurationTask(Context context)
+    public RestApiConfigurationTask(Context context, OmnipyRestApi restApi)
     {
         _context = context;
+        _restApi = restApi;
         _log =  LoggerFactory.getLogger(L.PUMP);
-        MainApp.bus().register(this);
     }
 
     public void cancel()
@@ -460,6 +462,9 @@ class RestApiConfigurationTask extends AsyncTask<Void, Void, String> {
                 } catch (SocketException | UnknownHostException e) {
                 e.printStackTrace();
             }
+
+            if (omnipyHost != null)
+                break;
 
             try {
                     Thread.sleep(5000);
@@ -518,10 +523,8 @@ class RestApiConfigurationTask extends AsyncTask<Void, Void, String> {
         }
 
         if (!_canceled) {
-            MainApp.bus().post(new EventOmnipyConfigurationComplete(omnipyHost, apiSecret,
-                    discovered, connectable, authenticated));
-
-            MainApp.bus().unregister(this);
+            _restApi.setConfigurationComplete(new EventOmnipyConfigurationComplete(omnipyHost, apiSecret,
+                            discovered, connectable, authenticated));
         }
     }
 
