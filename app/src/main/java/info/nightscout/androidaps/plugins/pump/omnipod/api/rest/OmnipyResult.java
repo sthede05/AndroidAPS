@@ -18,7 +18,7 @@ public class OmnipyResult {
     public OmnipyApiVersion api;
     public JsonObject response;
     public OmnipodStatus status;
-    public Double datetime;
+    public double datetime;
     public Exception exception;
 
     public static OmnipyResult fromJson(String jsonResponse, OmnipyRequest request) {

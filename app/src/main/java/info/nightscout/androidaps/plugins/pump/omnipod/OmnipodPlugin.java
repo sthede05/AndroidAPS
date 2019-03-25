@@ -189,7 +189,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
             return result;
         }
 
-        detailedBolusInfo.deliverAt = _pdm.GetLastUpdated();
+        detailedBolusInfo.deliverAt = _pdm.GetLastResultDate();
         TreatmentsPlugin.getPlugin().addToHistoryTreatment(detailedBolusInfo, false);
 
         result.carbsDelivered = detailedBolusInfo.carbs;
@@ -269,7 +269,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
             result.comment = "";
 
             TemporaryBasal tempBasal = new TemporaryBasal()
-                    .date(_pdm.GetLastUpdated())
+                    .date(_pdm.GetLastResultDate())
                     .absolute(result.absolute)
                     .duration(result.duration)
                     .source(Source.USER);
@@ -305,7 +305,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
         PumpEnactResult result = _pdm.CancelTempBasal(enforceNew);
         if (result.success) {
             if (TreatmentsPlugin.getPlugin().isTempBasalInProgress()) {
-                TemporaryBasal tempStop = new TemporaryBasal().date(_pdm.GetLastUpdated()).source(Source.USER);
+                TemporaryBasal tempStop = new TemporaryBasal().date(_pdm.GetLastResultDate()).source(Source.USER);
                 TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempStop);
                 MainApp.bus().post(new EventOmnipodUpdateGui());
             }

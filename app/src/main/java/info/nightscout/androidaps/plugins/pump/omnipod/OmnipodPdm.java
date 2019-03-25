@@ -160,6 +160,10 @@ public class OmnipodPdm {
     @Subscribe
     public synchronized void onResultReceived(final EventOmnipyApiResult or) {
         OmnipyResult result = or.getResult();
+        onResultReceived(result);
+    }
+
+    public synchronized void onResultReceived(OmnipyResult result) {
         if (!result.canceled) {
             _lastResult = result;
             _pod_initialized = false;
@@ -266,6 +270,13 @@ public class OmnipodPdm {
     public long GetLastUpdated() {
         if (_lastStatus != null)
             return  (long)_lastStatus.state_last_updated * 1000;
+        else
+            return 0;
+    }
+
+    public long GetLastResultDate() {
+        if (_lastResult != null)
+            return  (long)_lastResult.datetime * 1000;
         else
             return 0;
     }
@@ -400,6 +411,7 @@ public class OmnipodPdm {
             Date ct = Calendar.getInstance().getTime();
             OmnipyResult result = _restApi.setBasalSchedule(basalSchedule, ct.getHours(),
                     ct.getMinutes(), ct.getSeconds(), null).waitForResult();
+            this.onResultReceived(result);
             r.enacted = result.success;
             r.success = result.success;
             if (result.success) {
@@ -422,6 +434,7 @@ public class OmnipodPdm {
         if (_lastStatus == null)
         {
             OmnipyResult result = _restApi.UpdateStatus(null).waitForResult();
+            this.onResultReceived(result);
             if (result.success && result.status.var_basal_schedule != null
                     && result.status.var_basal_schedule.length != 0)
             {
@@ -469,6 +482,7 @@ public class OmnipodPdm {
     public PumpEnactResult Bolus(DetailedBolusInfo detailedBolusInfo) {
         BigDecimal iuBolus = GetExactInsulinUnits(detailedBolusInfo.insulin);
         OmnipyResult result = _restApi.Bolus(iuBolus, null).waitForResult();
+        this.onResultReceived(result);
         PumpEnactResult r = new PumpEnactResult();
         r.enacted = result.success;
         r.success = result.success;
@@ -488,6 +502,7 @@ public class OmnipodPdm {
         BigDecimal durationHours = GetExactHourUnits(durationInMinutes);
 
         OmnipyResult result = _restApi.SetTempBasal(iuRate, durationHours, null).waitForResult();
+        this.onResultReceived(result);
         PumpEnactResult r = new PumpEnactResult();
         r.enacted = result.success;
         r.success = result.success;
@@ -505,6 +520,7 @@ public class OmnipodPdm {
         PumpEnactResult r = new PumpEnactResult();
 
         OmnipyResult result = _restApi.CancelTempBasal(null).waitForResult();
+        this.onResultReceived(result);
         r.enacted = result.success;
         r.success = result.success;
         if (result.success)
