@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Timer;
@@ -269,6 +270,28 @@ public class OmnipodPdm {
             return 0;
     }
 
+    public String[] getAlerts(int alertMask)
+    {
+        ArrayList<String> alerts = new ArrayList<>();
+        if ((alertMask & 0x01) > 0)
+            alerts.add("Auto-off");
+        if ((alertMask & 0x02) > 0)
+            alerts.add("Unknown");
+        if ((alertMask & 0x04) > 0)
+            alerts.add("Pod expiring soon");
+        if ((alertMask & 0x08) > 0)
+            alerts.add("Replace pod soon");
+        if ((alertMask & 0x10) > 0)
+            alerts.add("Low reservoir");
+        if ((alertMask & 0x20) > 0)
+            alerts.add("Insulin Suspended");
+        if ((alertMask & 0x40) > 0)
+            alerts.add("End of insulin suspend");
+        if ((alertMask & 0x80) > 0)
+            alerts.add("Pod expired");
+        return (String[]) alerts.toArray();
+    }
+
     public String getPodStatusText()
     {
         if (_lastStatus == null)
@@ -279,7 +302,7 @@ public class OmnipodPdm {
                 .append(" Radio address: ")
                 .append(String.format("%08X", _lastStatus.radio_address));
 
-        sb.append("\n\nStatus: ");
+        sb.append("\nStatus: ");
         if (_lastStatus.state_progress < 8)
         {
             sb.append("Not yet running");
@@ -308,7 +331,7 @@ public class OmnipodPdm {
         int hours = minutes / 60;
         minutes -= hours * 60;
 
-        sb.append("\n\nTotal insulin delivered: ").append(String.format("%3.2f",
+        sb.append("\nTotal insulin delivered: ").append(String.format("%3.2f",
                 _lastStatus.insulin_delivered)).append("U");
         sb.append("\nReservoir: ");
         if (_lastStatus.insulin_reservoir > 50)
@@ -316,11 +339,11 @@ public class OmnipodPdm {
         else
             sb.append(String.format("%2.2f", _lastStatus.insulin_reservoir)).append("U");
 
-        sb.append("\n\nPod age: ").append(String.format("%dd%dh%dm", days, hours, minutes));
+        sb.append("\nPod age: ").append(String.format("%dd%dh%dm", days, hours, minutes));
 
         Date date = new Date((long)_lastStatus.state_last_updated * 1000);
         DateFormat dateFormat = android.text.format.DateFormat.getTimeFormat(_context);
-        sb.append("\n\nStatus updated: ").append(dateFormat.format(date));
+        sb.append("\nStatus updated: ").append(dateFormat.format(date));
 
         return sb.toString();
     }
@@ -352,7 +375,7 @@ public class OmnipodPdm {
             }
         }
 
-        sb.append("\n\nLast successful connection: ");
+        sb.append("\nLast successful connection: ");
         long tx = _restApi.getLastSuccessfulConnection();
         if (tx == 0)
         {
