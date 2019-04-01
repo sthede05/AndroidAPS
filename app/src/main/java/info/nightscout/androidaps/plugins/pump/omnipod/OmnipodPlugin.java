@@ -26,6 +26,8 @@ import info.nightscout.androidaps.interfaces.PluginType;
 import info.nightscout.androidaps.interfaces.PumpDescription;
 import info.nightscout.androidaps.interfaces.PumpInterface;
 import info.nightscout.androidaps.logging.L;
+import info.nightscout.androidaps.plugins.general.actions.defs.CustomAction;
+import info.nightscout.androidaps.plugins.general.actions.defs.CustomActionType;
 import info.nightscout.androidaps.plugins.general.overview.events.EventOverviewBolusProgress;
 import info.nightscout.androidaps.plugins.pump.common.defs.PumpType;
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipodUpdateGui;
@@ -35,6 +37,8 @@ import info.nightscout.androidaps.utils.SP;
 
 
 import org.json.JSONException;
+
+import java.util.List;
 
 
 public class OmnipodPlugin extends PluginBase implements PumpInterface {
@@ -398,5 +402,20 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
         per.enacted = false;
         per.success = false;
         return per;
+    }
+
+    @Override
+    public boolean canHandleDST() {
+        return true;
+    }
+
+    @Override
+    public List<CustomAction> getCustomActions() {
+        return null;
+    }
+
+    @Override
+    public void executeCustomAction(CustomActionType customActionType) {
+
     }
 }
