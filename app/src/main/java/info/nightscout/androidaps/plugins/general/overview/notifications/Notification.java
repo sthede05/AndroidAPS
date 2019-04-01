@@ -76,6 +76,10 @@ public class Notification {
     public static final int DISKFULL = 51;
 
 
+    public static final int OMNIPY_CONNECTION_STATUS = 201;
+    public static final int OMNIPY_POD_STATUS = 201;
+
+
     public int id;
     public Date date;
     public String text;

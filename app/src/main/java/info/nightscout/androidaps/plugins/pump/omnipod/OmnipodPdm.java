@@ -26,6 +26,7 @@ import info.nightscout.androidaps.plugins.general.overview.events.EventNewNotifi
 import info.nightscout.androidaps.plugins.general.overview.notifications.Notification;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.OmnipodStatus;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmnipyCallback;
+import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmnipyRequest;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmnipyRequestType;
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipyApiResult;
 import info.nightscout.androidaps.logging.L;
@@ -96,7 +97,8 @@ public class OmnipodPdm {
             _pingTimer.cancel();
             _pingTimer = null;
         }
-        MainApp.bus().post(new Notification(Notification.PUMP_UNREACHABLE, "Omnipy disconnected", Notification.NORMAL));
+        MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_CONNECTION_STATUS));
+        MainApp.bus().post(new Notification(Notification.OMNIPY_CONNECTION_STATUS, "Disconnected from omnipy", Notification.NORMAL));
         _restApi.StartConfiguring();
     }
 
@@ -163,34 +165,89 @@ public class OmnipodPdm {
         onResultReceived(result);
     }
 
+    private int _lastPodResultMessage = -1;
+    private int _lastPodAlertMessage = 0;
     public synchronized void onResultReceived(OmnipyResult result) {
         if (!result.canceled) {
             _lastResult = result;
             _pod_initialized = false;
-            if (result.status == null)
+            if (result.status == null) {
+                _lastPodResultMessage = -1;
+                return;
+            }
+
+            if (result.status.radio_address == 0)
             {
-                OmnipyRequestType reqType = result.originalRequest.getRequestType();
-                Notification notification = new Notification(Notification.PUMP_UNREACHABLE, "No active pod", Notification.NORMAL);
-                MainApp.bus().post(new EventNewNotification(notification));
+                if (_lastPodResultMessage != 1) {
+                    _lastPodResultMessage = 1;
+                    MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
+                    Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "No registered pod", Notification.NORMAL);
+                    MainApp.bus().post(new EventNewNotification(notification));
+                    MainApp.bus().post(new EventOmnipodUpdateGui());
+                }
                 return;
             }
             _lastStatus = result.status;
             SP.putString(R.string.key_omnipod_status, result.status.asJson());
             if (result.status.state_faulted)
             {
-                Notification notification = new Notification(Notification.PUMP_UNREACHABLE, "Pod is faulted", Notification.NORMAL);
-                MainApp.bus().post(new EventNewNotification(notification));
+                if (_lastPodResultMessage != 2) {
+                    _lastPodResultMessage = 2;
+                    MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
+                    Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod is faulted", Notification.URGENT);
+                    MainApp.bus().post(new EventNewNotification(notification));
+                    MainApp.bus().post(new EventOmnipodUpdateGui());
+                }
             }
-            else if (result.status.state_progress != 8 && result.status.state_progress != 9)
+            else if (result.status.state_progress < 8)
             {
-                Notification notification = new Notification(Notification.PUMP_UNREACHABLE, "Pod is not running", Notification.NORMAL);
-                MainApp.bus().post(new EventNewNotification(notification));
+                if (_lastPodResultMessage != 3) {
+                    _lastPodResultMessage = 3;
+                    MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
+                    Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod not started yet", Notification.NORMAL);
+                    MainApp.bus().post(new EventNewNotification(notification));
+                    MainApp.bus().post(new EventOmnipodUpdateGui());
+                }
+            }
+            else if (result.status.state_progress > 9)
+            {
+                if (_lastPodResultMessage != 4) {
+                    _lastPodResultMessage = 4;
+                    MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
+                    Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod stopped", Notification.INFO);
+                    MainApp.bus().post(new EventNewNotification(notification));
+                    MainApp.bus().post(new EventOmnipodUpdateGui());
+                }
             }
             else
             {
-                _pod_initialized = true;
-                MainApp.bus().post(new EventDismissNotification(Notification.PUMP_UNREACHABLE));
-                MainApp.bus().post(new EventOmnipodUpdateGui());
+                if (_lastPodResultMessage != 5 || _lastPodAlertMessage != result.status.state_alert ) {
+                    _lastPodResultMessage = 5;
+                    _lastPodAlertMessage = result.status.state_alert;
+                    _pod_initialized = true;
+
+                    if (result.status.state_alert == 0) {
+                        MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
+                        Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod is running", Notification.INFO, 1);
+                        MainApp.bus().post(new EventNewNotification(notification));
+                        MainApp.bus().post(new EventOmnipodUpdateGui());
+                    }
+                    else
+                    {
+                        String alertText = "";
+                        for (String alert : getAlerts(result.status.state_alert)) {
+                            if (alertText.length() == 0)
+                                alertText += alert;
+                            else
+                                alertText += ", " + alert;
+                        }
+                        MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
+                        Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod alert: " + alertText, Notification.INFO);
+                        MainApp.bus().post(new EventNewNotification(notification));
+                        MainApp.bus().post(new EventOmnipodUpdateGui());
+                    }
+
+                }
             }
         }
     }
@@ -212,7 +269,8 @@ public class OmnipodPdm {
                 errorMessage = "Omnipy connection cannot be established at the configured address: " + confResult.hostName
                         + " Please verify the address in configuration.";
             }
-            Notification notification = new Notification(Notification.PUMP_UNREACHABLE, errorMessage, Notification.NORMAL);
+            MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_CONNECTION_STATUS));
+            Notification notification = new Notification(Notification.OMNIPY_CONNECTION_STATUS, errorMessage, Notification.NORMAL);
             MainApp.bus().post(new EventNewNotification(notification));
 
             _pingTimer = new Timer();
@@ -228,7 +286,8 @@ public class OmnipodPdm {
         {
             errorMessage = "Omnipy connection established at address " + confResult.hostName +
                     " but authentication failed. Please verify your password in settings.";
-            Notification notification = new Notification(Notification.PUMP_UNREACHABLE, errorMessage, Notification.NORMAL);
+            MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_CONNECTION_STATUS));
+            Notification notification = new Notification(Notification.OMNIPY_CONNECTION_STATUS, errorMessage, Notification.NORMAL);
             MainApp.bus().post(new EventNewNotification(notification));
 
             _pingTimer = new Timer();
@@ -241,8 +300,9 @@ public class OmnipodPdm {
         }
         else
         {
-            MainApp.bus().post(new EventDismissNotification(Notification.PUMP_UNREACHABLE));
-            Notification notification = new Notification(100, "Connected to omnipy running at " + confResult.hostName, Notification.INFO, 1);
+            MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_CONNECTION_STATUS));
+            Notification notification = new Notification(Notification.OMNIPY_CONNECTION_STATUS,
+                    "Connected to omnipy running at " + confResult.hostName, Notification.INFO, 1);
             MainApp.bus().post(new EventNewNotification(notification));
 
             UpdateStatus();
@@ -284,7 +344,7 @@ public class OmnipodPdm {
     public String[] getAlerts(int alertMask)
     {
         ArrayList<String> alerts = new ArrayList<>();
-        if ((alertMask & 0x01) > 0)
+        if ((alertMask & 0x01) > 0)MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_CONNECTION_STATUS));
             alerts.add("Auto-off");
         if ((alertMask & 0x02) > 0)
             alerts.add("Unknown");
@@ -415,10 +475,14 @@ public class OmnipodPdm {
             r.enacted = result.success;
             r.success = result.success;
             if (result.success) {
+                MainApp.bus().post(new EventDismissNotification(Notification.PROFILE_SET_OK));
+                MainApp.bus().post(new EventDismissNotification(Notification.PROFILE_SET_FAILED));
                 Notification notification = new Notification(Notification.PROFILE_SET_OK, MainApp.gs(R.string.profile_set_ok), Notification.INFO, 60);
                 MainApp.bus().post(new EventNewNotification(notification));
             } else {
                 r.comment = result.response.getAsString();
+                MainApp.bus().post(new EventDismissNotification(Notification.PROFILE_SET_OK));
+                MainApp.bus().post(new EventDismissNotification(Notification.PROFILE_SET_FAILED));
                 Notification notification = new Notification(Notification.PROFILE_SET_FAILED, "Basal profile not updated", Notification.NORMAL, 60);
                 MainApp.bus().post(new EventNewNotification(notification));
             }

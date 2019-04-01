@@ -34,6 +34,9 @@ import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.events.EventPreferenceChange;
 import info.nightscout.androidaps.logging.L;
+import info.nightscout.androidaps.plugins.general.overview.events.EventDismissNotification;
+import info.nightscout.androidaps.plugins.general.overview.events.EventNewNotification;
+import info.nightscout.androidaps.plugins.general.overview.notifications.Notification;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmnipyCallback;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmnipyConstants;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmnipyRequestType;
@@ -298,6 +301,23 @@ public class OmnipyRestApi {
         _discovered = false;
 
         _configuring = true;
+
+        if (SP.getBoolean(R.string.key_omnipy_autodetect_host, true))
+        {
+            MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_CONNECTION_STATUS));
+            Notification notification = new Notification(Notification.OMNIPY_CONNECTION_STATUS, "Searching for omnipy on local network..", Notification.NORMAL, 1);
+            MainApp.bus().post(new EventNewNotification(notification));
+        }
+        else
+        {
+            String omnipyHost = SP.getString(R.string.key_omnipy_host, null);
+            if (omnipyHost != null && omnipyHost.length() == 0) {
+                MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_CONNECTION_STATUS));
+                Notification notification = new Notification(Notification.OMNIPY_CONNECTION_STATUS, "Trying to connect to omnipy at address: " + omnipyHost, Notification.INFO, 1);
+                MainApp.bus().post(new EventNewNotification(notification));
+            }
+        }
+
         _configurationTask = new RestApiConfigurationTask(_context, this);
         _configurationTask.execute();
     }

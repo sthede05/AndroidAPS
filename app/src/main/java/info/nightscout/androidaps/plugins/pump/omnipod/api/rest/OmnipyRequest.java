@@ -203,7 +203,7 @@ class OmnipyRequestTask extends AsyncTask<String, Void, OmnipyResult> {
                 _request.withParameter(OmnipyConstants.OMNIPY_PARAM_AUTH, authToken);
                 _request.withParameter(OmnipyConstants.OMNIPY_PARAM_IV, iv);
 
-            } catch (IOException e) {
+            } catch (Exception e) {
                 result.exception = e;
                 result.success = false;
                 return result;
@@ -228,7 +228,7 @@ class OmnipyRequestTask extends AsyncTask<String, Void, OmnipyResult> {
                 result.success = false;
                 return result;
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             result.exception = e;
             result.success = false;
         }

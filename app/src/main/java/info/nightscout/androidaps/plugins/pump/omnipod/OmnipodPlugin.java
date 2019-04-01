@@ -181,8 +181,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
 
     @Override
     public int getBatteryLevel() {
-        // TODO: return from api
-        return 50;
+        return -1;
     }
 
     @Override
