@@ -187,6 +187,8 @@ public class ComboPlugin extends PluginBase implements PumpInterface, Constraint
         }
     }
 
+    @Override
+    public boolean isBotheredByConstantConnectionRequests() { return false; }
 
     @Override
     public boolean isInitialized() {

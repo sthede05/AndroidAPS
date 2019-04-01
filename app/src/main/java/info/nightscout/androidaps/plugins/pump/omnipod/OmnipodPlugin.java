@@ -98,6 +98,9 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
     }
 
     @Override
+    public boolean isBotheredByConstantConnectionRequests() { return true; }
+
+    @Override
     public boolean isInitialized() {
         return _pdm.IsInitialized();
     }

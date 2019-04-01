@@ -184,6 +184,9 @@ public class DanaRSPlugin extends PluginBase implements PumpInterface, DanaRInte
     }
 
     @Override
+    public boolean isBotheredByConstantConnectionRequests() { return false; }
+
+    @Override
     public boolean isConnected() {
         return danaRSService != null && danaRSService.isConnected();
     }
