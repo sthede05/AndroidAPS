@@ -21,6 +21,7 @@ import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.DetailedBolusInfo;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.data.PumpEnactResult;
+import info.nightscout.androidaps.events.EventPreferenceChange;
 import info.nightscout.androidaps.plugins.general.overview.events.EventDismissNotification;
 import info.nightscout.androidaps.plugins.general.overview.events.EventNewNotification;
 import info.nightscout.androidaps.plugins.general.overview.notifications.Notification;
@@ -163,6 +164,39 @@ public class OmnipodPdm {
     public synchronized void onResultReceived(final EventOmnipyApiResult or) {
         OmnipyResult result = or.getResult();
         onResultReceived(result);
+    }
+
+    @Subscribe
+    public void onStatusEvent(final EventPreferenceChange s) {
+        if (s.isChanged(R.string.key_omnipy_autodetect_host)
+                || s.isChanged(R.string.key_omnipy_host)
+                ||s.isChanged(R.string.key_omnipy_password))
+        {
+            _restApi.StartConfiguring();
+        }
+
+        if (s.isChanged(R.string.key_omnipod_limit_max_temp)) {
+        }
+        if (s.isChanged(R.string.key_omnipod_limit_max_bolus)) {
+        }
+
+        if (s.isChanged(R.string.key_omnipod_remind_low_reservoir_units)) {
+        }
+        if (s.isChanged(R.string.key_omnipod_remind_pod_expiry_minutes)) {
+        }
+
+        if (s.isChanged(R.string.key_omnipod_remind_basal_change)) {
+        }
+        if (s.isChanged(R.string.key_omnipod_remind_bolus_start)) {
+        }
+        if (s.isChanged(R.string.key_omnipod_remind_bolus_cancel)) {
+        }
+        if (s.isChanged(R.string.key_omnipod_remind_temp_start)) {
+        }
+        if (s.isChanged(R.string.key_omnipod_remind_temp_running)) {
+        }
+        if (s.isChanged(R.string.key_omnipod_remind_temp_cancel)) {
+        }
     }
 
     private int _lastPodResultMessage = -1;
@@ -341,7 +375,7 @@ public class OmnipodPdm {
             return 0;
     }
 
-    public String[] getAlerts(int alertMask)
+    public ArrayList<String> getAlerts(int alertMask)
     {
         ArrayList<String> alerts = new ArrayList<>();
         if ((alertMask & 0x01) > 0)MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_CONNECTION_STATUS));
@@ -360,7 +394,7 @@ public class OmnipodPdm {
             alerts.add("End of insulin suspend");
         if ((alertMask & 0x80) > 0)
             alerts.add("Pod expired");
-        return (String[]) alerts.toArray();
+        return alerts;
     }
 
     public String getPodStatusText()

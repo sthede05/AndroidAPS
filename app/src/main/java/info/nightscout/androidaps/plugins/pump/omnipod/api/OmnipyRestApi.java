@@ -258,16 +258,6 @@ public class OmnipyRestApi {
                 .withCallback(callback);
     }
 
-    @Subscribe
-    public void onStatusEvent(final EventPreferenceChange s) {
-        if (s.isChanged(R.string.key_omnipy_autodetect_host)
-            || s.isChanged(R.string.key_omnipy_host)
-            ||s.isChanged(R.string.key_omnipy_password))
-        {
-            StartConfiguring();
-        }
-    }
-
     public void StopConfiguring() {
         if (!_configuring)
             return;

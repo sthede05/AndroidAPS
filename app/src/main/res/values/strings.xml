@@ -1346,7 +1346,6 @@
     <string name="key_omnipy_password">key_omnipy_password</string>
     <string name="key_omnipy_autodetect_host">key_omnipy_autodetect_host</string>
     <string name="key_omnipy_host">key_omnipy_host</string>
-    <string name="key_omnipod_status">key_omnipod_status</string>
     <string name="omnipod_pdm_header">Omnipod PDM</string>
     <string name="omnipy_connection">Omnipy Connection</string>
     <string name="omnipy_connection_status">Connection Status</string>
@@ -1367,6 +1366,19 @@
     <string name="omnipy_history">History</string>
     <string name="omnipy_restart_remote">Restart Omnipy Host</string>
     <string name="omnipy_shutdown_remote">Shutdown Omnipy Host</string>
+    <string name="key_omnipod_status">key_omnipod_status</string>
+    <string name="key_omnipod_remind_bolus_start">key_omnipod_remind_bolus_start</string>
+    <string name="key_omnipod_remind_bolus_cancel">key_omnipod_remind_bolus_cancel</string>
+    <string name="key_omnipod_remind_temp_start">key_omnipod_remind_temp_start</string>
+    <string name="key_omnipod_remind_temp_running">key_omnipod_remind_temp_running</string>
+    <string name="key_omnipod_remind_temp_cancel">key_omnipod_remind_temp_cancel</string>
+    <string name="key_omnipod_remind_basal_change">key_omnipod_remind_basal_change</string>
+    <string name="key_omnipod_remind_low_reservoir_units">key_omnipod_remind_low_reservoir_units</string>
+    <string name="key_omnipod_remind_pod_expiry_minutes">key_omnipod_remind_pod_expiry_minutes</string>
+    <string name="key_omnipod_limit_max_temp">key_omnipod_limit_max_temp</string>
+    <string name="key_omnipod_limit_max_bolus">key_omnipod_limit_max_bolus</string>
+    <string name="key_omnipod_alert_deactivate_screamers">key_omnipod_alert_deactivate_screamers</string>
+    <string name="key_omnipod_alert_auto_acknowledge">key_omnipod_alert_auto_acknowledge</string>
 
     <plurals name="objective_days">
         <item quantity="one">%1$d day</item>
