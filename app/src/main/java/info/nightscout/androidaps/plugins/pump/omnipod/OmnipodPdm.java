@@ -255,10 +255,10 @@ public class OmnipodPdm {
             }
             else
             {
+                _pod_initialized = true;
                 if (_lastPodResultMessage != 5 || _lastPodAlertMessage != result.status.state_alert ) {
                     _lastPodResultMessage = 5;
                     _lastPodAlertMessage = result.status.state_alert;
-                    _pod_initialized = true;
 
                     if (result.status.state_alert == 0) {
                         MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
@@ -514,7 +514,9 @@ public class OmnipodPdm {
                 Notification notification = new Notification(Notification.PROFILE_SET_OK, MainApp.gs(R.string.profile_set_ok), Notification.INFO, 60);
                 MainApp.bus().post(new EventNewNotification(notification));
             } else {
-                r.comment = result.response.getAsString();
+                if (result.response != null) {
+                    r.comment = result.response.toString();
+                }
                 MainApp.bus().post(new EventDismissNotification(Notification.PROFILE_SET_OK));
                 MainApp.bus().post(new EventDismissNotification(Notification.PROFILE_SET_FAILED));
                 Notification notification = new Notification(Notification.PROFILE_SET_FAILED, "Basal profile not updated", Notification.NORMAL, 60);
