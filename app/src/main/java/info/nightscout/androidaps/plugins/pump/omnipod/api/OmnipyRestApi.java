@@ -232,13 +232,9 @@ public class OmnipyRestApi {
                 .withCallback(callback));
     }
 
-    public OmnipyRequest setBasalSchedule(BigDecimal[] basalSchedule, int hours, int minutes,
-                                          int seconds, OmnipyCallback callback) {
+    public OmnipyRequest setBasalSchedule(BigDecimal[] basalSchedule, OmnipyCallback callback) {
         OmnipyRequest request = new OmnipyRequest(OmnipyRequestType.SetBasalSchedule, _baseUrl)
                 .withAuthentication(_apiSecret)
-                .withParameter("hours", Integer.toString(hours))
-                .withParameter("minutes", Integer.toString(minutes))
-                .withParameter("seconds", Integer.toString(seconds))
                 .withCallback(callback);
 
         for(int i=0; i<48; i++)

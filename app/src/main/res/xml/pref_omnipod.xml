@@ -75,7 +75,10 @@
     </PreferenceCategory>
     <PreferenceCategory android:title="Alert handling"
         android:enabled="false">
-
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="@string/key_omnipod_tz_auto_change"
+            android:title="Allow AAPS to change pod timezone" />
         <SwitchPreference
             android:defaultValue="false"
             android:key="@string/key_omnipod_alert_deactivate_screamers"
