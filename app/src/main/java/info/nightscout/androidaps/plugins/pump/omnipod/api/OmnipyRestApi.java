@@ -232,9 +232,11 @@ public class OmnipyRestApi {
                 .withCallback(callback));
     }
 
-    public OmnipyRequest setBasalSchedule(BigDecimal[] basalSchedule, OmnipyCallback callback) {
+    public OmnipyRequest setBasalSchedule(BigDecimal[] basalSchedule, int utc_offset,
+                                          OmnipyCallback callback) {
         OmnipyRequest request = new OmnipyRequest(OmnipyRequestType.SetBasalSchedule, _baseUrl)
                 .withAuthentication(_apiSecret)
+                .withParameter("utc", Integer.toString(utc_offset))
                 .withCallback(callback);
 
         for(int i=0; i<48; i++)

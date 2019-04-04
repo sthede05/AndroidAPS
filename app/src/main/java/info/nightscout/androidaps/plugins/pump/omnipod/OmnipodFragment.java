@@ -13,6 +13,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -81,7 +83,7 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
         view.findViewById(R.id.omnipy_btn_deactivate_pod).setOnClickListener(this);
         view.findViewById(R.id.omnipy_btn_shutdown_remote_host).setOnClickListener(this);
         view.findViewById(R.id.omnipy_btn_restart_remote_host).setOnClickListener(this);
-        view.findViewById(R.id.omnipy_btn_new_pod).setOnClickListener(this);
+        view.findViewById(R.id.omnipy_btn_register_pod).setOnClickListener(this);
         return view;
     }
 
@@ -247,6 +249,37 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
             Toast("Omnipy is not available", true);
     }
 
+    private void RegisterPod(Button b) {
+        View vw = this.getView();
+        EditText tx = vw.findViewById(R.id.omnipy_txt_lot_number);
+        String lot = tx.getText().toString();
+        tx = vw.findViewById(R.id.omnipy_txt_serial_number);
+        String tid = tx.getText().toString();
+        tx = vw.findViewById(R.id.omnipy_txt_serial_number);
+
+//        CheckBox ck = vw.findViewById(R.id.omnipy_chk_read_pdm);
+//        ck.isChecked()
+
+        String rd = tx.getText().toString();
+        OmnipyRestApi rest = _pdm.GetRestApi();
+        if (rest.isConfigured()) {
+            b.setEnabled(false);
+
+            rest.CreateNewPod(Integer.parseInt(lot), Integer.parseInt(tid), 0, result -> {
+                if (result.success) {
+                    Toast("Registered new pod", true);
+                }
+                else
+                {
+                    Toast("Failed to register the pod", true);
+                }
+                b.setEnabled(true);
+            });
+        }
+
+        }
+
+
     @Override
     protected void updateGUI() {
         View vw = this.getView();
@@ -287,7 +320,9 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
                 Confirm("Are you sure you want to shut down the omnipy host?", () -> {
                     Shutdown((Button)view); });
                 break;
-            case R.id.omnipy_btn_new_pod:
+            case R.id.omnipy_btn_register_pod:
+                Confirm("Are you sure you want to register a new pod? This will remove your current pod.", () -> {
+                    RegisterPod((Button)view); });
                 break;
             default:
                 break;

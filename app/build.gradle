@@ -102,7 +102,7 @@ android {
             resValue "string", "app_name", "AndroidAPS"
             versionName version
             manifestPlaceholders = [
-                    appIcon: "@mipmap/ic_launcher",
+                    appIcon     : "@mipmap/ic_launcher",
                     appIconRound: "@mipmap/ic_launcher_round"
             ]
         }
@@ -112,7 +112,7 @@ android {
             resValue "string", "app_name", "Pumpcontrol"
             versionName version + "-pumpcontrol"
             manifestPlaceholders = [
-                    appIcon: "@mipmap/ic_pumpcontrol",
+                    appIcon     : "@mipmap/ic_pumpcontrol",
                     appIconRound: "@null"
             ]
         }
@@ -122,7 +122,7 @@ android {
             resValue "string", "app_name", "NSClient"
             versionName version + "-nsclient"
             manifestPlaceholders = [
-                    appIcon: "@mipmap/ic_yellowowl",
+                    appIcon     : "@mipmap/ic_yellowowl",
                     appIconRound: "@null"
             ]
         }
@@ -132,7 +132,7 @@ android {
             resValue "string", "app_name", "NSClient2"
             versionName version + "-nsclient"
             manifestPlaceholders = [
-                    appIcon: "@mipmap/ic_yellowowl",
+                    appIcon     : "@mipmap/ic_yellowowl",
                     appIconRound: "@null"
             ]
         }
@@ -147,7 +147,7 @@ android {
         unitTests.includeAndroidResources = true
     }
 
-    useLibrary  "org.apache.http.legacy"
+    useLibrary "org.apache.http.legacy"
 }
 
 allprojects {
@@ -164,6 +164,7 @@ configurations {
 }
 
 dependencies {
+    implementation 'com.android.support:support-v4:27.1.1'
     wearApp project(':wear')
 
     implementation fileTree(include: ['*.jar'], dir: 'libs')

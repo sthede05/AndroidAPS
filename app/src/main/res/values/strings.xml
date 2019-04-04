@@ -1119,7 +1119,7 @@
     <string name="openapsama_max_daily_safety_multiplier">Max daily safety multiplier</string>
     <string name="openapsama_current_basal_safety_multiplier">Current basal safety multiplier</string>
     <string name="value_unavailable_short">n/a</string>
-    <string translatable="false" name="key_virtualpump_type">virtualpump_type</string>
+    <string name="key_virtualpump_type" translatable="false">virtualpump_type</string>
     <string name="virtualpump_type">Virtual Pump Type</string>
     <string name="virtualpump_definition">Pump Definition</string>
     <string name="virtualpump_pump_def">Bolus: Step=%1$s\nExtended Bolus: [Step=%2$s, Duration=%3$smin-%4$sh]\nBasal: Step=%5$s\nTBR: %6$s (by %7$s), Duration=%8$smin-%9$sh\n%10$s</string>
@@ -1127,12 +1127,12 @@
     <string name="ns_autobackfill_title">Autobackfill BG</string>
     <string name="ga_lang" translatable="false">Irish</string>
     <string name="wear_wizard_settings">Wizard Settings</string>
-    <string translatable="false" name="key_wearwizard_bg">wearwizard_bg</string>
-    <string translatable="false" name="key_wearwizard_tt">wearwizard_tt</string>
-    <string translatable="false" name="key_wearwizard_trend">wearwizard_trend</string>
-    <string translatable="false" name="key_wearwizard_cob">wearwizard_cob</string>
-    <string translatable="false" name="key_wearwizard_bolusiob">wearwizard_bolusiob</string>
-    <string translatable="false" name="key_wearwizard_basaliob">wearwizard_basaliob</string>
+    <string name="key_wearwizard_bg" translatable="false">wearwizard_bg</string>
+    <string name="key_wearwizard_tt" translatable="false">wearwizard_tt</string>
+    <string name="key_wearwizard_trend" translatable="false">wearwizard_trend</string>
+    <string name="key_wearwizard_cob" translatable="false">wearwizard_cob</string>
+    <string name="key_wearwizard_bolusiob" translatable="false">wearwizard_bolusiob</string>
+    <string name="key_wearwizard_basaliob" translatable="false">wearwizard_basaliob</string>
     <string name="wear_wizard_settings_summary">Calculations included in the Wizard result:</string>
     <string name="wear_display_settings">Display Settings</string>
     <string name="wear_general_settings">General Settings</string>
@@ -1189,8 +1189,8 @@
     <string name="poctech">Poctech</string>
     <string name="description_source_poctech">Receive BG values from Poctech app</string>
     <string name="description_source_tomato">Receive BG values from Tomato app (MiaoMiao device)</string>
-    <string translatable="false" name="key_high_temptarget_raises_sensitivity">high_temptarget_raises_sensitivity</string>
-    <string translatable="false" name="key_low_temptarget_lowers_sensitivity">low_temptarget_lowers_sensitivity</string>
+    <string name="key_high_temptarget_raises_sensitivity" translatable="false">high_temptarget_raises_sensitivity</string>
+    <string name="key_low_temptarget_lowers_sensitivity" translatable="false">low_temptarget_lowers_sensitivity</string>
     <string name="high_temptarget_raises_sensitivity_title">High temptarget raises sensitivity</string>
     <string name="high_temptarget_raises_sensitivity_summary"><![CDATA[Raise sensitivity for temptargets >= 100]]></string>
     <string name="low_temptarget_lowers_sensitivity_title">Low temptarget lowers sensitivity</string>
@@ -1393,4 +1393,7 @@
         <item quantity="one">%1$d minute</item>
         <item quantity="other">%1$d minutes</item>
     </plurals>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

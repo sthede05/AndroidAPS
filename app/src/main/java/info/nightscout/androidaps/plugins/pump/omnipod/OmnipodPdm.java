@@ -501,8 +501,10 @@ public class OmnipodPdm {
         r.enacted = false;
         r.success = false;
         if (_pod_initialized) {
+            Calendar c = Calendar.getInstance();
+            int offset_minutes = profile.getTimeZone().getRawOffset() / (60 * 1000);
             BigDecimal[] basalSchedule = getBasalScheduleFromProfile(profile);
-            OmnipyResult result = _restApi.setBasalSchedule(basalSchedule, null).waitForResult();
+            OmnipyResult result = _restApi.setBasalSchedule(basalSchedule, offset_minutes, null).waitForResult();
             this.onResultReceived(result);
             r.enacted = result.success;
             r.success = result.success;
