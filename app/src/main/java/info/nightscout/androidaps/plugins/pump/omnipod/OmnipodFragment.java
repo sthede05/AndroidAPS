@@ -113,7 +113,8 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
             });
         }
         else
-            Toast("Omnipy is not available", true);
+            DisplayMessage("Need to connect to omnipy in order to perform action");
+
     }
 
     private void CheckConnection(Button b) {
@@ -149,7 +150,8 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
             });
         }
         else
-            Toast("Omnipy is not available", true);
+            DisplayMessage("Need to connect to omnipy in order to perform action");
+
     }
 
     private void Shutdown(Button b){
@@ -167,7 +169,8 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
             });
         }
         else
-            Toast("Omnipy is not available", true);
+            DisplayMessage("Need to connect to omnipy in order to perform action");
+
     }
 
     private void Restart(Button b){
@@ -185,7 +188,7 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
             });
         }
         else
-            Toast("Omnipy is not available", true);
+            DisplayMessage("Need to connect to omnipy in order to perform action");
     }
 
     private void CheckRL(Button b) {
@@ -203,7 +206,8 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
             });
         }
         else
-            Toast("Omnipy is not available", true);
+            DisplayMessage("Need to connect to omnipy in order to perform action");
+
     }
 
     private void ClearAlerts(Button b)
@@ -246,7 +250,7 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
             });
         }
         else
-            Toast("Omnipy is not available", true);
+            DisplayMessage("Need to connect to omnipy in order to perform action");
     }
 
     private void RegisterPod(Button b) {
@@ -265,16 +269,43 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
         if (rest.isConfigured()) {
             b.setEnabled(false);
 
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+            AlertDialog dlg = builder.setMessage("Now take your pdm in your hand and put RileyLink nearby. Click 'Status' button on your pdm" +
+                    " until this message disappears")
+                .show();
+
             rest.CreateNewPod(Integer.parseInt(lot), Integer.parseInt(tid), 0, result -> {
+                dlg.dismiss();
+
                 if (result.success) {
-                    Toast("Registered new pod", true);
+                    DisplayMessage("Registered new pod successfully! Now put your PDM away and don't run any other commands.");
+
+                    AlertDialog dlgx = builder.setMessage("Trying to read pod status..")
+                            .show();
+
+                    rest.UpdateStatus(result2 -> {
+                        dlgx.dismiss();
+                        if (result2.success)
+                        {
+                            DisplayMessage("Status read from the pod successfully, pod is registered.");
+                        }
+                        else
+                        {
+                            DisplayMessage("Failed to read pod status. Try registering again or try updating the status later.");
+                        }
+                    });
+
                 }
                 else
                 {
-                    Toast("Failed to register the pod", true);
+                    DisplayMessage("Failed to read the address from the pdm. (Did you click Status?)");
                 }
                 b.setEnabled(true);
             });
+        }
+        else
+        {
+            DisplayMessage("Need to connect to omnipy in order to perform action");
         }
 
         }
