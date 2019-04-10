@@ -535,7 +535,7 @@ public class OmnipodPdm {
     {
         BigDecimal[] scheduleToVerify = getBasalScheduleFromProfile(profile);
         for(int i=0; i<48; i++)
-            if (!_lastStatus.var_basal_schedule[i].equals(scheduleToVerify[i]))
+            if (_lastStatus.var_basal_schedule[i].compareTo(scheduleToVerify[i]) != 0)
                 return false;
         return true;
     }
