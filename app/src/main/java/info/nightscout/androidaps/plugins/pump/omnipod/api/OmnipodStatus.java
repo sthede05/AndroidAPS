@@ -134,6 +134,9 @@ public class OmnipodStatus {
     public BigDecimal[] var_basal_schedule;
     public int var_utc_offset;
 
+    public int fault_event;
+    public int fault_event_rel_time;
+
 
     public static OmnipodStatus fromJson(String json) {
         Gson gson = new Gson();
