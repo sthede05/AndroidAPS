@@ -47,7 +47,6 @@ public class OmnipodPdm {
     private OmnipyResult _lastResult;
     private OmnipodStatus _lastStatus;
 
-    private boolean _pod_initialized;
     private boolean _suspended;
 
     private Timer _pingTimer;
@@ -66,7 +65,6 @@ public class OmnipodPdm {
         MainApp.bus().register(_restApi);
         //_profile = ProfileFunctions.getInstance().getProfile();
         _lastStatus = OmnipodStatus.fromJson(SP.getString(R.string.key_omnipod_status, null));
-        _pod_initialized = false;
         _restApi.StartConfiguring();
     }
 
@@ -93,7 +91,6 @@ public class OmnipodPdm {
 
     private void handleDisconnect()
     {
-        _pod_initialized = false;
         if (_pingTimer != null) {
             _pingTimer.cancel();
             _pingTimer = null;
@@ -103,7 +100,10 @@ public class OmnipodPdm {
         _restApi.StartConfiguring();
     }
 
-    public boolean IsInitialized() { return _pod_initialized; }
+    public boolean IsInitialized() {
+        return (_lastStatus != null &&
+                (_lastStatus.state_progress == 8 || _lastStatus.state_progress == 9));
+    }
 
     public boolean IsSuspended() {
         return _suspended;
@@ -122,7 +122,7 @@ public class OmnipodPdm {
 
     public boolean IsConnected() {
         return _restApi.isConfigured() && _restApi.isConnectable()
-                && _restApi.isAuthenticated() && _pod_initialized;
+                && _restApi.isAuthenticated();
     }
 
     public void Connect() {
@@ -141,8 +141,6 @@ public class OmnipodPdm {
             if (!_restApi.isConnectable())
                 return true;
             if (!_restApi.isAuthenticated())
-                return true;
-            if (!_pod_initialized)
                 return true;
             return false;
         }
@@ -202,87 +200,80 @@ public class OmnipodPdm {
     private int _lastPodResultMessage = -1;
     private int _lastPodAlertMessage = 0;
     public synchronized void onResultReceived(OmnipyResult result) {
-        if (!result.canceled) {
+        if (result != null && !result.canceled && result.status != null) {
             _lastResult = result;
-            _pod_initialized = false;
-            if (result.status == null) {
-                _lastPodResultMessage = -1;
-                return;
+
+            if (_lastStatus != null && (_lastStatus.radio_address != result.status.radio_address ||
+                    _lastStatus.id_lot != result.status.id_lot || _lastStatus.id_t != result.status.id_t))
+            {
+                _lastStatus = null;
             }
 
-            if (result.status.radio_address == 0)
+            if (result.status.state_progress == 0 && (_lastStatus == null || _lastStatus.state_progress != 0))
             {
-                if (_lastPodResultMessage != 1) {
-                    _lastPodResultMessage = 1;
-                    MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
-                    Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "No registered pod", Notification.NORMAL);
-                    MainApp.bus().post(new EventNewNotification(notification));
-                    MainApp.bus().post(new EventOmnipodUpdateGui());
-                }
-                return;
+                MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
+                Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "No pod registered", Notification.NORMAL);
+                MainApp.bus().post(new EventNewNotification(notification));
+                MainApp.bus().post(new EventOmnipodUpdateGui());
             }
-            _lastStatus = result.status;
-            SP.putString(R.string.key_omnipod_status, result.status.asJson());
-            if (result.status.state_faulted)
+            else if (result.status.state_faulted && (_lastStatus == null || !_lastStatus.state_faulted))
             {
-                if (_lastPodResultMessage != 2) {
-                    _lastPodResultMessage = 2;
-                    MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
-                    Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod is faulted", Notification.URGENT);
-                    MainApp.bus().post(new EventNewNotification(notification));
-                    MainApp.bus().post(new EventOmnipodUpdateGui());
-                }
+                // TODO: log fault event
+                MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
+                Notification notification = new Notification(Notification.OMNIPY_POD_STATUS,
+                        String.format("Pod faulted with error: %d", result.status.fault_event), Notification.URGENT);
+                MainApp.bus().post(new EventNewNotification(notification));
+                MainApp.bus().post(new EventOmnipodUpdateGui());
             }
-            else if (result.status.state_progress < 8)
+            else if (result.status.state_progress < 8 && (_lastStatus == null || _lastStatus.state_progress == 0))
             {
-                if (_lastPodResultMessage != 3) {
-                    _lastPodResultMessage = 3;
-                    MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
-                    Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod not started yet", Notification.NORMAL);
-                    MainApp.bus().post(new EventNewNotification(notification));
-                    MainApp.bus().post(new EventOmnipodUpdateGui());
-                }
+                MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
+                Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod in activation progress", Notification.NORMAL);
+                MainApp.bus().post(new EventNewNotification(notification));
+                MainApp.bus().post(new EventOmnipodUpdateGui());
             }
-            else if (result.status.state_progress > 9)
+            else if (result.status.state_progress == 8 && (_lastStatus == null || _lastStatus.state_progress < 8))
             {
-                if (_lastPodResultMessage != 4) {
-                    _lastPodResultMessage = 4;
-                    MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
-                    Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod stopped", Notification.INFO);
-                    MainApp.bus().post(new EventNewNotification(notification));
-                    MainApp.bus().post(new EventOmnipodUpdateGui());
-                }
+                // TODO: log pod activated
+                MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
+                Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod is activated and running", Notification.NORMAL);
+                MainApp.bus().post(new EventNewNotification(notification));
+                MainApp.bus().post(new EventOmnipodUpdateGui());
             }
-            else
+            else if (result.status.state_progress == 9 && (_lastStatus == null || _lastStatus.state_progress == 8))
             {
-                _pod_initialized = true;
-                if (_lastPodResultMessage != 5 || _lastPodAlertMessage != result.status.state_alert ) {
-                    _lastPodResultMessage = 5;
-                    _lastPodAlertMessage = result.status.state_alert;
+                // TODO: log reservoir event
+                MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
+                Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod running with low reservoir (less than 50U)", Notification.NORMAL);
+                MainApp.bus().post(new EventNewNotification(notification));
+                MainApp.bus().post(new EventOmnipodUpdateGui());
+            }
+            else if (result.status.state_progress > 9 && (_lastStatus == null || _lastStatus.state_progress <= 9))
+            {
+                // TODO: log pod stopped
+                MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
+                Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod stopped", Notification.INFO);
+                MainApp.bus().post(new EventNewNotification(notification));
+                MainApp.bus().post(new EventOmnipodUpdateGui());
+            }
 
-                    if (result.status.state_alert == 0) {
-                        MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
-                        Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod is running", Notification.INFO, 1);
-                        MainApp.bus().post(new EventNewNotification(notification));
-                        MainApp.bus().post(new EventOmnipodUpdateGui());
-                    }
+            if ((result.status.state_progress == 8 || result.status.state_progress == 9) && result.status.state_alert != 0
+                && (_lastStatus == null || _lastStatus.state_alert != result.status.state_alert))
+            {
+                String alertText = "";
+                for (String alert : getAlerts(result.status.state_alert)) {
+                    if (alertText.length() == 0)
+                        alertText += alert;
                     else
-                    {
-                        String alertText = "";
-                        for (String alert : getAlerts(result.status.state_alert)) {
-                            if (alertText.length() == 0)
-                                alertText += alert;
-                            else
-                                alertText += ", " + alert;
-                        }
-                        MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
-                        Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod alert: " + alertText, Notification.INFO);
-                        MainApp.bus().post(new EventNewNotification(notification));
-                        MainApp.bus().post(new EventOmnipodUpdateGui());
-                    }
-
+                        alertText += ", " + alert;
                 }
+                MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
+                Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod alert: " + alertText, Notification.INFO);
+                MainApp.bus().post(new EventNewNotification(notification));
+                MainApp.bus().post(new EventOmnipodUpdateGui());
             }
+
+            _lastStatus = result.status;
         }
     }
 
@@ -290,7 +281,6 @@ public class OmnipodPdm {
     public void onConfigurationComplete(final EventOmnipyConfigurationComplete confResult) {
         MainApp.bus().post(new EventOmnipodUpdateGui());
         String errorMessage;
-        _pod_initialized = false;
         if (!confResult.isConnectable)
         {
             if (confResult.isDiscovered)
@@ -354,10 +344,12 @@ public class OmnipodPdm {
 
     private long _lastStatusRequest = 0;
     public void UpdateStatus() {
-        long t0 = System.currentTimeMillis();
-        if (t0 - _lastStatusRequest > 10000) {
-            _lastStatusRequest = t0;
-            _restApi.UpdateStatus(null);
+        if (IsConnected() && IsInitialized()) {
+            long t0 = System.currentTimeMillis();
+            if (t0 - _lastStatusRequest > 10000) {
+                _lastStatusRequest = t0;
+                _restApi.UpdateStatus(null);
+            }
         }
     }
 
@@ -372,7 +364,7 @@ public class OmnipodPdm {
         if (_lastResult != null)
             return  (long)_lastResult.datetime * 1000;
         else
-            return 0;
+            return System.currentTimeMillis();
     }
 
     public ArrayList<String> getAlerts(int alertMask)
@@ -500,7 +492,8 @@ public class OmnipodPdm {
         PumpEnactResult r = new PumpEnactResult();
         r.enacted = false;
         r.success = false;
-        if (_pod_initialized) {
+        if (IsConnected() && IsInitialized()) {
+
             Calendar c = Calendar.getInstance();
             int offset_minutes = profile.getTimeZone().getRawOffset() / (60 * 1000);
             BigDecimal[] basalSchedule = getBasalScheduleFromProfile(profile);
@@ -527,29 +520,15 @@ public class OmnipodPdm {
     }
 
     public boolean IsProfileSet(Profile profile) {
-        if (!_pod_initialized) {
-            return false;
-        }
-
-        if (_lastStatus == null)
-        {
-            OmnipyResult result = _restApi.UpdateStatus(null).waitForResult();
-            this.onResultReceived(result);
-            if (result.success && result.status.var_basal_schedule != null
-                    && result.status.var_basal_schedule.length != 0)
+        if (IsConnected() && IsInitialized()) {
+            if (_lastStatus.var_basal_schedule == null || _lastStatus.var_basal_schedule.length == 0)
             {
-                return verifySchedule(result.status.var_basal_schedule, profile);
+                return false;
             }
-
-            return false;
+            else
+                return verifySchedule(_lastStatus.var_basal_schedule, profile);
         }
-
-        if (_lastStatus.var_basal_schedule == null || _lastStatus.var_basal_schedule.length == 0)
-        {
-            return false;
-        }
-
-        return verifySchedule(_lastStatus.var_basal_schedule, profile);
+        return false;
     }
 
     private boolean verifySchedule(BigDecimal[] podSchedule, Profile profile)
@@ -562,55 +541,65 @@ public class OmnipodPdm {
     }
 
     public double GetBaseBasalRate() {
-        if (!_pod_initialized || _lastStatus == null || _lastStatus.var_basal_schedule == null
-                || _lastStatus.var_basal_schedule.length == 0)
+        if (IsConnected() && IsInitialized() && _lastStatus.var_basal_schedule != null
+                && _lastStatus.var_basal_schedule.length > 0) {
+            long t = System.currentTimeMillis();
+            t += _lastStatus.var_utc_offset;
+            Date dt = new Date(t);
+            int h = dt.getHours();
+            int m = dt.getMinutes();
+
+            int index = h * 2;
+            if (m >= 30)
+                index++;
+
+            return _lastStatus.var_basal_schedule[index].doubleValue();
+        }
+        else
             return -1d;
-
-        long t = System.currentTimeMillis();
-        t+= _lastStatus.var_utc_offset;
-        Date dt = new Date(t);
-        int h = dt.getHours();
-        int m = dt.getMinutes();
-
-        int index = h * 2;
-        if (m >= 30)
-            index++;
-
-        return _lastStatus.var_basal_schedule[index].doubleValue();
     }
 
     public PumpEnactResult Bolus(DetailedBolusInfo detailedBolusInfo) {
-        BigDecimal iuBolus = GetExactInsulinUnits(detailedBolusInfo.insulin);
-        OmnipyResult result = _restApi.Bolus(iuBolus, null).waitForResult();
-        this.onResultReceived(result);
         PumpEnactResult r = new PumpEnactResult();
-        r.enacted = result.success;
-        r.success = result.success;
-        if (result.success)
-        {
-            r.bolusDelivered = iuBolus.doubleValue();
+        r.enacted = false;
+        r.success = false;
+        if (IsConnected() && IsInitialized()) {
+            BigDecimal iuBolus = GetExactInsulinUnits(detailedBolusInfo.insulin);
+            OmnipyResult result = _restApi.Bolus(iuBolus, null).waitForResult();
+            this.onResultReceived(result);
+            r.enacted = result.success;
+            r.success = result.success;
+            if (result.success) {
+                r.bolusDelivered = iuBolus.doubleValue();
+            }
         }
         return r;
     }
 
     public void CancelBolus(OmnipyCallback cb) {
-        _restApi.CancelBolus(cb);
+        if (IsConnected() && IsInitialized()) {
+            _restApi.CancelBolus(cb);
+        }
     }
 
     public PumpEnactResult SetTempBasal(Double absoluteRate, Integer durationInMinutes, Profile profile, boolean enforceNew) {
-        BigDecimal iuRate = GetExactInsulinUnits(absoluteRate);
-        BigDecimal durationHours = GetExactHourUnits(durationInMinutes);
-
-        OmnipyResult result = _restApi.SetTempBasal(iuRate, durationHours, null).waitForResult();
-        this.onResultReceived(result);
         PumpEnactResult r = new PumpEnactResult();
-        r.enacted = result.success;
-        r.success = result.success;
-        if (result.success)
-        {
-            r.absolute = iuRate.doubleValue();
-            r.duration = durationInMinutes;
-            r.isPercent = false;
+        r.enacted = false;
+        r.success = false;
+        if (IsConnected() && IsInitialized()) {
+            BigDecimal iuRate = GetExactInsulinUnits(absoluteRate);
+            BigDecimal durationHours = GetExactHourUnits(durationInMinutes);
+
+            OmnipyResult result = _restApi.SetTempBasal(iuRate, durationHours, null).waitForResult();
+            this.onResultReceived(result);
+            r.enacted = result.success;
+            r.success = result.success;
+            if (result.success)
+            {
+                r.absolute = iuRate.doubleValue();
+                r.duration = durationInMinutes;
+                r.isPercent = false;
+            }
         }
         return r;
     }
@@ -618,14 +607,17 @@ public class OmnipodPdm {
     public PumpEnactResult CancelTempBasal(boolean enforceNew) {
 
         PumpEnactResult r = new PumpEnactResult();
+        r.enacted = false;
+        r.success = false;
 
-        OmnipyResult result = _restApi.CancelTempBasal(null).waitForResult();
-        this.onResultReceived(result);
-        r.enacted = result.success;
-        r.success = result.success;
-        if (result.success)
-        {
-            r.isTempCancel = true;
+        if (IsConnected() && IsInitialized()) {
+            OmnipyResult result = _restApi.CancelTempBasal(null).waitForResult();
+            this.onResultReceived(result);
+            r.enacted = result.success;
+            r.success = result.success;
+            if (result.success) {
+                r.isTempCancel = true;
+            }
         }
         return r;
     }
@@ -635,12 +627,14 @@ public class OmnipodPdm {
     }
 
     public String GetStatusShort() {
-        if (_lastStatus.state_faulted)
-            return "FAULT";
-        if (_lastStatus.state_progress == 9)
-            return "IU<50";
-        if (_lastStatus.state_progress == 8)
-            return "OK";
+        if (_lastStatus != null) {
+            if (_lastStatus.state_faulted)
+                return "FAULT";
+            if (_lastStatus.state_progress == 9)
+                return "IU<50";
+            if (_lastStatus.state_progress == 8)
+                return "OK";
+        }
         return "UNKNOWN";
     }
 
