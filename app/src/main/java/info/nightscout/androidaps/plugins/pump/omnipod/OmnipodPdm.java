@@ -22,6 +22,7 @@ import info.nightscout.androidaps.data.DetailedBolusInfo;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.data.PumpEnactResult;
 import info.nightscout.androidaps.events.EventPreferenceChange;
+import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;
 import info.nightscout.androidaps.plugins.general.overview.events.EventDismissNotification;
 import info.nightscout.androidaps.plugins.general.overview.events.EventNewNotification;
 import info.nightscout.androidaps.plugins.general.overview.notifications.Notification;
@@ -47,7 +48,7 @@ public class OmnipodPdm {
     private OmnipyResult _lastResult;
     private OmnipodStatus _lastStatus;
 
-    private boolean _suspended;
+    private Profile _pendingProfile;
 
     private Timer _pingTimer;
 
@@ -63,7 +64,7 @@ public class OmnipodPdm {
         _restApi = new OmnipyRestApi(_context);
         MainApp.bus().register(this);
         MainApp.bus().register(_restApi);
-        //_profile = ProfileFunctions.getInstance().getProfile();
+        _pendingProfile = ProfileFunctions.getInstance().getProfile();
         _lastStatus = OmnipodStatus.fromJson(SP.getString(R.string.key_omnipod_status, null));
         _restApi.StartConfiguring();
     }
@@ -106,7 +107,7 @@ public class OmnipodPdm {
     }
 
     public boolean IsSuspended() {
-        return _suspended;
+        return false;
     }
 
     public boolean IsBusy() {
@@ -197,8 +198,6 @@ public class OmnipodPdm {
         }
     }
 
-    private int _lastPodResultMessage = -1;
-    private int _lastPodAlertMessage = 0;
     public synchronized void onResultReceived(OmnipyResult result) {
         if (result != null && !result.canceled && result.status != null) {
             _lastResult = result;
@@ -274,6 +273,8 @@ public class OmnipodPdm {
             }
 
             _lastStatus = result.status;
+            SP.putString(R.string.key_omnipod_status, _lastStatus.asJson());
+            OmnipodStatus.fromJson(SP.getString(R.string.key_omnipod_status, null));
         }
     }
 
