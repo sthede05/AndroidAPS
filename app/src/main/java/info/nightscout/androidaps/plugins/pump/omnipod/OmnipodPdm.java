@@ -546,7 +546,7 @@ public class OmnipodPdm {
     }
 
     public double GetBaseBasalRate() {
-        if (IsConnected() && IsInitialized() && _lastStatus.var_basal_schedule != null
+        if (IsInitialized() && _lastStatus.var_basal_schedule != null
                 && _lastStatus.var_basal_schedule.length > 0) {
             long t = System.currentTimeMillis();
             t += _lastStatus.var_utc_offset;
