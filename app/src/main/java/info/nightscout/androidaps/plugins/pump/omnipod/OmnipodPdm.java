@@ -464,12 +464,16 @@ public class OmnipodPdm {
                 sb.append("\nConnectable: No");
             else
             {
-                sb.append("\nConnectable: Yes  Omnipy API Version: v" + _lastResult.api.version_major
-                        + "." + _lastResult.api.version_minor);
+                sb.append("\nConnectable: Yes");
                 if (_restApi.isAuthenticated())
                     sb.append("\nAuthentication: Verified");
                 else
                     sb.append("\nAuthentication: Failed");
+                if (_lastResult != null && _lastResult.api != null)
+                {
+                    sb.append("\nOmnipy API Version: v" + _lastResult.api.version_major
+                        + "." + _lastResult.api.version_minor);
+                }
             }
         }
 
