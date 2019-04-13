@@ -280,6 +280,10 @@ public class OmnipodPdm {
 
     @Subscribe
     public void onConfigurationComplete(final EventOmnipyConfigurationComplete confResult) {
+        if (_pingTimer != null) {
+            _pingTimer.cancel();
+            _pingTimer = null;
+        }
         MainApp.bus().post(new EventOmnipodUpdateGui());
         String errorMessage;
         if (!confResult.isConnectable)
@@ -525,7 +529,7 @@ public class OmnipodPdm {
     }
 
     public boolean IsProfileSet(Profile profile) {
-        if (IsConnected() && IsInitialized()) {
+        if (IsInitialized()) {
             if (_lastStatus.var_basal_schedule == null || _lastStatus.var_basal_schedule.length == 0)
             {
                 return false;
