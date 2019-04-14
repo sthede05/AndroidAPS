@@ -123,7 +123,7 @@ public class OmnipodPdm {
 
     public boolean IsConnected() {
         return _restApi.isConfigured() && _restApi.isConnectable()
-                && _restApi.isAuthenticated();
+                && _restApi.isAuthenticated() && IsInitialized();
     }
 
     public void Connect() {
@@ -224,7 +224,8 @@ public class OmnipodPdm {
                 MainApp.bus().post(new EventNewNotification(notification));
                 MainApp.bus().post(new EventOmnipodUpdateGui());
             }
-            else if (result.status.state_progress < 8 && (_lastStatus == null || _lastStatus.state_progress == 0))
+            else if (result.status.state_progress < 8 && result.status.state_progress > 0 &&
+                    (_lastStatus == null || _lastStatus.state_progress == 0))
             {
                 MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
                 Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod in activation progress", Notification.NORMAL);
