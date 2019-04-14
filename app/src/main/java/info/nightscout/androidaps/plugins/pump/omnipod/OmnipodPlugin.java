@@ -185,12 +185,11 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
 
     private long getHistoryId(OmnipyResult result)
     {
-        long entry_id = -1;
-        if (result.response != null && result.response.has("history_entry_id"))
+        if (result.status != null)
         {
-            entry_id = result.response.get("history_entry_id").getAsLong();
+            return result.status.last_command_db_id;
         }
-        return entry_id;
+        return -1;
     }
 
     @Override
@@ -203,13 +202,13 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
         if (result != null) {
             r.enacted = result.success;
             r.success = result.success;
-            r.comment = getCommentString(result);
             if (result.success) {
                 MainApp.bus().post(new EventDismissNotification(Notification.PROFILE_SET_OK));
                 MainApp.bus().post(new EventDismissNotification(Notification.PROFILE_SET_FAILED));
                 Notification notification = new Notification(Notification.PROFILE_SET_OK, MainApp.gs(R.string.profile_set_ok), Notification.INFO, 60);
                 MainApp.bus().post(new EventNewNotification(notification));
             } else {
+                r.comment = getCommentString(result);
                 MainApp.bus().post(new EventDismissNotification(Notification.PROFILE_SET_OK));
                 MainApp.bus().post(new EventDismissNotification(Notification.PROFILE_SET_FAILED));
                 Notification notification = new Notification(Notification.PROFILE_SET_FAILED, "Basal profile not updated", Notification.NORMAL, 60);
@@ -258,9 +257,11 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
         OmnipyResult result = _pdm.Bolus(units);
         if (result != null)
         {
-            r.comment = getCommentString(result);
+            r.enacted = result.success;
+            r.success = result.success;
             if (!result.success) {
                 r.bolusDelivered = 0;
+                r.comment = getCommentString(result);
             }
             else {
                 detailedBolusInfo.deliverAt = _pdm.GetLastResultDate();
@@ -348,7 +349,6 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
         if (result != null) {
             r.enacted = result.success;
             r.success = result.success;
-            r.comment = getCommentString(result);
             if (result.success)
             {
                 r.absolute = iuRate.doubleValue();
@@ -365,6 +365,10 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
                 if (L.isEnabled(L.PUMPCOMM))
                     log.debug("Setting temp basal absolute: " + result);
             }
+            else
+            {
+                r.comment = getCommentString(result);
+            }
         }
         MainApp.bus().post(new EventOmnipodUpdateGui());
         return r;
@@ -378,7 +382,8 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
 
         OmnipyResult result = _pdm.CancelTempBasal();
         if (result != null) {
-            r.comment = getCommentString(result);
+            r.enacted = result.success;
+            r.success = result.success;
             if (result.success) {
                 r.isTempCancel = true;
                 if (TreatmentsPlugin.getPlugin().isTempBasalInProgress()) {
@@ -386,6 +391,10 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
                     TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempStop);
                     MainApp.bus().post(new EventOmnipodUpdateGui());
                 }
+            }
+            else
+            {
+                r.comment = getCommentString(result);
             }
         }
         return r;

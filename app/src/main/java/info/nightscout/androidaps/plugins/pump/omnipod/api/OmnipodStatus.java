@@ -137,6 +137,8 @@ public class OmnipodStatus {
     public int fault_event;
     public int fault_event_rel_time;
 
+    public int last_command_db_id;
+
 
     public static OmnipodStatus fromJson(String json) {
         Gson gson = new Gson();
