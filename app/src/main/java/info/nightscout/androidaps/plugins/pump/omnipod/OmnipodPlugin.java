@@ -360,7 +360,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
                         .absolute(r.absolute)
                         .duration(r.duration)
                         .pumpId(getHistoryId(result))
-                        .source(Source.PUMP);
+                        .source(Source.USER);
                 TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempBasal);
                 if (L.isEnabled(L.PUMPCOMM))
                     log.debug("Setting temp basal absolute: " + result);
