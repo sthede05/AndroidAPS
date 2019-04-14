@@ -497,37 +497,6 @@ public class OmnipodPdm {
         return sb.toString();
     }
 
-    public PumpEnactResult SetNewBasalProfile(Profile profile) {
-        PumpEnactResult r = new PumpEnactResult();
-        r.enacted = false;
-        r.success = false;
-        if (IsConnected() && IsInitialized()) {
-
-            Calendar c = Calendar.getInstance();
-            int offset_minutes = profile.getTimeZone().getRawOffset() / (60 * 1000);
-            BigDecimal[] basalSchedule = getBasalScheduleFromProfile(profile);
-            OmnipyResult result = _restApi.setBasalSchedule(basalSchedule, offset_minutes, null).waitForResult();
-            this.onResultReceived(result);
-            r.enacted = result.success;
-            r.success = result.success;
-            if (result.success) {
-                MainApp.bus().post(new EventDismissNotification(Notification.PROFILE_SET_OK));
-                MainApp.bus().post(new EventDismissNotification(Notification.PROFILE_SET_FAILED));
-                Notification notification = new Notification(Notification.PROFILE_SET_OK, MainApp.gs(R.string.profile_set_ok), Notification.INFO, 60);
-                MainApp.bus().post(new EventNewNotification(notification));
-            } else {
-                if (result.response != null) {
-                    r.comment = result.response.toString();
-                }
-                MainApp.bus().post(new EventDismissNotification(Notification.PROFILE_SET_OK));
-                MainApp.bus().post(new EventDismissNotification(Notification.PROFILE_SET_FAILED));
-                Notification notification = new Notification(Notification.PROFILE_SET_FAILED, "Basal profile not updated", Notification.NORMAL, 60);
-                MainApp.bus().post(new EventNewNotification(notification));
-            }
-        }
-        return r;
-    }
-
     public boolean IsProfileSet(Profile profile) {
         if (IsInitialized()) {
             if (_lastStatus.var_basal_schedule == null || _lastStatus.var_basal_schedule.length == 0)
@@ -568,19 +537,24 @@ public class OmnipodPdm {
             return -1d;
     }
 
-    public PumpEnactResult Bolus(DetailedBolusInfo detailedBolusInfo) {
-        PumpEnactResult r = new PumpEnactResult();
-        r.enacted = false;
-        r.success = false;
+    public OmnipyResult SetNewBasalProfile(Profile profile) {
+        OmnipyResult result = null;
         if (IsConnected() && IsInitialized()) {
-            BigDecimal iuBolus = GetExactInsulinUnits(detailedBolusInfo.insulin);
-            OmnipyResult result = _restApi.Bolus(iuBolus, null).waitForResult();
+
+            Calendar c = Calendar.getInstance();
+            int offset_minutes = profile.getTimeZone().getRawOffset() / (60 * 1000);
+            BigDecimal[] basalSchedule = getBasalScheduleFromProfile(profile);
+            result = _restApi.setBasalSchedule(basalSchedule, offset_minutes, null).waitForResult();
             this.onResultReceived(result);
-            r.enacted = result.success;
-            r.success = result.success;
-            if (result.success) {
-                r.bolusDelivered = iuBolus.doubleValue();
-            }
+        }
+        return result;
+    }
+
+    public OmnipyResult Bolus(BigDecimal bolusUnits) {
+        OmnipyResult r = null;
+        if (IsConnected() && IsInitialized()) {
+            r = _restApi.Bolus(bolusUnits, null).waitForResult();
+            this.onResultReceived(r);
         }
         return r;
     }
@@ -591,44 +565,22 @@ public class OmnipodPdm {
         }
     }
 
-    public PumpEnactResult SetTempBasal(Double absoluteRate, Integer durationInMinutes, Profile profile, boolean enforceNew) {
-        PumpEnactResult r = new PumpEnactResult();
-        r.enacted = false;
-        r.success = false;
+    public OmnipyResult SetTempBasal(BigDecimal iuRate, BigDecimal durationHours) {
+        OmnipyResult r = null;
         if (IsConnected() && IsInitialized()) {
-            BigDecimal iuRate = GetExactInsulinUnits(absoluteRate);
-            BigDecimal durationHours = GetExactHourUnits(durationInMinutes);
-
-            OmnipyResult result = _restApi.SetTempBasal(iuRate, durationHours, null).waitForResult();
-            this.onResultReceived(result);
-            r.enacted = result.success;
-            r.success = result.success;
-            if (result.success)
-            {
-                r.absolute = iuRate.doubleValue();
-                r.duration = durationInMinutes;
-                r.isPercent = false;
-            }
+            r = _restApi.SetTempBasal(iuRate, durationHours, null).waitForResult();
+            this.onResultReceived(r);
         }
         return r;
     }
 
-    public PumpEnactResult CancelTempBasal(boolean enforceNew) {
-
-        PumpEnactResult r = new PumpEnactResult();
-        r.enacted = false;
-        r.success = false;
-
+    public OmnipyResult CancelTempBasal() {
+        OmnipyResult result = null;
         if (IsConnected() && IsInitialized()) {
-            OmnipyResult result = _restApi.CancelTempBasal(null).waitForResult();
+            result = _restApi.CancelTempBasal(null).waitForResult();
             this.onResultReceived(result);
-            r.enacted = result.success;
-            r.success = result.success;
-            if (result.success) {
-                r.isTempCancel = true;
-            }
         }
-        return r;
+        return result;
     }
 
     public String GetPodId() {
@@ -647,14 +599,14 @@ public class OmnipodPdm {
         return "UNKNOWN";
     }
 
-    private BigDecimal GetExactInsulinUnits(double iu)
+    public BigDecimal GetExactInsulinUnits(double iu)
     {
         BigDecimal big20 = new BigDecimal("20");
         // round to 0.05's complements
         return new BigDecimal(iu).multiply(big20).setScale(0, RoundingMode.HALF_UP).setScale(2).divide(big20);
     }
 
-    private BigDecimal GetExactHourUnits(int minutes)
+    public BigDecimal GetExactHourUnits(int minutes)
     {
         BigDecimal big30 = new BigDecimal("30");
         return new BigDecimal(minutes).divide(big30).setScale(0, RoundingMode.HALF_UP).setScale(1).divide(new BigDecimal(2));

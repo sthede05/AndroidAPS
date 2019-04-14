@@ -28,8 +28,12 @@ import info.nightscout.androidaps.interfaces.PumpInterface;
 import info.nightscout.androidaps.logging.L;
 import info.nightscout.androidaps.plugins.general.actions.defs.CustomAction;
 import info.nightscout.androidaps.plugins.general.actions.defs.CustomActionType;
+import info.nightscout.androidaps.plugins.general.overview.events.EventDismissNotification;
+import info.nightscout.androidaps.plugins.general.overview.events.EventNewNotification;
 import info.nightscout.androidaps.plugins.general.overview.events.EventOverviewBolusProgress;
+import info.nightscout.androidaps.plugins.general.overview.notifications.Notification;
 import info.nightscout.androidaps.plugins.pump.common.defs.PumpType;
+import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmnipyResult;
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipodUpdateGui;
 import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
 import info.nightscout.androidaps.utils.DateUtil;
@@ -38,6 +42,7 @@ import info.nightscout.androidaps.utils.SP;
 
 import org.json.JSONException;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 
@@ -150,10 +155,68 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
         _pdm.UpdateStatus();
     }
 
+    private String getCommentString(OmnipyResult result)
+    {
+        String comment = "";
+        if (result != null)
+        {
+            if (result.success) {
+                long entry_id = -1;
+                int lot = -1;
+                int tid = -1;
+                if (result.response != null && result.response.has("history_entry_id")) {
+                    entry_id = result.response.get("history_entry_id").getAsLong();
+                }
+                if (result.status != null) {
+                    lot = result.status.id_lot;
+                    tid = result.status.id_t;
+                }
+                comment = String.format("%d/%d/%d", lot, tid, entry_id);
+            }
+            else {
+                if (result.response != null)
+                {
+                    comment = result.response.toString();
+                }
+            }
+        }
+        return comment;
+    }
+
+    private long getHistoryId(OmnipyResult result)
+    {
+        long entry_id = -1;
+        if (result.response != null && result.response.has("history_entry_id"))
+        {
+            entry_id = result.response.get("history_entry_id").getAsLong();
+        }
+        return entry_id;
+    }
+
     @Override
     public PumpEnactResult setNewBasalProfile(Profile profile) {
-        PumpEnactResult ret = _pdm.SetNewBasalProfile(profile);
-        return ret;
+        PumpEnactResult r = new PumpEnactResult();
+        r.enacted = false;
+        r.success = false;
+
+        OmnipyResult result = _pdm.SetNewBasalProfile(profile);
+        if (result != null) {
+            r.enacted = result.success;
+            r.success = result.success;
+            r.comment = getCommentString(result);
+            if (result.success) {
+                MainApp.bus().post(new EventDismissNotification(Notification.PROFILE_SET_OK));
+                MainApp.bus().post(new EventDismissNotification(Notification.PROFILE_SET_FAILED));
+                Notification notification = new Notification(Notification.PROFILE_SET_OK, MainApp.gs(R.string.profile_set_ok), Notification.INFO, 60);
+                MainApp.bus().post(new EventNewNotification(notification));
+            } else {
+                MainApp.bus().post(new EventDismissNotification(Notification.PROFILE_SET_OK));
+                MainApp.bus().post(new EventDismissNotification(Notification.PROFILE_SET_FAILED));
+                Notification notification = new Notification(Notification.PROFILE_SET_FAILED, "Basal profile not updated", Notification.NORMAL, 60);
+                MainApp.bus().post(new EventNewNotification(notification));
+            }
+        }
+        return r;
     }
 
     @Override
@@ -187,41 +250,48 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
     @Override
     public PumpEnactResult deliverTreatment(DetailedBolusInfo detailedBolusInfo) {
 
-        log.debug("omnipod plugin DeliverTreatment()");
-        PumpEnactResult result = _pdm.Bolus(detailedBolusInfo);
+        PumpEnactResult r = new PumpEnactResult();
+        r.enacted = false;
+        r.success = false;
 
-        if (!result.success) {
-            result.bolusDelivered = 0;
-            return result;
+        BigDecimal units = _pdm.GetExactInsulinUnits(detailedBolusInfo.insulin);
+        OmnipyResult result = _pdm.Bolus(units);
+        if (result != null)
+        {
+            r.comment = getCommentString(result);
+            if (!result.success) {
+                r.bolusDelivered = 0;
+            }
+            else {
+                detailedBolusInfo.deliverAt = _pdm.GetLastResultDate();
+                detailedBolusInfo.pumpId = getHistoryId(result);
+                TreatmentsPlugin.getPlugin().addToHistoryTreatment(detailedBolusInfo, false);
+
+                r.carbsDelivered = detailedBolusInfo.carbs;
+
+                _runningBolusInfo = detailedBolusInfo;
+                Double delivering = 0.05d;
+
+                while (delivering < detailedBolusInfo.insulin) {
+                    EventOverviewBolusProgress bolusingEvent = EventOverviewBolusProgress.getInstance();
+                    bolusingEvent.status = String.format(MainApp.gs(R.string.bolusdelivering), delivering);
+                    bolusingEvent.percent = Math.min((int) (delivering / detailedBolusInfo.insulin * 100), 100);
+                    MainApp.bus().post(bolusingEvent);
+                    delivering += 0.05d;
+                    SystemClock.sleep(2000);
+                }
+                SystemClock.sleep(200);
+                EventOverviewBolusProgress bolusingEvent = EventOverviewBolusProgress.getInstance();
+                bolusingEvent.status = String.format(MainApp.gs(R.string.bolusdelivered), detailedBolusInfo.insulin);
+                bolusingEvent.percent = 100;
+                MainApp.bus().post(bolusingEvent);
+                SystemClock.sleep(1000);
+                if (L.isEnabled(L.PUMPCOMM))
+                    log.debug("Delivering treatment insulin: " + detailedBolusInfo.insulin + "U carbs: " + detailedBolusInfo.carbs + "g " + result);
+                MainApp.bus().post(new EventOmnipodUpdateGui());
+            }
         }
-
-        detailedBolusInfo.deliverAt = _pdm.GetLastResultDate();
-        TreatmentsPlugin.getPlugin().addToHistoryTreatment(detailedBolusInfo, false);
-
-        result.carbsDelivered = detailedBolusInfo.carbs;
-        result.comment = "";
-
-        _runningBolusInfo = detailedBolusInfo;
-        Double delivering = 0.05d;
-
-        while (delivering < detailedBolusInfo.insulin) {
-            EventOverviewBolusProgress bolusingEvent = EventOverviewBolusProgress.getInstance();
-            bolusingEvent.status = String.format(MainApp.gs(R.string.bolusdelivering), delivering);
-            bolusingEvent.percent = Math.min((int) (delivering / detailedBolusInfo.insulin * 100), 100);
-            MainApp.bus().post(bolusingEvent);
-            delivering += 0.05d;
-            SystemClock.sleep(2000);
-        }
-        SystemClock.sleep(200);
-        EventOverviewBolusProgress bolusingEvent = EventOverviewBolusProgress.getInstance();
-        bolusingEvent.status = String.format(MainApp.gs(R.string.bolusdelivered), detailedBolusInfo.insulin);
-        bolusingEvent.percent = 100;
-        MainApp.bus().post(bolusingEvent);
-        SystemClock.sleep(1000);
-        if (L.isEnabled(L.PUMPCOMM))
-            log.debug("Delivering treatment insulin: " + detailedBolusInfo.insulin + "U carbs: " + detailedBolusInfo.carbs + "g " + result);
-        MainApp.bus().post(new EventOmnipodUpdateGui());
-        return result;
+        return r;
     }
 
     @Override
@@ -267,65 +337,58 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
 
     @Override
     public PumpEnactResult setTempBasalAbsolute(Double absoluteRate, Integer durationInMinutes, Profile profile, boolean enforceNew) {
-        log.debug("omnipod plugin SetTempBasalAbsolute()");
-        PumpEnactResult result = _pdm.SetTempBasal(absoluteRate, durationInMinutes, profile, enforceNew);
-        if (result.success) {
-            result.absolute = absoluteRate;
-            result.duration = durationInMinutes;
-            result.comment = "";
+        PumpEnactResult r = new PumpEnactResult();
+        r.enacted = false;
+        r.success = false;
 
-            TemporaryBasal tempBasal = new TemporaryBasal()
-                    .date(_pdm.GetLastResultDate())
-                    .absolute(result.absolute)
-                    .duration(result.duration)
-                    .source(Source.USER);
-            TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempBasal);
-            if (L.isEnabled(L.PUMPCOMM))
-                log.debug("Setting temp basal absolute: " + result);
+        BigDecimal iuRate = _pdm.GetExactInsulinUnits(absoluteRate);
+        BigDecimal durationHours = _pdm.GetExactHourUnits(durationInMinutes);
+        OmnipyResult result = _pdm.SetTempBasal(iuRate, durationHours);
+
+        if (result != null) {
+            r.enacted = result.success;
+            r.success = result.success;
+            r.comment = getCommentString(result);
+            if (result.success)
+            {
+                r.absolute = iuRate.doubleValue();
+                r.duration = durationHours.multiply(new BigDecimal(30)).intValue();
+                r.isPercent = false;
+
+                TemporaryBasal tempBasal = new TemporaryBasal()
+                        .date(_pdm.GetLastResultDate())
+                        .absolute(r.absolute)
+                        .duration(r.duration)
+                        .pumpId(getHistoryId(result))
+                        .source(Source.PUMP);
+                TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempBasal);
+                if (L.isEnabled(L.PUMPCOMM))
+                    log.debug("Setting temp basal absolute: " + result);
+            }
         }
         MainApp.bus().post(new EventOmnipodUpdateGui());
-        return result;
-    }
-
-    @Override
-    public PumpEnactResult setTempBasalPercent(Integer percent, Integer durationInMinutes, Profile profile, boolean enforceNew) {
-        log.debug("omnipod plugin SetTempBasalPercent()");
-        PumpEnactResult per = new PumpEnactResult();
-        per.enacted = false;
-        per.success = false;
-        return per;
-    }
-
-    @Override
-    public PumpEnactResult setExtendedBolus(Double insulin, Integer durationInMinutes) {
-        log.debug("omnipod plugin SetExtendedBolus()");
-        PumpEnactResult per = new PumpEnactResult();
-        per.enacted = false;
-        per.success = false;
-        return per;
+        return r;
     }
 
     @Override
     public PumpEnactResult cancelTempBasal(boolean enforceNew) {
-        log.debug("CancelTempBasal()");
-        PumpEnactResult result = _pdm.CancelTempBasal(enforceNew);
-        if (result.success) {
-            if (TreatmentsPlugin.getPlugin().isTempBasalInProgress()) {
-                TemporaryBasal tempStop = new TemporaryBasal().date(_pdm.GetLastResultDate()).source(Source.USER);
-                TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempStop);
-                MainApp.bus().post(new EventOmnipodUpdateGui());
+        PumpEnactResult r = new PumpEnactResult();
+        r.enacted = false;
+        r.success = false;
+
+        OmnipyResult result = _pdm.CancelTempBasal();
+        if (result != null) {
+            r.comment = getCommentString(result);
+            if (result.success) {
+                r.isTempCancel = true;
+                if (TreatmentsPlugin.getPlugin().isTempBasalInProgress()) {
+                    TemporaryBasal tempStop = new TemporaryBasal().date(_pdm.GetLastResultDate()).source(Source.USER);
+                    TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempStop);
+                    MainApp.bus().post(new EventOmnipodUpdateGui());
+                }
             }
         }
-        return result;
-    }
-
-    @Override
-    public PumpEnactResult cancelExtendedBolus() {
-        log.debug("CancelExtendedBolus()");
-        PumpEnactResult per = new PumpEnactResult();
-        per.enacted = false;
-        per.success = false;
-        return per;
+        return r;
     }
 
     @Override
@@ -368,6 +431,33 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
             log.error("Unhandled exception", e);
         }
         return pump;
+    }
+
+    @Override
+    public PumpEnactResult setTempBasalPercent(Integer percent, Integer durationInMinutes, Profile profile, boolean enforceNew) {
+        log.debug("omnipod plugin SetTempBasalPercent()");
+        PumpEnactResult per = new PumpEnactResult();
+        per.enacted = false;
+        per.success = false;
+        return per;
+    }
+
+    @Override
+    public PumpEnactResult setExtendedBolus(Double insulin, Integer durationInMinutes) {
+        log.debug("omnipod plugin SetExtendedBolus()");
+        PumpEnactResult per = new PumpEnactResult();
+        per.enacted = false;
+        per.success = false;
+        return per;
+    }
+
+    @Override
+    public PumpEnactResult cancelExtendedBolus() {
+        log.debug("CancelExtendedBolus()");
+        PumpEnactResult per = new PumpEnactResult();
+        per.enacted = false;
+        per.success = false;
+        return per;
     }
 
     @Override
