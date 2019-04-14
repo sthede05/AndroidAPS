@@ -35,7 +35,9 @@ public class OmnipyRequest {
     private int _versionRequiredMajor = 0;
     private int _versionRequiredMinor = 0;
 
-    private long _requestDateTime;
+    public long created;
+    public long requested;
+    public long responseReceived;
 
     public OmnipyRequest(OmnipyRequestType requestType, String baseUrl)
     {
@@ -43,6 +45,7 @@ public class OmnipyRequest {
         _requestType = requestType;
         _parameters = new ArrayList<>();
         _task = new OmnipyRequestTask(this);
+        created = System.currentTimeMillis();
     }
 
     public OmnipyRequest withAuthentication(OmnipyApiSecret apiSecret)
@@ -131,8 +134,6 @@ public class OmnipyRequest {
         MainApp.bus().post(new EventOmnipyApiResult(result));
     }
 
-    public long getRequestDateTime() { return _requestDateTime; }
-
     public URL getUrl() throws MalformedURLException {
         String urlString = _baseUrl + OmnipyConstants.getPath(_requestType);
         Uri.Builder ub = Uri.parse(urlString).buildUpon();
@@ -213,6 +214,8 @@ class OmnipyRequestTask extends AsyncTask<String, Void, OmnipyResult> {
         result = new OmnipyResult();
         result.originalRequest = _request;
         try {
+            _request.requested = System.currentTimeMillis();
+            _request.withParameter("req_t", Long.toString(_request.requested));
             URL url = _request.getUrl();
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
 
@@ -226,12 +229,12 @@ class OmnipyRequestTask extends AsyncTask<String, Void, OmnipyResult> {
             {
                 result.exception = new OmnipyConnectionException();
                 result.success = false;
-                return result;
             }
         } catch (Exception e) {
             result.exception = e;
             result.success = false;
         }
+        _request.responseReceived = System.currentTimeMillis();
         return result;
     }
 
