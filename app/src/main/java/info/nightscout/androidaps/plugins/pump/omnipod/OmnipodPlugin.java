@@ -352,7 +352,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
             if (result.success)
             {
                 r.absolute = iuRate.doubleValue();
-                r.duration = durationHours.multiply(new BigDecimal(30)).intValue();
+                r.duration = durationHours.multiply(new BigDecimal(60)).intValue();
                 r.isPercent = false;
 
                 TemporaryBasal tempBasal = new TemporaryBasal()
