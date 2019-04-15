@@ -138,6 +138,9 @@ public class OmnipodStatus {
     public int fault_event_rel_time;
 
     public int last_command_db_id;
+    public double last_enacted_temp_basal_start = -1;
+    public double last_enacted_temp_basal_duration = -1;
+    public double last_enacted_temp_basal_amount = -1;
 
 
     public static OmnipodStatus fromJson(String json) {

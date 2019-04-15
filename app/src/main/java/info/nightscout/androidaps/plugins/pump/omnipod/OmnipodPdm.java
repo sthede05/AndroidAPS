@@ -505,13 +505,17 @@ public class OmnipodPdm {
                 return false;
             }
             else
-                return verifySchedule(_lastStatus.var_basal_schedule, profile);
+                return verifySchedule(profile);
         }
         return false;
     }
 
-    private boolean verifySchedule(BigDecimal[] podSchedule, Profile profile)
+    private boolean verifySchedule(Profile profile)
     {
+        int offset_minutes = profile.getTimeZone().getRawOffset() / (60 * 1000);
+        if (_lastStatus.var_utc_offset != offset_minutes)
+            return false;
+
         BigDecimal[] scheduleToVerify = getBasalScheduleFromProfile(profile);
         for(int i=0; i<48; i++)
             if (_lastStatus.var_basal_schedule[i].compareTo(scheduleToVerify[i]) != 0)
@@ -540,9 +544,7 @@ public class OmnipodPdm {
 
     public OmnipyResult SetNewBasalProfile(Profile profile) {
         OmnipyResult result = null;
-        if (IsConnected() && IsInitialized()) {
-
-            Calendar c = Calendar.getInstance();
+        if (IsConnected() && IsInitialized() && _lastStatus != null) {
             int offset_minutes = profile.getTimeZone().getRawOffset() / (60 * 1000);
             BigDecimal[] basalSchedule = getBasalScheduleFromProfile(profile);
             result = _restApi.setBasalSchedule(basalSchedule, offset_minutes, null).waitForResult();

@@ -20,12 +20,14 @@ import info.nightscout.androidaps.db.ExtendedBolus;
 import info.nightscout.androidaps.db.Source;
 import info.nightscout.androidaps.db.TemporaryBasal;
 import info.nightscout.androidaps.events.EventNetworkChange;
+import info.nightscout.androidaps.interfaces.Constraint;
 import info.nightscout.androidaps.interfaces.PluginBase;
 import info.nightscout.androidaps.interfaces.PluginDescription;
 import info.nightscout.androidaps.interfaces.PluginType;
 import info.nightscout.androidaps.interfaces.PumpDescription;
 import info.nightscout.androidaps.interfaces.PumpInterface;
 import info.nightscout.androidaps.logging.L;
+import info.nightscout.androidaps.plugins.aps.loop.LoopPlugin;
 import info.nightscout.androidaps.plugins.general.actions.defs.CustomAction;
 import info.nightscout.androidaps.plugins.general.actions.defs.CustomActionType;
 import info.nightscout.androidaps.plugins.general.overview.events.EventDismissNotification;
@@ -194,9 +196,35 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
 
     @Override
     public PumpEnactResult setNewBasalProfile(Profile profile) {
+
         PumpEnactResult r = new PumpEnactResult();
         r.enacted = false;
         r.success = false;
+
+        final LoopPlugin loopPlugin = LoopPlugin.getPlugin();
+        boolean runLoop = false;
+        boolean warnUser = false;
+
+        if (TreatmentsPlugin.getPlugin().isTempBasalInProgress())
+        {
+            PumpEnactResult cancelResult = this.cancelTempBasal(false);
+
+            if (!cancelResult.success)
+            {
+                r.comment = "Failed to cancel existing temp basal";
+                return r;
+            }
+
+            Constraint<Boolean> closedLoopEnabled = MainApp.getConstraintChecker().isClosedLoopAllowed();
+            if (loopPlugin.isEnabled(loopPlugin.getType()) && !loopPlugin.isSuspended()
+                    && !loopPlugin.isDisconnected() && closedLoopEnabled.value()) {
+                runLoop = true;
+            }
+            else
+            {
+                warnUser = true;
+            }
+        }
 
         OmnipyResult result = _pdm.SetNewBasalProfile(profile);
         if (result != null) {
@@ -207,14 +235,35 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
                 MainApp.bus().post(new EventDismissNotification(Notification.PROFILE_SET_FAILED));
                 Notification notification = new Notification(Notification.PROFILE_SET_OK, MainApp.gs(R.string.profile_set_ok), Notification.INFO, 60);
                 MainApp.bus().post(new EventNewNotification(notification));
+                if (warnUser) {
+                    MainApp.bus().post(new EventNewNotification(new Notification(Notification.OMNIPY_TEMP_BASAL_CANCELED,
+                            "Temporary basal canceled before setting a new basal profile. Please set temporary basal again." , Notification.NORMAL, 60)));
+                }
             } else {
                 r.comment = getCommentString(result);
                 MainApp.bus().post(new EventDismissNotification(Notification.PROFILE_SET_OK));
                 MainApp.bus().post(new EventDismissNotification(Notification.PROFILE_SET_FAILED));
                 Notification notification = new Notification(Notification.PROFILE_SET_FAILED, "Basal profile not updated", Notification.NORMAL, 60);
                 MainApp.bus().post(new EventNewNotification(notification));
+                if (warnUser) {
+                    MainApp.bus().post(new EventNewNotification(new Notification(Notification.OMNIPY_TEMP_BASAL_CANCELED,
+                            "Temporary basal canceled trying to set a new basal profile. Please set temporary basal again." , Notification.NORMAL, 60)));
+                }
             }
         }
+        else
+        {
+            if (warnUser) {
+                MainApp.bus().post(new EventNewNotification(new Notification(Notification.OMNIPY_TEMP_BASAL_CANCELED,
+                        "Temporary basal canceled trying to set a new basal profile. Please set temporary basal again." , Notification.NORMAL, 60)));
+            }
+        }
+
+        if (runLoop)
+        {
+            loopPlugin.invoke("OmnipodProfileReset", true);
+        }
+
         return r;
     }
 

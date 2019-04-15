@@ -76,8 +76,9 @@ public class Notification {
     public static final int DISKFULL = 51;
 
 
-    public static final int OMNIPY_CONNECTION_STATUS = 201;
+    public static final int OMNIPY_CONNECTION_STATUS = 200;
     public static final int OMNIPY_POD_STATUS = 201;
+    public static final int OMNIPY_TEMP_BASAL_CANCELED = 202;
 
 
     public int id;
