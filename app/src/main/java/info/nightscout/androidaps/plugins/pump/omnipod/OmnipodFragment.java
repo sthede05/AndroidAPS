@@ -45,19 +45,6 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-//        Intent intent = Objects.requireNonNull(getActivity()).getIntent();
-//        if (intent != null) {
-//
-//            Bundle extras = intent.getExtras();
-//            if (extras != null) {
-//                String address = extras.getString("omnipy_address");
-//                if (address != null) {
-//                    //
-//                }
-//            }
-//        }
-
         OmnipodPlugin op = OmnipodPlugin.getPlugin();
         _pdm = op.getPdm();
     }
@@ -77,7 +64,6 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
         View view = inflater.inflate(R.layout.fragment_omnipod, container, false);
 
         view.findViewById(R.id.omnipy_btn_check_connection).setOnClickListener(this);
-        view.findViewById(R.id.omnipy_btn_check_rl).setOnClickListener(this);
         view.findViewById(R.id.omnipy_btn_update_status).setOnClickListener(this);
         view.findViewById(R.id.omnipy_btn_clear_alerts).setOnClickListener(this);
         view.findViewById(R.id.omnipy_btn_deactivate_pod).setOnClickListener(this);
@@ -189,25 +175,6 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
         }
         else
             DisplayMessage("Need to connect to omnipy in order to perform action");
-    }
-
-    private void CheckRL(Button b) {
-        OmnipyRestApi rest = _pdm.GetRestApi();
-        if (rest.isConfigured()) {
-            b.setEnabled(false);
-            rest.GetRLInfo(result -> {
-                if (result.success) {
-                    DisplayMessage(result.response.getAsString());
-                } else {
-                    Toast("RL info request failed", true);
-                }
-                b.setEnabled(true);
-                updateGUI();
-            });
-        }
-        else
-            DisplayMessage("Need to connect to omnipy in order to perform action");
-
     }
 
     private void ClearAlerts(Button b)
@@ -335,9 +302,6 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
                 break;
             case R.id.omnipy_btn_clear_alerts:
                 ClearAlerts((Button)view);
-                break;
-            case R.id.omnipy_btn_check_rl:
-                CheckRL((Button)view);
                 break;
             case R.id.omnipy_btn_deactivate_pod:
                 Confirm("Are you sure you want to deactivate the pod?", () -> {
