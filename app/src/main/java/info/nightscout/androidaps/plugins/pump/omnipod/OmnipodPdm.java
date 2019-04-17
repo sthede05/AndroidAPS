@@ -41,14 +41,9 @@ import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmnipyResult;
 public class OmnipodPdm {
 
     private final Context _context;
-
-    //private Profile _profile;
-
     private OmnipyRestApi _restApi;
     private OmnipyResult _lastResult;
     private OmnipodStatus _lastStatus;
-
-    private Profile _pendingProfile;
 
     private Timer _pingTimer;
 
@@ -64,7 +59,6 @@ public class OmnipodPdm {
         _restApi = new OmnipyRestApi(_context);
         MainApp.bus().register(this);
         MainApp.bus().register(_restApi);
-        _pendingProfile = ProfileFunctions.getInstance().getProfile();
         _lastStatus = OmnipodStatus.fromJson(SP.getString(R.string.key_omnipod_status, null));
         _restApi.StartConfiguring();
     }
@@ -205,6 +199,11 @@ public class OmnipodPdm {
             if (_lastStatus != null && (_lastStatus.radio_address != result.status.radio_address ||
                     _lastStatus.id_lot != result.status.id_lot || _lastStatus.id_t != result.status.id_t))
             {
+                MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_CHANGE));
+                Notification notification = new Notification(Notification.OMNIPY_POD_CHANGE,
+                        String.format("Pod with Lot %d and Serial %d has been removed.", _lastStatus.id_lot, _lastStatus.id_t), Notification.NORMAL);
+                MainApp.bus().post(new EventNewNotification(notification));
+                MainApp.bus().post(new EventOmnipodUpdateGui());
                 _lastStatus = null;
             }
 
@@ -228,7 +227,7 @@ public class OmnipodPdm {
                     (_lastStatus == null || _lastStatus.state_progress == 0))
             {
                 MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
-                Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod in activation progress", Notification.NORMAL);
+                Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod in activation progress", Notification.INFO);
                 MainApp.bus().post(new EventNewNotification(notification));
                 MainApp.bus().post(new EventOmnipodUpdateGui());
             }
@@ -236,7 +235,7 @@ public class OmnipodPdm {
             {
                 // TODO: log pod activated
                 MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
-                Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod is activated and running", Notification.NORMAL);
+                Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod is activated and running", Notification.INFO);
                 MainApp.bus().post(new EventNewNotification(notification));
                 MainApp.bus().post(new EventOmnipodUpdateGui());
             }
@@ -252,7 +251,7 @@ public class OmnipodPdm {
             {
                 // TODO: log pod stopped
                 MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
-                Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod stopped", Notification.INFO);
+                Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod stopped", Notification.NORMAL);
                 MainApp.bus().post(new EventNewNotification(notification));
                 MainApp.bus().post(new EventOmnipodUpdateGui());
             }
@@ -268,7 +267,7 @@ public class OmnipodPdm {
                         alertText += ", " + alert;
                 }
                 MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
-                Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod alert: " + alertText, Notification.INFO);
+                Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod alert: " + alertText, Notification.NORMAL);
                 MainApp.bus().post(new EventNewNotification(notification));
                 MainApp.bus().post(new EventOmnipodUpdateGui());
             }
@@ -350,9 +349,9 @@ public class OmnipodPdm {
 
     private long _lastStatusRequest = 0;
     public void UpdateStatus() {
-        if (IsConnected() && IsInitialized()) {
+        if (IsConnected() && IsInitialized() && !IsBusy()) {
             long t0 = System.currentTimeMillis();
-            if (t0 - _lastStatusRequest > 10000) {
+            if (t0 - _lastStatusRequest > 60000) {
                 _lastStatusRequest = t0;
                 _restApi.UpdateStatus(null);
             }

@@ -79,6 +79,7 @@ public class Notification {
     public static final int OMNIPY_CONNECTION_STATUS = 200;
     public static final int OMNIPY_POD_STATUS = 201;
     public static final int OMNIPY_TEMP_BASAL_CANCELED = 202;
+    public static final int OMNIPY_POD_CHANGE = 203;
 
 
     public int id;
