@@ -12,6 +12,7 @@ import java.math.RoundingMode;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -505,7 +506,8 @@ public class OmnipodPdm {
 
     private boolean verifySchedule(Profile profile)
     {
-        int offset_minutes = profile.getTimeZone().getRawOffset() / (60 * 1000);
+        TimeZone tz = profile.getTimeZone();
+        int offset_minutes = (tz.getRawOffset() + tz.getDSTSavings()) / (60 * 1000);
         if (_lastStatus.var_utc_offset != offset_minutes)
             return false;
 
@@ -538,7 +540,8 @@ public class OmnipodPdm {
     public OmnipyResult SetNewBasalProfile(Profile profile) {
         OmnipyResult result = null;
         if (IsConnected() && IsInitialized() && _lastStatus != null) {
-            int offset_minutes = profile.getTimeZone().getRawOffset() / (60 * 1000);
+            TimeZone tz = profile.getTimeZone();
+            int offset_minutes = (tz.getRawOffset() + tz.getDSTSavings()) / (60 * 1000);
             BigDecimal[] basalSchedule = getBasalScheduleFromProfile(profile);
             result = _restApi.setBasalSchedule(basalSchedule, offset_minutes, null).waitForResult();
             this.onResultReceived(result);
