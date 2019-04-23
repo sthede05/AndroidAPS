@@ -57,26 +57,26 @@ public class AlarmSoundService extends Service {
         } catch (IOException e) {
             log.error("Unhandled exception", e);
         }
-        player.setLooping(true); // Set looping
+        //player.setLooping(true); // Set looping
         AudioManager manager = (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
         if (manager == null || !manager.isMusicActive()) {
-            player.setVolume(100, 100);
+            //player.setVolume(100, 100);
         }
 
-        try {
-            player.prepare();
-            player.start();
-        } catch (IOException e) {
-            log.error("Unhandled exception", e);
-        }
+//        try {
+//            //player.prepare();
+//            //player.start();
+//        } catch (IOException e) {
+//            log.error("Unhandled exception", e);
+//        }
 
         return START_STICKY;
     }
 
     @Override
     public void onDestroy() {
-        player.stop();
-        player.release();
+        //player.stop();
+        //player.release();
         if (L.isEnabled(L.CORE))
             log.debug("onDestroy");
     }

@@ -66,7 +66,7 @@
                 android:maxLines="20"
                 android:selectAllOnFocus="true"
                 android:title="@string/openapsama_max_daily_safety_multiplier"
-                validate:maxNumber="10"
+                validate:maxNumber="100"
                 validate:minNumber="1"
                 validate:testType="numericRange" />
 
@@ -80,7 +80,7 @@
                 android:selectAllOnFocus="true"
                 android:singleLine="true"
                 android:title="@string/openapsama_current_basal_safety_multiplier"
-                validate:floatmaxNumber="10"
+                validate:floatmaxNumber="100"
                 validate:floatminNumber="1"
                 validate:testType="floatNumericRange" />
 

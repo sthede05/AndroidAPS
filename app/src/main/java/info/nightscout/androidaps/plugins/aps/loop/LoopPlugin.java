@@ -20,6 +20,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import info.nightscout.androidaps.Constants;
 import info.nightscout.androidaps.MainActivity;
@@ -114,11 +116,32 @@ public class LoopPlugin extends PluginBase {
         isDisconnected = SP.getBoolean("isDisconnected", false);
     }
 
+    private Timer _loopInvoker;
+
     @Override
     protected void onStart() {
         MainApp.bus().register(this);
         createNotificationChannel();
         super.onStart();
+        if (_loopInvoker != null) {
+            _loopInvoker.cancel();
+        }
+        _loopInvoker = new Timer();
+        _loopInvoker.scheduleAtFixedRate( new TimerTask() {
+            @Override
+            public void run() {
+
+                if (lastRun == null || lastRun.lastAPSRun == null || lastRun.lastAPSRun.getTime() < System.currentTimeMillis() - 30000)
+                {
+                    Constraint<Boolean> closedLoopEnabled = MainApp.getConstraintChecker().isClosedLoopAllowed();
+                    if (loopPlugin.isEnabled(loopPlugin.getType()) && !loopPlugin.isSuspended()
+                            && !loopPlugin.isDisconnected() && closedLoopEnabled.value()) {
+
+                        loopPlugin.invoke("self-timer", false);
+                    }
+                }
+            }
+        }, 5000,120000);
     }
 
     private void createNotificationChannel() {
@@ -137,6 +160,11 @@ public class LoopPlugin extends PluginBase {
     protected void onStop() {
         super.onStop();
         MainApp.bus().unregister(this);
+        if (_loopInvoker != null) {
+            _loopInvoker.cancel();
+            _loopInvoker = null;
+        }
+
     }
 
     @Override
@@ -333,9 +361,9 @@ public class LoopPlugin extends PluginBase {
 
             // safety check for multiple SMBs
             long lastBolusTime = TreatmentsPlugin.getPlugin().getLastBolusTime();
-            if (lastBolusTime != 0 && lastBolusTime + T.mins(3).msecs() > System.currentTimeMillis()) {
+            if (lastBolusTime != 0 && lastBolusTime + T.mins(6).msecs() > System.currentTimeMillis()) {
                 if (L.isEnabled(L.APS))
-                    log.debug("SMB requsted but still in 3 min interval");
+                    log.debug("SMB requsted but still in 6 min interval");
                 resultAfterConstraints.smb = 0;
             }
 
