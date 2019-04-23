@@ -20,11 +20,20 @@
 
                 <ImageView
                     android:id="@+id/imgConnectionStatus"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
                     android:foreground="@drawable/ic_outline_check_24px"
                     android:layout_gravity="center_vertical"
                     android:foregroundTint="#00FF00"/>
+
+                <ProgressBar
+                    android:id="@+id/prgConnectionStatus"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:indeterminate="true"
+                    android:indeterminateOnly="true"
+                    android:layout_gravity="center_vertical"
+                    />
 
                 <TextView
                     android:id="@+id/txtConnectionStatus"
@@ -33,7 +42,7 @@
                     android:layout_gravity="center_vertical"
                     android:layout_weight="3"
                     android:text="Omnipy Connection"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                     android:visibility="visible" />
 
                 <Button
@@ -50,11 +59,20 @@
 
                 <ImageView
                     android:id="@+id/imgRadioStatus"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
                     android:foreground="@drawable/ic_outline_check_24px"
                     android:layout_gravity="center_vertical"
                     android:foregroundTint="#00FF00"/>
+
+                <ProgressBar
+                    android:id="@+id/prgRadioStatus"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:indeterminate="true"
+                    android:indeterminateOnly="true"
+                    android:layout_gravity="center_vertical"
+                    />
 
                 <TextView
                     android:id="@+id/txtRadioStatus"
@@ -63,7 +81,7 @@
                     android:layout_gravity="center_vertical"
                     android:layout_weight="3"
                     android:text="Radio Link"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                     android:visibility="visible" />
 
                 <Button
@@ -79,12 +97,22 @@
                 android:layout_margin="4dp">
 
                 <ImageView
-                    android:id="@+id/imgCommandHistory"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:id="@+id/imgCommandStatus"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
                     android:foreground="@drawable/ic_outline_check_24px"
                     android:layout_gravity="center_vertical"
                     android:foregroundTint="#00FF00"/>
+
+                <ProgressBar
+                    android:id="@+id/prgCommandStatus"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:indeterminate="true"
+                    android:indeterminateOnly="true"
+                    android:layout_gravity="center_vertical"
+                    />
+
 
                 <TextView
                     android:id="@+id/txtCommandStatus"
@@ -93,11 +121,11 @@
                     android:layout_gravity="center_vertical"
                     android:layout_weight="3"
                     android:text="Pod Communication"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                     android:visibility="visible" />
 
                 <Button
-                    android:id="@+id/btnCommandHistory"
+                    android:id="@+id/btnCommandStatus"
                     android:layout_width="wrap_content"
                     android:layout_weight="1"
                     android:text="Details" />
