@@ -65,7 +65,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
     public OmnipodPlugin() {
         super(new PluginDescription()
                 .mainType(PluginType.PUMP)
-                .fragmentClass(OmnipodPdmFragment.class.getName())
+                .fragmentClass(OmnipodFragment.class.getName())
                 .pluginName(R.string.omnipod)
                 .shortName(R.string.omnipod_shortname)
                 .preferencesId(R.xml.pref_omnipod)
