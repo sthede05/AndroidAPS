@@ -11,25 +11,19 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
-import info.nightscout.androidaps.data.DetailedBolusInfo;
 import info.nightscout.androidaps.data.Profile;
-import info.nightscout.androidaps.data.PumpEnactResult;
 import info.nightscout.androidaps.events.EventPreferenceChange;
-import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;
 import info.nightscout.androidaps.plugins.general.overview.events.EventDismissNotification;
 import info.nightscout.androidaps.plugins.general.overview.events.EventNewNotification;
 import info.nightscout.androidaps.plugins.general.overview.notifications.Notification;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.OmnipodStatus;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmnipyCallback;
-import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmnipyRequest;
-import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmnipyRequestType;
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipyApiResult;
 import info.nightscout.androidaps.logging.L;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.OmnipyRestApi;
@@ -631,5 +625,13 @@ public class OmnipodPdm {
             return _lastStatus.insulin_reservoir;
         else
             return -1;
+    }
+
+    public OmnipodStatus getStatus() {
+        return _lastStatus;
+    }
+
+    public OmnipyRestApi getRestApi() {
+        return _restApi;
     }
 }
