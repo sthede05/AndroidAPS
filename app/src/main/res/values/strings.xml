@@ -1387,6 +1387,15 @@
     <string name="key_omnipod_alert_auto_acknowledge">key_omnipod_alert_auto_acknowledge</string>
     <string name="key_omnipod_tz_auto_change">key_omnipod_tz_auto_change</string>
 
+    <string name="omnipod_activation_fragment_Activate_a_new_pod">Activate a new pod</string>
+    <string name="omnipod_activation_fragment_Register_an_activated_pod">Register an activated pod</string>
+    <string name="omnipod_activation_fragment_Lot_number">Lot Number:</string>
+    <string name="omnipod_activation_fragment_Serial_number">Serial Number:</string>
+    <string name="omnipod_activation_fragment_Activate_Pod">Activate pod</string>
+    <string name="omnipod_activation_fragment_Radio_address">Radio address:</string>
+    <string name="omnipod_activation_fragment_Determine_radio_address_by_listening_to_the_PDM">Determine radio address by listening to the PDM</string>
+
+
     <plurals name="objective_days">
         <item quantity="one">%1$d day</item>
         <item quantity="other">%1$d days</item>
