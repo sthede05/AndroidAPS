@@ -1394,6 +1394,9 @@
     <string name="omnipod_activation_fragment_Activate_Pod">Activate pod</string>
     <string name="omnipod_activation_fragment_Radio_address">Radio address:</string>
     <string name="omnipod_activation_fragment_Determine_radio_address_by_listening_to_the_PDM">Determine radio address by listening to the PDM</string>
+    <string name="omnipod">Omnipy Pump Plugin</string>
+    <string name="omnipod_shortname">Omnipy</string>
+    <string name="omnipod_description">Omnipy plugin to connect to omnipod</string>
 
 
     <plurals name="objective_days">
