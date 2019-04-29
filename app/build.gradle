@@ -104,7 +104,7 @@ android {
         targetSdkVersion 25
         multiDexEnabled true
         versionCode 1500
-        version "2.3.omnipy1.3.7"
+        version "2.3.omnipy1.4.0"
         buildConfigField "String", "VERSION", '"' + version + '"'
         buildConfigField "String", "BUILDVERSION", '"' + generateGitBuild() + '-' + generateDate() + '"'
         buildConfigField "String", "REMOTE", '"' + generateGitRemote() + '"'
@@ -307,7 +307,7 @@ printf('--------------\n')
 printf('isMaster: %s\n', isMaster().toString())
 printf('allCommited: %s\n', allCommited().toString())
 printf('--------------\n')
-if (isMaster() && !allCommited()) {
-    throw new GradleException('There are uncommitted changes or git system is not available. Clone sources again as described in wiki and do not allow gradle update')
-}
+//if (isMaster() && !allCommited()) {
+//    throw new GradleException('There are uncommitted changes or git system is not available. Clone sources again as described in wiki and do not allow gradle update')
+//}
 
