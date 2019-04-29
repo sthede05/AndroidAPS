@@ -16,6 +16,8 @@ public enum OmnipyRequestType {
     IsBusy,
     AckAlerts,
     DeactivatePod,
+    ArchivePod,
+    PairPod,
     Bolus,
     CancelBolus,
     TempBasal,

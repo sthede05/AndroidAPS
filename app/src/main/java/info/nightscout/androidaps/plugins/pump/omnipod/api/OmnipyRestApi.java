@@ -67,6 +67,11 @@ public class OmnipyRestApi {
     private String REST_URL_CANCEL_TEMP_BASAL = "/pdm/canceltempbasal";
     private String REST_URL_SET_BASAL_SCHEDULE = "/pdm/setbasalschedule";
 
+    private String REST_URL_ARCHIVE_POD = "/pdm/archive";
+    private String REST_URL_PAIR_POD = "/pdm/pair";
+    private String REST_URL_ACTIVATE_POD = "/pdm/activate";
+    private String REST_URL_START_POD = "/pdm/start";
+
     private String REST_URL_RL_INFO = "/rl/info";
 
     private String _baseUrl;
@@ -187,6 +192,38 @@ public class OmnipyRestApi {
                 .withAuthentication(_apiSecret)
                 .withCallback(callback));
     }
+
+
+    public OmnipyRequest ArchivePod(OmnipyCallback callback) {
+        return queue(new OmnipyRequest(OmnipyRequestType.ArchivePod, _baseUrl)
+                .withAuthentication(_apiSecret)
+                .withCallback(callback));
+    }
+
+    public OmnipyRequest PairPod(int utc_offset, OmnipyCallback callback) {
+        return queue(new OmnipyRequest(OmnipyRequestType.PairPod, _baseUrl)
+                .withAuthentication(_apiSecret)
+                .withParameter("utc", Integer.toString(utc_offset))
+                .withCallback(callback));
+    }
+
+    public OmnipyRequest ActivatePod(OmnipyCallback callback) {
+        return queue(new OmnipyRequest(OmnipyRequestType.ActivatePod, _baseUrl)
+                .withAuthentication(_apiSecret)
+                .withCallback(callback));
+    }
+
+    public OmnipyRequest StartPod(BigDecimal[] basalSchedule, OmnipyCallback callback) {
+        OmnipyRequest request = new OmnipyRequest(OmnipyRequestType.StartPod, _baseUrl)
+                .withAuthentication(_apiSecret)
+                .withCallback(callback);
+
+        for(int i=0; i<48; i++)
+            request.withParameter("h" + Integer.toString(i), basalSchedule[i].toString());
+
+        return queue(request);
+    }
+
 
     public OmnipyRequest Bolus(BigDecimal bolusAmount, OmnipyCallback callback) {
         return queue(new OmnipyRequest(OmnipyRequestType.Bolus, _baseUrl)
