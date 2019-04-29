@@ -20,11 +20,16 @@ import android.widget.Toast;
 
 import com.squareup.otto.Subscribe;
 
+import java.util.Calendar;
 import java.util.Objects;
+import java.util.TimeZone;
 
 import butterknife.OnClick;
 import info.nightscout.androidaps.R;
+import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.plugins.common.SubscriberFragment;
+import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;
+import info.nightscout.androidaps.plugins.pump.omnipod.api.OmnipodStatus;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.OmnipyRestApi;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmnipyCallback;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmnipyResult;
@@ -66,216 +71,198 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
         view.findViewById(R.id.omnipy_btn_check_connection).setOnClickListener(this);
         view.findViewById(R.id.omnipy_btn_update_status).setOnClickListener(this);
         view.findViewById(R.id.omnipy_btn_clear_alerts).setOnClickListener(this);
-        view.findViewById(R.id.omnipy_btn_deactivate_pod).setOnClickListener(this);
         view.findViewById(R.id.omnipy_btn_shutdown_remote_host).setOnClickListener(this);
         view.findViewById(R.id.omnipy_btn_restart_remote_host).setOnClickListener(this);
-        view.findViewById(R.id.omnipy_btn_register_pod).setOnClickListener(this);
+        view.findViewById(R.id.omnipy_btn_deactivate_pod).setOnClickListener(this);
+        view.findViewById(R.id.omnipy_btn_archive_pod).setOnClickListener(this);
+        view.findViewById(R.id.omnipy_btn_activate_pod).setOnClickListener(this);
+        view.findViewById(R.id.omnipy_btn_start_pod).setOnClickListener(this);
         return view;
     }
 
-    private void Toast(CharSequence text, boolean shortMessage)
-    {
-        Context context = getActivity().getApplicationContext();
-        int duration = shortMessage ? Toast.LENGTH_SHORT: Toast.LENGTH_LONG;
-        Toast toast = Toast.makeText(context, text, duration);
-        toast.show();
-    }
+
 
     private void UpdateStatus(Button b) {
         OmnipyRestApi rest = _pdm.GetRestApi();
-        if (rest.isConfigured()) {
-            b.setEnabled(false);
-            Toast("Requesting status update", true);
-
-            rest.UpdateStatus(result -> {
-                if (result.success) {
-                    Toast("Status updated", true);
-                } else {
-                    Toast("Status update failed", true);
-                }
-                b.setEnabled(true);
-                updateGUI();
-
-            });
-        }
-        else
-            DisplayMessage("Need to connect to omnipy in order to perform action");
-
+        DialogMessage("Requesting status update");
+        rest.UpdateStatus(result -> {
+            CloseDialog();
+            if (result.success) {
+                DialogMessageWithOK("Status updated");
+            } else {
+                if (result.response != null)
+                    DialogMessageWithOK("Status update failed:\n "+ result.response.toString());
+                else
+                    DialogMessageWithOK("Status update failed");
+            }
+        });
     }
 
     private void CheckConnection(Button b) {
         OmnipyRestApi rest = _pdm.GetRestApi();
-        if (rest.isConfigured()) {
-            b.setEnabled(false);
-            rest.CheckAuthentication(result -> {
-                if (result.success) {
-                    Toast("Connection successful!", true);
-                } else {
-                    Toast("Connection failed", true);
-                }
-                b.setEnabled(true);
-                updateGUI();
-            });
+        DialogMessage("Trying to connect");
+        rest.CheckAuthentication(result -> {
+            if (result.success) {
+                DialogMessageWithOK("Connection successful!");
+            } else {
+                if (result.response != null)
+                    DialogMessageWithOK("Connection failed:\n "+ result.response.toString());
+                else
+                    DialogMessageWithOK("Connection failed");
             }
-        else
-            Toast("Omnipy is not available", true);
+        });
+    }
+
+    private void Shutdown(Button b) {
+        OmnipyRestApi rest = _pdm.GetRestApi();
+        DialogMessage("Requesting shutdown");
+        rest.Shutdown (result -> {
+            if (result.success) {
+                DialogMessageWithOK("Shutdown request sent.");
+            } else {
+                if (result.response != null)
+                    DialogMessageWithOK("Shutdown failed:\n "+ result.response.toString());
+                else
+                    DialogMessageWithOK("Shutdown failed");
+            }
+        });
+    }
+
+    private void Restart(Button b) {
+        OmnipyRestApi rest = _pdm.GetRestApi();
+        DialogMessage("Requesting restart");
+        rest.Restart (result -> {
+            if (result.success) {
+                DialogMessageWithOK("Restart request sent.");
+            } else {
+                if (result.response != null)
+                    DialogMessageWithOK("Restart failed:\n "+ result.response.toString());
+                else
+                    DialogMessageWithOK("Restart failed");
+            }
+        });
+    }
+
+
+    private void ClearAlerts(Button b) {
+        OmnipyRestApi rest = _pdm.GetRestApi();
+        int alerts = _pdm.getStatus().state_alert;
+        DialogMessage("Requesting clear alerts");
+        rest.AcknowledgeAlerts ( alerts, result -> {
+            if (result.success) {
+                DialogMessageWithOK("Alerts cleared");
+            } else {
+                if (result.response != null)
+                    DialogMessageWithOK("Clear alerts failed:\n "+ result.response.toString());
+                else
+                    DialogMessageWithOK("Clear alerts failed");
+            }
+        });
     }
 
     private void DeactivatePod(Button b){
         OmnipyRestApi rest = _pdm.GetRestApi();
-        if (rest.isConfigured()) {
-            b.setEnabled(false);
-            rest.DeactivatePod(result -> {
-                 if (result.success) {
-                    Toast("Deactivation successful", true);
-                } else {
-                    Toast("Deactivation failed", true);
-                }
-                b.setEnabled(true);
-                updateGUI();
-            });
-        }
-        else
-            DisplayMessage("Need to connect to omnipy in order to perform action");
-
+        DialogMessage("Deactivating pod");
+        rest.DeactivatePod (result -> {
+            if (result.success) {
+                DialogMessageWithOK("Pod deactivated");
+            } else {
+                if (result.response != null)
+                    DialogMessageWithOK("Deactivate pod failed:\n "+ result.response.toString());
+                else
+                    DialogMessageWithOK("Deactivate pod failed");
+            }
+        });
     }
 
-    private void Shutdown(Button b){
-        OmnipyRestApi rest = _pdm.GetRestApi();
-        if (rest.isConfigured()) {
-            b.setEnabled(false);
-            rest.Shutdown (result -> {
-                if (result.success) {
-                    Toast("Shutdown requested", true);
-                } else {
-                    Toast("Shutdown request failed", true);
-                }
-                b.setEnabled(true);
-                updateGUI();
-            });
-        }
-        else
-            DisplayMessage("Need to connect to omnipy in order to perform action");
-
-    }
-
-    private void Restart(Button b){
-        OmnipyRestApi rest = _pdm.GetRestApi();
-        if (rest.isConfigured()) {
-            b.setEnabled(false);
-            rest.Restart(result -> {
-                if (result.success) {
-                    Toast("Restart requested", true);
-                } else {
-                    Toast("Restart request failed", true);
-                }
-                b.setEnabled(true);
-                updateGUI();
-            });
-        }
-        else
-            DisplayMessage("Need to connect to omnipy in order to perform action");
-    }
-
-    private void ClearAlerts(Button b)
+    public void ArchivePod(View view)
     {
         OmnipyRestApi rest = _pdm.GetRestApi();
-        if (rest.isConfigured()) {
-
-            b.setEnabled(false);
-
-            rest.UpdateStatus(result -> {
-                if (result.success)
-                {
-                    int alert = result.status.state_alert;
-                    if (alert != 0)
-                    {
-                        rest.AcknowledgeAlerts(alert, result2->
-                        {
-                            if(result2.success)
-                            {
-                                Toast("Alerts cleared", true);
-                            }
-                            else
-                            {
-                                Toast("Failed to clear alerts", true);
-                            }
-                        });
-                    }
-                    else
-                    {
-                        Toast("No alerts to clear", true);
-                    }
-                }
+        DialogMessage("Archiving pod");
+        rest.ArchivePod (result -> {
+            if (result.success) {
+                DialogMessageWithOK("Pod archived");
+            } else {
+                if (result.response != null)
+                    DialogMessageWithOK("Archive pod failed:\n "+ result.response.toString());
                 else
-                {
-                    Toast("Failed to update status", true);
-                }
-
-                b.setEnabled(true);
-                updateGUI();
-            });
-        }
-        else
-            DisplayMessage("Need to connect to omnipy in order to perform action");
+                    DialogMessageWithOK("Archive pod failed");
+            }
+        });
     }
 
-    private void RegisterPod(Button b) {
-        View vw = this.getView();
-        EditText tx = vw.findViewById(R.id.omnipy_txt_lot_number);
-        String lot = tx.getText().toString();
-        tx = vw.findViewById(R.id.omnipy_txt_serial_number);
-        String tid = tx.getText().toString();
-        tx = vw.findViewById(R.id.omnipy_txt_serial_number);
 
-//        CheckBox ck = vw.findViewById(R.id.omnipy_chk_read_pdm);
-//        ck.isChecked()
-
-        String rd = tx.getText().toString();
+    public void ActivatePod(View view)
+    {
         OmnipyRestApi rest = _pdm.GetRestApi();
-        if (rest.isConfigured()) {
-            b.setEnabled(false);
+        Confirm("Please fill the pod with insulin before starting with activation process.\n\n" +
+                        "Have you filled the pod with insulin and heard two beeps while filling it?",
+                () -> {
+                    Confirm("Have you positioned the RileyLink and the Pod as close to each other as possible?\n\n" +
+                            "Once you click Yes, activation will begin.",
+                            () -> {
+                                DialogMessage("Pairing pod with omnipy\n\n" +
+                                        "If this takes longer than 30 seconds, try changing positions of the pod and RL" +
+                                        " ensuring there is a small gap between the two of them.\nOmnipy will try to pair with the pod for up to 2 minutes.");
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-            AlertDialog dlg = builder.setMessage("Now take your pdm in your hand and put RileyLink nearby. Click 'Status' button on your pdm" +
-                    " until this message disappears")
-                .show();
+                                Profile profile = ProfileFunctions.getInstance().getProfile();
+                                TimeZone tz = profile.getTimeZone();
+                                int offset_minutes = (tz.getRawOffset() + tz.getDSTSavings()) / (60 * 1000);
 
-            rest.CreateNewPod(Integer.parseInt(lot), Integer.parseInt(tid), 0, result -> {
-                dlg.dismiss();
+                                rest.PairPod(offset_minutes, result ->
+                                {
+                                    if (result.success) {
+                                        DialogMessage("Pairing successful." +
+                                                "Setting pod variables and priming cannula now." +
+                                                "\n\nThis can take up to two minutes.");
+                                        rest.ActivatePod(result2 -> {
+                                            if (result2.success) {
+                                                DialogMessageWithOK("Pod has been primed and activated successfully.\n\n" +
+                                                        "Please prepare the site for insertion, remove the plastic cover on the pod. If the canula is visible, please deactivate this pod.\n" +
+                                                        "Otherwise peel off the adhesive strips and apply the pod on the skin.\nWhen you're finished, use the START button to start the injection process."
+                                                );
+                                            }
+                                            else {
+                                                if (result2.response != null)
+                                                    DialogMessageWithOK("Activation failed, please try again. Error:\n "+ result2.response.toString());
+                                                else
+                                                    DialogMessageWithOK("Activation failed, please try again.");
+                                            }
+                                        });
+                                    } else {
+                                        if (result.response != null)
+                                            DialogMessageWithOK("Pairing failed, please try again. Error:\n "+ result.response.toString());
+                                        else
+                                            DialogMessageWithOK("Pairing failed, please try again.");
+                                    }
 
-                if (result.success) {
-                    DisplayMessage("Registered new pod successfully! Now put your PDM away and don't run any other commands.");
+                                });
+                            }
+                            );
+                }
+                );
+    }
 
-                    AlertDialog dlgx = builder.setMessage("Trying to read pod status..")
-                            .show();
 
-                    rest.UpdateStatus(result2 -> {
-                        dlgx.dismiss();
-                        if (result2.success)
-                        {
-                            DisplayMessage("Status read from the pod successfully, pod is registered.");
-                        }
-                        else
-                        {
-                            DisplayMessage("Failed to read pod status. Try registering again or try updating the status later.");
+    public void StartPod(View view) {
+        OmnipyRestApi rest = _pdm.GetRestApi();
+        Confirm("When you're ready, click Yes to start the insertion and basal delivery process.\n",
+                () -> {
+                    Profile profile = ProfileFunctions.getInstance().getProfile();
+                    DialogMessage("Starting the pod");
+                    rest.StartPod(_pdm.getBasalScheduleFromProfile(profile), result -> {
+                        if (result.success) {
+                            DialogMessageWithOK("Pod started succesfully.");
+                        } else {
+                            if (result.response != null)
+                                DialogMessageWithOK("Starting the pod failed:\n " + result.response.toString());
+                            else
+                                DialogMessageWithOK("Starting the pod failed");
                         }
                     });
-
                 }
-                else
-                {
-                    DisplayMessage("Failed to read the address from the pdm. (Did you click Status?)");
-                }
-                b.setEnabled(true);
-            });
-        }
-        else
-        {
-            DisplayMessage("Need to connect to omnipy in order to perform action");
-        }
-
-        }
+        );
+    }
 
 
     @Override
@@ -287,6 +274,42 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
 
         tv = vw.findViewById(R.id.omnipy_txt_pod_status);
         tv.setText(_pdm.getPodStatusText());
+
+        OmnipodStatus pod = _pdm.getStatus();
+        OmnipyRestApi rest = _pdm.getRestApi();
+
+        Button b = (Button)vw.findViewById(R.id.omnipy_btn_check_connection);
+        b.setEnabled(rest.isConfigured() & rest.isConnectable());
+
+        b = vw.findViewById(R.id.omnipy_btn_shutdown_remote_host);
+        b.setEnabled(rest.isConfigured() & rest.isConnectable() & rest.isAuthenticated());
+
+        b = vw.findViewById(R.id.omnipy_btn_restart_remote_host);
+        b.setEnabled(rest.isConfigured() & rest.isConnectable() & rest.isAuthenticated());
+
+        b = vw.findViewById(R.id.omnipy_btn_update_status);
+        b.setEnabled(rest.isConfigured() & rest.isConnectable() & rest.isAuthenticated()
+                & (pod.state_progress > 0) & (pod.state_progress<15) & pod.radio_address != 0);
+
+        b = vw.findViewById(R.id.omnipy_btn_clear_alerts);
+        b.setEnabled(rest.isConfigured() & rest.isConnectable() & rest.isAuthenticated()
+                & (pod.state_alert > 0) & (pod.state_progress >= 8) & (pod.state_progress<15) & pod.radio_address != 0);
+
+        b = vw.findViewById(R.id.omnipy_btn_deactivate_pod);
+        b.setEnabled(rest.isConfigured() & rest.isConnectable() & rest.isAuthenticated() &
+                (pod.state_progress >= 3) & (pod.state_progress<15) & pod.radio_address != 0);
+
+        b = vw.findViewById(R.id.omnipy_btn_archive_pod);
+        b.setEnabled(rest.isConfigured() & rest.isConnectable() & rest.isAuthenticated() &
+                pod.radio_address != 0);
+
+        b = vw.findViewById(R.id.omnipy_btn_activate_pod);
+        b.setEnabled(rest.isConfigured() & rest.isConnectable() & rest.isAuthenticated() &
+                pod.state_progress < 5);
+
+        b = vw.findViewById(R.id.omnipy_btn_start_pod);
+        b.setEnabled(rest.isConfigured() & rest.isConnectable() & rest.isAuthenticated() &
+                (pod.state_progress == 5) & pod.radio_address != 0);
     }
 
     @Override
@@ -303,10 +326,6 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
             case R.id.omnipy_btn_clear_alerts:
                 ClearAlerts((Button)view);
                 break;
-            case R.id.omnipy_btn_deactivate_pod:
-                Confirm("Are you sure you want to deactivate the pod?", () -> {
-                  DeactivatePod((Button)view); });
-                break;
             case R.id.omnipy_btn_restart_remote_host:
                 Confirm("Are you sure you want to restart the omnipy host?", () -> {
                     Restart((Button)view); });
@@ -315,21 +334,54 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
                 Confirm("Are you sure you want to shut down the omnipy host?", () -> {
                     Shutdown((Button)view); });
                 break;
-            case R.id.omnipy_btn_register_pod:
-                Confirm("Are you sure you want to register a new pod? This will remove your current pod.", () -> {
-                    RegisterPod((Button)view); });
+            case R.id.omnipy_btn_deactivate_pod:
+                Confirm("Are you sure you want to deactivate the pod? The pod will be turned off completely and you will not be able to access it.", () -> {
+                    DeactivatePod((Button)view); });
+                break;
+            case R.id.omnipy_btn_archive_pod:
+                Confirm("Are you sure you want to archive the pod without deactivating it? The pod will continue to deliver basals as programmed but you will not be able to access it.", () -> {
+                    ArchivePod((Button)view); });
+                break;
+            case R.id.omnipy_btn_activate_pod:
+                Confirm("Are you sure you want to activate a new pod?", () -> {
+                    ActivatePod((Button)view); });
+                break;
+            case R.id.omnipy_btn_start_pod:
+                Confirm("Are you sure you want to start this pod?", () -> {
+                    StartPod((Button)view); });
                 break;
             default:
                 break;
         }
     }
 
-    private void DisplayMessage(String text){
+    private AlertDialog _currentDialog;
+    private void DialogMessage(String text)
+    {
+        CloseDialog();
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setMessage(text).setPositiveButton("OK", null).show();
+        builder.setMessage(text);
+        _currentDialog = builder.show();
+    }
+
+    private void DialogMessageWithOK(String text)
+    {
+        CloseDialog();
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        _currentDialog = builder.setMessage(text).setPositiveButton("OK", null).show();
+    }
+
+    private void CloseDialog()
+    {
+        if(_currentDialog != null)
+        {
+            _currentDialog.hide();
+            _currentDialog = null;
+        }
     }
 
     private void Confirm(String text, Runnable ifYes) {
+        CloseDialog();
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
             @Override
@@ -346,7 +398,7 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
             }
         };
 
-        builder.setMessage(text).setPositiveButton("Yes", listener)
+        _currentDialog = builder.setMessage(text).setPositiveButton("Yes", listener)
                 .setNegativeButton("No", listener).show();
     }
 

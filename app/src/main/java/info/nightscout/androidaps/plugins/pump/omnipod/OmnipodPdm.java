@@ -12,6 +12,7 @@ import java.math.RoundingMode;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -196,9 +197,8 @@ public class OmnipodPdm {
                 MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_CHANGE));
                 Notification notification = new Notification(Notification.OMNIPY_POD_CHANGE,
                         String.format("Pod with Lot %d and Serial %d has been removed.", _lastStatus.id_lot, _lastStatus.id_t), Notification.NORMAL);
-                MainApp.bus().post(new EventNewNotification(notification));
-                MainApp.bus().post(new EventOmnipodUpdateGui());
                 _lastStatus = null;
+                MainApp.bus().post(new EventNewNotification(notification));
             }
 
             if (result.status.state_progress == 0 && (_lastStatus == null || _lastStatus.state_progress != 0))
@@ -206,7 +206,6 @@ public class OmnipodPdm {
                 MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
                 Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "No pod registered", Notification.NORMAL);
                 MainApp.bus().post(new EventNewNotification(notification));
-                MainApp.bus().post(new EventOmnipodUpdateGui());
             }
             else if (result.status.state_faulted && (_lastStatus == null || !_lastStatus.state_faulted))
             {
@@ -215,7 +214,6 @@ public class OmnipodPdm {
                 Notification notification = new Notification(Notification.OMNIPY_POD_STATUS,
                         String.format("Pod faulted with error: %d", result.status.fault_event), Notification.URGENT);
                 MainApp.bus().post(new EventNewNotification(notification));
-                MainApp.bus().post(new EventOmnipodUpdateGui());
             }
             else if (result.status.state_progress < 8 && result.status.state_progress > 0 &&
                     (_lastStatus == null || _lastStatus.state_progress == 0))
@@ -223,7 +221,6 @@ public class OmnipodPdm {
                 MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
                 Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod in activation progress", Notification.INFO);
                 MainApp.bus().post(new EventNewNotification(notification));
-                MainApp.bus().post(new EventOmnipodUpdateGui());
             }
             else if (result.status.state_progress == 8 && (_lastStatus == null || _lastStatus.state_progress < 8))
             {
@@ -231,7 +228,6 @@ public class OmnipodPdm {
                 MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
                 Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod is activated and running", Notification.INFO);
                 MainApp.bus().post(new EventNewNotification(notification));
-                MainApp.bus().post(new EventOmnipodUpdateGui());
             }
             else if (result.status.state_progress == 9 && (_lastStatus == null || _lastStatus.state_progress == 8))
             {
@@ -239,7 +235,6 @@ public class OmnipodPdm {
                 MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
                 Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod running with low reservoir (less than 50U)", Notification.NORMAL);
                 MainApp.bus().post(new EventNewNotification(notification));
-                MainApp.bus().post(new EventOmnipodUpdateGui());
             }
             else if (result.status.state_progress > 9 && (_lastStatus == null || _lastStatus.state_progress <= 9))
             {
@@ -247,7 +242,6 @@ public class OmnipodPdm {
                 MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
                 Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod stopped", Notification.NORMAL);
                 MainApp.bus().post(new EventNewNotification(notification));
-                MainApp.bus().post(new EventOmnipodUpdateGui());
             }
 
             if ((result.status.state_progress == 8 || result.status.state_progress == 9) && result.status.state_alert != 0
@@ -263,13 +257,12 @@ public class OmnipodPdm {
                 MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
                 Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod alert: " + alertText, Notification.NORMAL);
                 MainApp.bus().post(new EventNewNotification(notification));
-                MainApp.bus().post(new EventOmnipodUpdateGui());
             }
 
             _lastStatus = result.status;
             SP.putString(R.string.key_omnipod_status, _lastStatus.asJson());
-            OmnipodStatus.fromJson(SP.getString(R.string.key_omnipod_status, null));
         }
+        MainApp.bus().post(new EventOmnipodUpdateGui());
     }
 
     @Subscribe
@@ -505,7 +498,8 @@ public class OmnipodPdm {
 
     private boolean verifySchedule(Profile profile)
     {
-        int offset_minutes = profile.getTimeZone().getRawOffset() / (60 * 1000);
+        TimeZone tz = profile.getTimeZone();
+        int offset_minutes = (tz.getRawOffset() + tz.getDSTSavings()) / (60 * 1000);
         if (_lastStatus.var_utc_offset != offset_minutes)
             return false;
 
@@ -538,7 +532,8 @@ public class OmnipodPdm {
     public OmnipyResult SetNewBasalProfile(Profile profile) {
         OmnipyResult result = null;
         if (IsConnected() && IsInitialized() && _lastStatus != null) {
-            int offset_minutes = profile.getTimeZone().getRawOffset() / (60 * 1000);
+            TimeZone tz = profile.getTimeZone();
+            int offset_minutes = (tz.getRawOffset() + tz.getDSTSavings()) / (60 * 1000);
             BigDecimal[] basalSchedule = getBasalScheduleFromProfile(profile);
             result = _restApi.setBasalSchedule(basalSchedule, offset_minutes, null).waitForResult();
             this.onResultReceived(result);
@@ -608,7 +603,7 @@ public class OmnipodPdm {
         return new BigDecimal(minutes).divide(big30).setScale(0, RoundingMode.HALF_UP).setScale(1).divide(new BigDecimal(2));
     }
 
-    private BigDecimal[] getBasalScheduleFromProfile(Profile profile)
+    public BigDecimal[] getBasalScheduleFromProfile(Profile profile)
     {
         BigDecimal[] basalSchedule = new BigDecimal[48];
         int secondsSinceMidnight = 0;

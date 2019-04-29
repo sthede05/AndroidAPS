@@ -19,6 +19,8 @@ public class OmnipyConstants {
         typePathMap.put(OmnipyRequestType.SetPodParameters, "/omnipy/parameters");
         typePathMap.put(OmnipyRequestType.ReadPdmAddress, "/omnipy/pdmspy");
         typePathMap.put(OmnipyRequestType.RLInfo, "/rl/info");
+        typePathMap.put(OmnipyRequestType.ArchivePod, "/pdm/archive");
+        typePathMap.put(OmnipyRequestType.PairPod, "/pdm/pair");
         typePathMap.put(OmnipyRequestType.ActivatePod, "/pdm/activate");
         typePathMap.put(OmnipyRequestType.StartPod, "/pdm/start");
         typePathMap.put(OmnipyRequestType.Status, "/pdm/status");

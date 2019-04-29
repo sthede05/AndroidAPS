@@ -17,14 +17,14 @@
                 android:id="@+id/radioButton3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Activate a new pod"
+                android:text="@string/omnipod_activation_fragment_Activate_a_new_pod"
                 android:enabled="false"/>
 
             <RadioButton
                 android:id="@+id/radioButton4"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Register an activated pod"
+                android:text="@string/omnipod_activation_fragment_Register_an_activated_pod"
                 android:checked="true"/>
 
                 <LinearLayout
@@ -37,7 +37,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Lot number:" />
+                        android:text="@string/omnipod_activation_fragment_Lot_number" />
 
                     <EditText
                         android:id="@+id/txtLotNumber"
@@ -58,7 +58,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Serial number:" />
+                        android:text="@string/omnipod_activation_fragment_Serial_number" />
 
                     <EditText
                         android:id="@+id/txtSerialNumber"
@@ -78,7 +78,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Radio address:" />
+                        android:text="@string/omnipod_activation_fragment_Radio_address" />
 
                     <EditText
                         android:id="@+id/editText3"
@@ -94,7 +94,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Determine radio address by listening to the PDM"
+                    android:text="@string/omnipod_activation_fragment_Determine_radio_address_by_listening_to_the_PDM"
                     android:checked="true"
                     android:visibility="gone"/>
 
@@ -102,7 +102,7 @@
                     android:id="@+id/button2"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Activate Pod" />
+                    android:text="@string/omnipod_activation_fragment_Activate_Pod" />
 
             </LinearLayout>
         </ScrollView>
