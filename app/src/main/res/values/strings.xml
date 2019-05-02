@@ -1411,7 +1411,7 @@
     <string name="omnipod_pod_connection_status_Connectable_Yes">\nConnectable: Yes</string>
     <string name="omnipod_pod_connection_status_Authentication_Verified">\nAuthentication: Verified</string>
     <string name="omnipod_pod_connection_status_Authentication_Failed">\nAuthentication: Failed</string>
-    <string name="omnipod_pod_connection_status__Omnipy_API_Version">\nOmnipy API Version: v</string>
+    <string name="omnipod_pod_connection_status_Omnipy_API_Version">\nOmnipy API Version: v</string>
     <string name="omnipod_pod_connection_status_Last_successful_connection">\nLast successful connection: </string>
     <string name="omnipod_pod_connection_status_NA">N/A</string>
 
@@ -1423,7 +1423,7 @@
     <string name="omnipod_pod_status_status">\nStatus: </string>
     <string name="omnipod_pod_status_Not_yet_running">Not yet running</string>
     <string name="omnipod_pod_status_Running">Running</string>
-    <string name="omnipod_pod_status_omnipod_pod_status_Running_with_low_insulin_below50U">Running with low insulin (&lt;50U)</string>
+    <string name="omnipod_pod_status_Running_with_low_insulin_below50U">Running with low insulin (&lt;50U)</string>
     <string name="omnipod_pod_status_Inactive">Inactive</string>
     <string name="omnipod_pod_status_POD_FAULTED">\nPOD FAULTED</string>
     <string name="omnipod_pod_status_Total_insulin_delivered">\nTotal insulin delivered: </string>
@@ -1530,7 +1530,7 @@
     <string name="omnipod_ActivatePod_7"> ensuring there is a small gap between the two of them.\nOmnipy will try to pair with the pod for up to 2 minutes.</string>
     <string name="omnipod_ActivatePod_8">Pairing successful.</string>
     <string name="omnipod_ActivatePod_9">Setting pod variables and priming cannula now.</string>
-    <string name="omnipod_ActivatePod_10">\n\nThis can take up to two minutes.</string>
+    <string name="omnipod_ActivatePod_10">This can take up to two minutes.</string>
     <string name="omnipod_ActivatePod_11">Pod has been primed and activated successfully.\n\n</string>
     <string name="omnipod_ActivatePod_12">Please prepare the site for insertion, remove the plastic cover on the pod. If the canula is visible, please deactivate this pod.\n</string>
     <string name="omnipod_ActivatePod_13">Otherwise peel off the adhesive strips and apply the pod on the skin.\nWhen you\'re finished, use the START button to start the injection process.</string>
