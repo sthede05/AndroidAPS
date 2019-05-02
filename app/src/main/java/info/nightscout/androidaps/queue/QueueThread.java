@@ -47,7 +47,7 @@ public class QueueThread extends Thread {
     }
 
     @Override
-    public final void run() {
+    public synchronized final void run() {
         if (mWakeLock != null)
             mWakeLock.acquire(T.mins(10).msecs());
         MainApp.bus().post(new EventQueueChanged());
