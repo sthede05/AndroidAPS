@@ -1051,11 +1051,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             } else {
                 console.error("profile.maxSMBBasalMinutes:",profile.maxSMBBasalMinutes,"profile.current_basal:",profile.current_basal);
                 //maxBolus = round( profile.current_basal * profile.maxSMBBasalMinutes / 60 ,1);
-                maxBolus = 1.6;
+                maxBolus = 1.2;
             }
             // bolus 1/2 the insulinReq, up to maxBolus, rounding down to nearest 0.1U
             reduction_coefficient = 5.0;
-            bolus_floor = 0.4;
+            bolus_floor = 0.2;
 
             if (insulinReq <= maxBolus * reduction_coefficient)
                 maxBolus = insulinReq / reduction_coefficient;
