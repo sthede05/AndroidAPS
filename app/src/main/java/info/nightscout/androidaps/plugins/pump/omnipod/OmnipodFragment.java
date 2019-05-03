@@ -400,7 +400,7 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
         };
 
         _currentDialog = builder.setMessage(text).setPositiveButton(MainApp.gs(R.string.omnipod_Yes_prompt), listener)     //"Yes"
-                .setNegativeButton(MainApp.gs(R.string.omnipod_Yes_prompt), listener).show();                              //"No"
+                .setNegativeButton(MainApp.gs(R.string.omnipod_No_prompt), listener).show();                              //"No"
     }
 
 }
