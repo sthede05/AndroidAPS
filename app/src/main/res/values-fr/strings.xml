@@ -1260,14 +1260,14 @@ L\'ENSEMBLE DES RISQUES LIÉS À LA QUALITÉ ET À LA PERFORMANCE DU PROGRAMME S
     <string name="omnipod_network_status_located_no_connection_txt1">"Omnipy trouvé à l'adresse "</string>
     <string name="omnipod_network_status_located_no_connection_txt2">" mais la connexion ne peut être établie"</string>
     <string name="omnipod_network_status_not_located_no_connection_txt1">"La connection à Omnipy ne peut être établie à l'adresse configurée: "</string>
-    <string name="omnipod_network_status_not_located_no_connection_txt2">" Merci de vérifier l'adresse dans les paramêtres."</string>
+    <string name="omnipod_network_status_not_located_no_connection_txt2">" Merci de vérifier l'adresse dans les paramètres."</string>
     <string name="omnipod_network_status_located_no_authentication_txt1">"Connexion à Omnipy établie à l'adresse "</string>
-    <string name="omnipod_network_status_located_no_authentication_txt2">" mais l'authentification a échoué. Merci de vérifier votre mot de passe dans les paramêtres."</string>
+    <string name="omnipod_network_status_located_no_authentication_txt2">" mais l'authentification a échoué. Merci de vérifier votre mot de passe dans les paramètres."</string>
     <string name="omnipod_network_status_located_and_connected">"Connecté à l'Omnipy à "</string>
     <string name="omnipod_restart_Pi_prompt">Êtes vous sûr(e) de vouloir redémarrer l\'hôte Omnipy ?</string>
     <string name="omnipod_shutdown_pi_prompt">Êtes vous sûr(e) de vouloir éteindre l\'hôte Omnipy ?</string>
     <string name="omnipod_pod_deactivation__prompt">Êtes vous sûr(e) de vouloir désactiver le POD ? Le POD se désactivera et deviendra inaccessible.</string>
-    <string name="omnipod_pod_archive_prompt">Êtes vous sûr(e) de vouloir archiver le POD sans le désactiver ? Le POD continuera de délivrer la basal mais et deviendra inaccessible.</string>
+    <string name="omnipod_pod_archive_prompt">Êtes vous sûr(e) de vouloir archiver le POD sans le désactiver ? Le POD continuera de délivrer la basale mais deviendra inaccessible.</string>
     <string name="omnipod_pod_activation_prompt">Êtes vous sûr(e) de vouloir activer un nouveau POD ?</string>
     <string name="omnipod_pod_start_prompt">Êtes vous sûr(e) de vouloir démarrer ce nouveau POD ?</string>
     <string name="omnipod_Yes_prompt">Oui</string>
@@ -1302,19 +1302,19 @@ L\'ENSEMBLE DES RISQUES LIÉS À LA QUALITÉ ET À LA PERFORMANCE DU PROGRAMME S
     <string name="omnipod_ArchivePod_Archiving_pod_failed2">Archivage du POD échoué</string>
     <string name="omnipod_ActivatePod_1">Commencez par remplir le nouveau POD avant de démarrer le processus d\'activation</string>
     <string name="omnipod_ActivatePod_2">Avez-vous rempli le nouveau POD jusqu\'à entendre les 2 bips pendant le remplissage ?</string>
-    <string name="omnipod_ActivatePod_3">Avez-vous positionné le nouveau POD et le RileyLink le plus proche l\'un de l\'autre ?</string>
+    <string name="omnipod_ActivatePod_3">Avez-vous positionné le nouveau POD et le RileyLink assez proche l\'un de l\'autre sans qu\'ils se touchent ?</string>
     <string name="omnipod_ActivatePod_4">Une fois que vous cliquerez sur Oui, l\'activation commencera.</string>
     <string name="omnipod_ActivatePod_5">Appairage du nouveau POD avec Omnipy en cours</string>
     <string name="omnipod_ActivatePod_6">Si cela prend plus de 30s, essayez de changer les positions du POD et du RileyLink</string>
     <string name="omnipod_ActivatePod_7">" en vous assurant qu'il demeure un petit espace entre les 2.
         L'appairage peut prendre jusqu'à 2 minutes."</string>
     <string name="omnipod_ActivatePod_8">Appairage réussi.</string>
-    <string name="omnipod_ActivatePod_9">Définition des paramêtres du POD et purge de la canule maintenant.</string>
+    <string name="omnipod_ActivatePod_9">Définition des paramètres du POD et purge de la canule maintenant.</string>
     <string name="omnipod_ActivatePod_10">Cela peut prendre jusqu\'à 2 minutes.</string>
-    <string name="omnipod_ActivatePod_11">Le POD a été purgé et activaté correctement.</string>
+    <string name="omnipod_ActivatePod_11">Le POD a été purgé et activé correctement.</string>
     <string name="omnipod_ActivatePod_12">Merci de préparer le site pour l\'insertion, enlever la protection de la canule. Si la canule est sortie, procéder à la désactivation du POD et éliminer le.</string>
     <string name="omnipod_ActivatePod_13">Sinon, retirez les adhésifs du POD et placez-le sur la zone de votre corps préalablement désinfectée.
-        Une fois fait, appuyez sur le bouton Démarrer pour lancer la phase d\'insertion.</string>
+        Une fois fait, appuyez sur le bouton 2. DÉMARRER NOUVEAU POD pour lancer la phase d\'insertion.</string>
     <string name="omnipod_ActivatePod_15">Activation échouée, merci de réessayer.</string>
     <string name="omnipod_ActivatePod_14">"Activation échouée, merci de réessayer. Erreur:"</string>
     <string name="omnipod_ActivatePod_17">Appairage échoué, merci de réessayer.</string>

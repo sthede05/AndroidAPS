@@ -213,7 +213,7 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
                                 rest.PairPod(offset_minutes, result ->
                                 {
                                     if (result.success) {
-                                        DialogMessage(MainApp.gs(R.string.omnipod_ActivatePod_8) +                           //"Pairing successful."
+                                        DialogMessage(MainApp.gs(R.string.omnipod_ActivatePod_8) +  "\n" + "\n" +                        //"Pairing successful."
                                                 MainApp.gs(R.string.omnipod_ActivatePod_9) +          //"Setting pod variables and priming cannula now."
                                                 "\n" + "\n" + MainApp.gs(R.string.omnipod_ActivatePod_10));                //"This can take up to two minutes."
                                         rest.ActivatePod(result2 -> {
