@@ -86,7 +86,7 @@ public class OmnipodPdm {
             _pingTimer = null;
         }
         MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_CONNECTION_STATUS));
-        MainApp.bus().post(new Notification(Notification.OMNIPY_CONNECTION_STATUS, "Disconnected from omnipy", Notification.NORMAL));
+        MainApp.bus().post(new Notification(Notification.OMNIPY_CONNECTION_STATUS, MainApp.gs(R.string.Disconnected_from_omnipy), Notification.NORMAL));    //"Disconnected from omnipy"
         _restApi.StartConfiguring();
     }
 
@@ -212,7 +212,7 @@ public class OmnipodPdm {
                 // TODO: log fault event
                 MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
                 Notification notification = new Notification(Notification.OMNIPY_POD_STATUS,
-                        String.format("Pod faulted with error: %d", result.status.fault_event), Notification.URGENT);
+                        String.format(MainApp.gs(R.string.Pod_faulted_with_error), result.status.fault_event), Notification.URGENT);                //"Pod faulted with error: %d"
                 MainApp.bus().post(new EventNewNotification(notification));
             }
             else if (result.status.state_progress < 8 && result.status.state_progress > 0 &&
@@ -421,14 +421,14 @@ public class OmnipodPdm {
         minutes -= hours * 60;
 
         sb.append("\n" + MainApp.gs(R.string.omnipod_pod_status_Total_insulin_delivered)).append(String.format("%3.2f",      //"Total insulin delivered: "
-                _lastStatus.insulin_delivered)).append("U");
+                _lastStatus.insulin_delivered)).append("u");
         sb.append("\n" + MainApp.gs(R.string.omnipod_pod_status_Reservoir));     //"\nReservoir: "
         if (_lastStatus.insulin_reservoir > 50)
             sb.append(MainApp.gs(R.string.omnipod_pod_status_more_than_50U));      //"more than 50U"
         else
-            sb.append(String.format("%2.2f", _lastStatus.insulin_reservoir)).append("U");
+            sb.append(String.format("%2.2f", _lastStatus.insulin_reservoir)).append("u");
 
-        sb.append("\n" + MainApp.gs(R.string.omnipod_pod_status_Pod_age)).append(String.format("%dd%dh%dm", days, hours, minutes));       //"Pod age: "
+        sb.append("\n" + MainApp.gs(R.string.omnipod_pod_status_Pod_age)).append(String.format(MainApp.gs(R.string.pod_age_format), days, hours, minutes));       //"Pod age: "         "%dd%dh%dm"
 
         Date date = new Date((long)_lastStatus.state_last_updated * 1000);
         DateFormat dateFormat = android.text.format.DateFormat.getTimeFormat(_context);

@@ -90,7 +90,7 @@
                 <Button
                     android:id="@+id/omnipy_btn_update_status"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:text="@string/omnipod_pod_status_update_status"/>
             </LinearLayout>
 
