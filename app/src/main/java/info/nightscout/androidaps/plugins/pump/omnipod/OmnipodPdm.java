@@ -39,6 +39,7 @@ public class OmnipodPdm {
     private OmnipyRestApi _restApi;
     private OmnipyResult _lastResult;
     private OmnipodStatus _lastStatus;
+    private int _lastKnownBatteryLevel = -1;
 
     private Timer _pingTimer;
 
@@ -190,6 +191,7 @@ public class OmnipodPdm {
     public synchronized void onResultReceived(OmnipyResult result) {
         if (result != null && !result.canceled && result.status != null) {
             _lastResult = result;
+            _lastKnownBatteryLevel = result.battery_level;
 
             if (_lastStatus != null && (_lastStatus.radio_address != result.status.radio_address ||
                     _lastStatus.id_lot != result.status.id_lot || _lastStatus.id_t != result.status.id_t)
@@ -633,5 +635,9 @@ public class OmnipodPdm {
 
     public OmnipyRestApi getRestApi() {
         return _restApi;
+    }
+
+    public int getBatteryLevel() {
+        return _lastKnownBatteryLevel;
     }
 }
