@@ -1160,6 +1160,11 @@
     <string name="old_version">stará verzia</string>
     <string name="very_old_version">veľmi stará verzia</string>
     <string name="new_version_warning">Nová verzia dostupná najmenej %1$d dní! Návrat k liečbe inzulínovou pumpou s podporou senzora po 60 dňoch, okruh bude deaktivovaný po 90 dňoch.</string>
+    <string name="Disconnected_from_omnipy">Disconnected from omnipy</string>
+    <string name="Pod_faulted_with_error">Pod faulted with error: %d</string>
+    <string name="pod_age_format">%dd%dh%dm</string>
+    <string name="Searching_for_omnipy_on_local_network">Searching for omnipy on local network..</string>
+    <string name="Trying_to_connect_to_omnipy_at_address">Trying to connect to omnipy at address:</string>
     <plurals name="objective_days">
         <item quantity="one">%1$d deň</item>
         <item quantity="few">%1$d dní</item>

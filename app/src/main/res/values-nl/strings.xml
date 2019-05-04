@@ -1115,6 +1115,11 @@ Stel in en gebruik tijdelijk en standaard tijdelijke streefdoelen (bv. bij sport
     <string name="dst_in_24h_warning">Zomer/wintertijd omschakeling binnen 24 uur</string>
     <string name="storage">interne opslag bijna vol</string>
     <string name="diskfull">Maak minstens %1$d MB vrij in interne opslag! Loop is uitgeschakeld!</string>
+    <string name="Disconnected_from_omnipy">Disconnected from omnipy</string>
+    <string name="Pod_faulted_with_error">Pod faulted with error: %d</string>
+    <string name="pod_age_format">%dd%dh%dm</string>
+    <string name="Searching_for_omnipy_on_local_network">Searching for omnipy on local network..</string>
+    <string name="Trying_to_connect_to_omnipy_at_address">Trying to connect to omnipy at address:</string>
     <plurals name="objective_days">
         <item quantity="one">%1$d dag</item>
         <item quantity="other">%1$d dag</item>

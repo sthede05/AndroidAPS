@@ -1020,6 +1020,11 @@
     <string name="insulinlimitviolation">인슐린 제한 위반</string>
     <string name="loop_openmode_min_change">최소 요청 변화 [%]</string>
     <string name="loop_openmode_min_change_summary">이 값보다 변화가 클때만 Loop가 새 변화 요청창을 띄울것 입니다. 기본 값은 20%입니다.</string>
+    <string name="Disconnected_from_omnipy">Disconnected from omnipy</string>
+    <string name="Pod_faulted_with_error">Pod faulted with error: %d</string>
+    <string name="pod_age_format">%dd%dh%dm</string>
+    <string name="Searching_for_omnipy_on_local_network">Searching for omnipy on local network..</string>
+    <string name="Trying_to_connect_to_omnipy_at_address">Trying to connect to omnipy at address:</string>
     <plurals name="objective_days">
         <item quantity="other">%1$d 일</item>
     </plurals>
