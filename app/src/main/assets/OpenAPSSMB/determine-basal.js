@@ -264,7 +264,7 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
     if (iob_data.iob > 0) {
         var naive_eventualBG = round( bg - (iob_data.iob * sens) );
     } else { // if IOB is negative, be more conservative and use the lower of sens, profile.sens
-        var naive_eventualBG = round( bg - (iob_data.iob * Math.min(sens, profile.sens) ) );
+        var naive_eventualBG = round( bg );
     }
     // and adjust it for the deviation above
     var eventualBG = naive_eventualBG + deviation;
@@ -1050,10 +1050,20 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
                 maxBolus = round( profile.current_basal * 30 / 60 ,1);
             } else {
                 console.error("profile.maxSMBBasalMinutes:",profile.maxSMBBasalMinutes,"profile.current_basal:",profile.current_basal);
-                maxBolus = round( profile.current_basal * profile.maxSMBBasalMinutes / 60 ,1);
+                //maxBolus = round( profile.current_basal * profile.maxSMBBasalMinutes / 60 ,1);
+                maxBolus = 1.2;
             }
             // bolus 1/2 the insulinReq, up to maxBolus, rounding down to nearest 0.1U
-            microBolus = Math.floor(Math.min(insulinReq/2,maxBolus)*10)/10;
+            reduction_coefficient = 5.0;
+            bolus_floor = 0.2;
+
+            if (insulinReq <= maxBolus * reduction_coefficient)
+                maxBolus = insulinReq / reduction_coefficient;
+            if (maxBolus < bolus_floor)
+                maxBolus = bolus_floor;
+
+            microBolus = Math.floor(Math.min(insulinReq,maxBolus)*5)/5;
+
             // calculate a long enough zero temp to eventually correct back up to target
             var smbTarget = target_bg;
             var worstCaseInsulinReq = (smbTarget - (naive_eventualBG + minIOBPredBG)/2 ) / sens;
@@ -1085,11 +1095,11 @@ var determine_basal = function determine_basal(glucose_status, currenttemp, iob_
             }
             rT.reason += ". ";
 
-            //allow SMBs every 3 minutes
-            var nextBolusMins = round(3-lastBolusAge,1);
+            //allow SMBs every 6 minutes
+            var nextBolusMins = round(6-lastBolusAge,1);
             //console.error(naive_eventualBG, insulinReq, worstCaseInsulinReq, durationReq);
             console.error("naive_eventualBG",naive_eventualBG+",",durationReq+"m "+smbLowTempReq+"U/h temp needed; last bolus",lastBolusAge+"m ago; maxBolus: "+maxBolus);
-            if (lastBolusAge > 3) {
+            if (lastBolusAge > 6) {
                 if (microBolus > 0) {
                     rT.units = microBolus;
                     rT.reason += "Microbolusing " + microBolus + "U. ";
