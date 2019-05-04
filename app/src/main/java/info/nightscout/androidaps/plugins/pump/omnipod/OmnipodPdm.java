@@ -192,7 +192,8 @@ public class OmnipodPdm {
             _lastResult = result;
 
             if (_lastStatus != null && (_lastStatus.radio_address != result.status.radio_address ||
-                    _lastStatus.id_lot != result.status.id_lot || _lastStatus.id_t != result.status.id_t))
+                    _lastStatus.id_lot != result.status.id_lot || _lastStatus.id_t != result.status.id_t)
+                && _lastStatus.radio_address != 0 && _lastStatus.id_lot != 0 && _lastStatus.id_t != 0)
             {
                 MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_CHANGE));
                 Notification notification = new Notification(Notification.OMNIPY_POD_CHANGE,
@@ -226,7 +227,8 @@ public class OmnipodPdm {
             {
                 // TODO: log pod activated
                 MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
-                Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod is activated and running", Notification.INFO);
+                Notification notification = new Notification(Notification.OMNIPY_POD_STATUS,
+                        String.format("Pod with Lot %d and Serial %d is active and running"), Notification.INFO);
                 MainApp.bus().post(new EventNewNotification(notification));
             }
             else if (result.status.state_progress == 9 && (_lastStatus == null || _lastStatus.state_progress == 8))
