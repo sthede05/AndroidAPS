@@ -18,8 +18,10 @@ public class OmnipyResult {
     public OmnipyApiVersion api;
     public JsonObject response;
     public OmnipodStatus status;
+
     public double datetime;
     public Exception exception;
+    public int battery_level = -1;
 
     public static OmnipyResult fromJson(String jsonResponse, OmnipyRequest request) {
         try {

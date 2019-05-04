@@ -39,6 +39,7 @@ public class OmnipodPdm {
     private OmnipyRestApi _restApi;
     private OmnipyResult _lastResult;
     private OmnipodStatus _lastStatus;
+    private int _lastKnownBatteryLevel = -1;
 
     private Timer _pingTimer;
 
@@ -86,7 +87,7 @@ public class OmnipodPdm {
             _pingTimer = null;
         }
         MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_CONNECTION_STATUS));
-        MainApp.bus().post(new Notification(Notification.OMNIPY_CONNECTION_STATUS, MainApp.gs(R.string.Disconnected_from_omnipy), Notification.NORMAL));    //"Disconnected from omnipy"
+        MainApp.bus().post(new Notification(Notification.OMNIPY_CONNECTION_STATUS, "Disconnected from omnipy", Notification.NORMAL));
         _restApi.StartConfiguring();
     }
 
@@ -190,9 +191,11 @@ public class OmnipodPdm {
     public synchronized void onResultReceived(OmnipyResult result) {
         if (result != null && !result.canceled && result.status != null) {
             _lastResult = result;
+            _lastKnownBatteryLevel = result.battery_level;
 
             if (_lastStatus != null && (_lastStatus.radio_address != result.status.radio_address ||
-                    _lastStatus.id_lot != result.status.id_lot || _lastStatus.id_t != result.status.id_t))
+                    _lastStatus.id_lot != result.status.id_lot || _lastStatus.id_t != result.status.id_t)
+                && _lastStatus.radio_address != 0 && _lastStatus.id_lot != 0 && _lastStatus.id_t != 0)
             {
                 MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_CHANGE));
                 Notification notification = new Notification(Notification.OMNIPY_POD_CHANGE,
@@ -463,8 +466,11 @@ public class OmnipodPdm {
                     sb.append("\n" + MainApp.gs(R.string.omnipod_pod_connection_status_Authentication_Failed));      //"Authentication: Failed"
                 if (_lastResult != null && _lastResult.api != null)
                 {
-                    sb.append("\n" + MainApp.gs(R.string.omnipod_pod_connection_status_Omnipy_API_Version) + _lastResult.api.version_major         //"Omnipy API Version: v"
-                        + "." + _lastResult.api.version_minor);
+                    sb.append(String.format("\n" + MainApp.gs(R.string.omnipod_pod_connection_status_Omnipy_API_Version) + "%d.%d.%d.%d",         //"Omnipy API Version: v"
+                            _lastResult.api.version_major,
+                            _lastResult.api.version_minor,
+                            _lastResult.api.version_revision,
+                            _lastResult.api.version_build));
                 }
             }
         }
@@ -629,5 +635,9 @@ public class OmnipodPdm {
 
     public OmnipyRestApi getRestApi() {
         return _restApi;
+    }
+
+    public int getBatteryLevel() {
+        return _lastKnownBatteryLevel;
     }
 }
