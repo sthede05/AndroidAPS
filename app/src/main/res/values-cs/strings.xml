@@ -1160,6 +1160,11 @@
     <string name="old_version">stará verze</string>
     <string name="very_old_version">velmi stará verze</string>
     <string name="new_version_warning">Nová verze je dostupná minimálně %1$d dní! Přepnutí na ochranu před nízkou glykémií po 60 dnech, vypnutí smyčky po 90 dnech</string>
+    <string name="Disconnected_from_omnipy">Disconnected from omnipy</string>
+    <string name="Pod_faulted_with_error">Pod faulted with error: %d</string>
+    <string name="pod_age_format">%dd%dh%dm</string>
+    <string name="Searching_for_omnipy_on_local_network">Searching for omnipy on local network..</string>
+    <string name="Trying_to_connect_to_omnipy_at_address">Trying to connect to omnipy at address:</string>
     <plurals name="objective_days">
         <item quantity="one">%1$d den</item>
         <item quantity="few">%1$d dnů</item>

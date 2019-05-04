@@ -38,7 +38,7 @@
                     android:id="@+id/omnipy_btn_check_connection"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Check Connection" />
+                    android:text="@string/omnipod_pod_connection_status_check_connection"/>
 
             </LinearLayout>
 
@@ -52,13 +52,13 @@
                     android:id="@+id/omnipy_btn_shutdown_remote_host"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Shutdown" />
+                    android:text="@string/omnipod_pod_connection_status_shutdownPi"/>
 
                 <Button
                     android:id="@+id/omnipy_btn_restart_remote_host"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Restart" />
+                    android:text="@string/omnipod_pod_connection_status_RestartPi"/>
 
             </LinearLayout>
 
@@ -85,13 +85,13 @@
                     android:id="@+id/omnipy_btn_clear_alerts"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/omnipy_cmd_clear_alerts"/>
+                    android:text="@string/omnipy_pod_status_clear_alerts"/>
 
                 <Button
                     android:id="@+id/omnipy_btn_update_status"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:text="@string/omnipod_cmd_update_status"/>
+                    android:layout_height="wrap_content"
+                    android:text="@string/omnipod_pod_status_update_status"/>
             </LinearLayout>
 
             <TextView
@@ -112,13 +112,13 @@
                     android:id="@+id/omnipy_btn_deactivate_pod"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/omnipod_cmd_deactivate_pod"/>
+                    android:text="@string/omnipod_pod_actions_deactivate_pod"/>
 
                 <Button
                     android:id="@+id/omnipy_btn_archive_pod"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/omnipod_cmd_archive_pod"/>
+                    android:text="@string/omnipod_pod_actions_archive_pod"/>
 
             </LinearLayout>
 
@@ -131,13 +131,13 @@
                     android:id="@+id/omnipy_btn_activate_pod"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/omnipod_cmd_activate_pod"/>
+                    android:text="@string/omnipod_pod_actions_activate_pod"/>
 
                 <Button
                     android:id="@+id/omnipy_btn_start_pod"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/omnipod_cmd_start_pod"/>
+                    android:text="@string/omnipod_pod_actions_start_pod"/>
             </LinearLayout>
 
 

@@ -330,15 +330,16 @@ public class OmnipyRestApi {
         if (SP.getBoolean(R.string.key_omnipy_autodetect_host, true))
         {
             MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_CONNECTION_STATUS));
-            Notification notification = new Notification(Notification.OMNIPY_CONNECTION_STATUS, "Searching for omnipy on local network..", Notification.NORMAL, 1);
+            Notification notification = new Notification(Notification.OMNIPY_CONNECTION_STATUS, MainApp.gs(R.string.Searching_for_omnipy_on_local_network), Notification.NORMAL, 1);    //"Searching for omnipy on local network.."
             MainApp.bus().post(new EventNewNotification(notification));
+
         }
         else
         {
             String omnipyHost = SP.getString(R.string.key_omnipy_host, null);
             if (omnipyHost != null && omnipyHost.length() == 0) {
                 MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_CONNECTION_STATUS));
-                Notification notification = new Notification(Notification.OMNIPY_CONNECTION_STATUS, "Trying to connect to omnipy at address: " + omnipyHost, Notification.INFO, 1);
+                Notification notification = new Notification(Notification.OMNIPY_CONNECTION_STATUS, MainApp.gs(R.string.Trying_to_connect_to_omnipy_at_address) + omnipyHost, Notification.INFO, 1);    //"Trying to connect to omnipy at address:"
                 MainApp.bus().post(new EventNewNotification(notification));
             }
         }
