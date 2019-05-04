@@ -462,8 +462,11 @@ public class OmnipodPdm {
                     sb.append("\nAuthentication: Failed");
                 if (_lastResult != null && _lastResult.api != null)
                 {
-                    sb.append("\nOmnipy API Version: v" + _lastResult.api.version_major
-                        + "." + _lastResult.api.version_minor);
+                    sb.append(String.format("\nOmnipy API Version: v%d.%d.%d.%d",
+                            _lastResult.api.version_major,
+                            _lastResult.api.version_minor,
+                            _lastResult.api.version_revision,
+                            _lastResult.api.version_build));
                 }
             }
         }
