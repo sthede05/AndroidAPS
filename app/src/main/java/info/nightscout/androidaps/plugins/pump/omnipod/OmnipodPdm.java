@@ -636,4 +636,8 @@ public class OmnipodPdm {
     public OmnipyRestApi getRestApi() {
         return _restApi;
     }
+
+    public int getBatteryLevel() {
+        return _lastKnownBatteryLevel;
+    }
 }
