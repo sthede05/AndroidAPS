@@ -368,7 +368,7 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
     private void DialogMessageWithOK(String text)
     {
         CloseDialog();
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext()).setCancelable(false);
         _currentDialog = builder.setMessage(text).setPositiveButton("OK", null).show();
     }
 
@@ -383,7 +383,7 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
 
     private void Confirm(String text, Runnable ifYes) {
         CloseDialog();
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext()).setCancelable(false);
         DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
