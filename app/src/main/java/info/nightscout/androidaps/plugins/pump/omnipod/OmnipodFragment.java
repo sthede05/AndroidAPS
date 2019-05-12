@@ -195,6 +195,12 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
 
     public void ActivatePod(View view)
     {
+        Profile profile = ProfileFunctions.getInstance().getProfile();
+        if (profile == null)
+        {
+            DialogMessageWithOK(MainApp.gs(R.string.omnipod_activate_err_no_profile_set));
+            return;
+        }
         OmnipyRestApi rest = _pdm.GetRestApi();
         Confirm(MainApp.gs(R.string.omnipod_ActivatePod_1) + "\n"  + "\n"  +           //"Please fill the pod with insulin before starting with activation process."
                 MainApp.gs(R.string.omnipod_ActivatePod_2),           //"Have you filled the pod with insulin and heard two beeps while filling it?"
@@ -206,7 +212,6 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
                                         MainApp.gs(R.string.omnipod_ActivatePod_6) +          //"If this takes longer than 30 seconds, try changing positions of the pod and RL"
                                         MainApp.gs(R.string.omnipod_ActivatePod_7));      //" ensuring there is a small gap between the two of them.\nOmnipy will try to pair with the pod for up to 2 minutes."
 
-                                Profile profile = ProfileFunctions.getInstance().getProfile();
                                 TimeZone tz = profile.getTimeZone();
                                 int offset_minutes = (tz.getRawOffset() + tz.getDSTSavings()) / (60 * 1000);
 
