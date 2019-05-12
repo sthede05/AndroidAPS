@@ -1,20 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
-    <PreferenceCategory android:title="@string/omnipy_connection_settings">
-        <SwitchPreference
-            android:defaultValue="true"
-            android:disableDependentsState="true"
-            android:key="@string/key_omnipy_autodetect_host"
-            android:title="@string/omnipy_auto_detect_host" />
-        <EditTextPreference
-            android:defaultValue=""
-            android:dependency="@string/key_omnipy_autodetect_host"
-            android:key="@string/key_omnipy_host"
-            android:title="@string/omnipy_host_ip" />
-        <EditTextPreference
-            android:defaultValue=""
-            android:key="@string/key_omnipy_password"
-            android:title="@string/omnipy_set_http_password" />
+    <PreferenceCategory android:title="@string/omnipod_settings">
     </PreferenceCategory>
+    <EditTextPreference
+        android:defaultValue="Default value"
+        android:key="edit_text_preference_1"
+        android:selectAllOnFocus="true"
+        android:singleLine="false"
+        android:title="@string/omnicore_settings"
+        android:enabled="false"/>
 </PreferenceScreen>

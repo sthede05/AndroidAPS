@@ -1553,6 +1553,7 @@
     <string name="Searching_for_omnipy_on_local_network">Searching for omnipy on local network..</string>
     <string name="Trying_to_connect_to_omnipy_at_address">Trying to connect to omnipy at address:</string>
     <string name="omnipod_activate_err_no_profile_set">Error: Cannot activate a pod without an active user profile. Please set it up using AndroidAPS profile actions.</string>
+    <string name="omnicore_settings">Open the OmniCore app to configure your Omnipod</string>
 
 
     <plurals name="objective_days">
