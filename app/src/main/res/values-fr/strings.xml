@@ -1329,4 +1329,5 @@ L\'ENSEMBLE DES RISQUES LIÉS À LA QUALITÉ ET À LA PERFORMANCE DU PROGRAMME S
     <string name="pod_age_format">%dj %dh %dm</string>
     <string name="Searching_for_omnipy_on_local_network">Recherche d\'Omnipy sur le réseau local..</string>
     <string name="Trying_to_connect_to_omnipy_at_address">Tentative de connexion à l\'adresse:</string>
+    <string name="omnipod_activate_err_no_profile_set">Erreur: Un POD ne peut être activé sans profil d\'utilisateur actif. Merci d\'activer un profil dans AndroidAPS.</string>
 </resources>
