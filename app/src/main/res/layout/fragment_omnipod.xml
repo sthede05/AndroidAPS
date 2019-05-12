@@ -16,53 +16,6 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/textviewOmnipyConnection"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@color/cardview_dark_background"
-                android:text="@string/omnipy_connection_status"
-                android:textAppearance="@android:style/TextAppearance.Material.Large" />
-
-            <TextView
-                android:id="@+id/omnipy_txt_connection_status"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal"
-                android:gravity="right">
-
-                <Button
-                    android:id="@+id/omnipy_btn_check_connection"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/omnipod_pod_connection_status_check_connection"/>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="right"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/omnipy_btn_shutdown_remote_host"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/omnipod_pod_connection_status_shutdownPi"/>
-
-                <Button
-                    android:id="@+id/omnipy_btn_restart_remote_host"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/omnipod_pod_connection_status_RestartPi"/>
-
-            </LinearLayout>
-
-            <TextView
                 android:id="@+id/textviewPodStatus"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

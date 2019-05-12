@@ -29,7 +29,6 @@ import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipyApiResu
 import info.nightscout.androidaps.logging.L;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.OmnipyRestApi;
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipodUpdateGui;
-import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipyConfigurationComplete;
 import info.nightscout.androidaps.utils.SP;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmnipyResult;
 
@@ -56,13 +55,11 @@ public class OmnipodPdm {
         MainApp.bus().register(this);
         MainApp.bus().register(_restApi);
         _lastStatus = OmnipodStatus.fromJson(SP.getString(R.string.key_omnipod_status, null));
-        _restApi.StartConfiguring();
     }
 
     public void OnStop() {
         MainApp.bus().unregister(_restApi);
         MainApp.bus().unregister(this);
-        _restApi.StopConfiguring();
         _restApi = null;
     }
 
@@ -88,7 +85,6 @@ public class OmnipodPdm {
         }
         MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_CONNECTION_STATUS));
         MainApp.bus().post(new Notification(Notification.OMNIPY_CONNECTION_STATUS, "Disconnected from omnipy", Notification.NORMAL));
-        _restApi.StartConfiguring();
     }
 
     public boolean IsInitialized() {
@@ -112,7 +108,7 @@ public class OmnipodPdm {
     }
 
     public boolean IsConnected() {
-        return _restApi.isConfigured() && _restApi.isConnectable()
+        return _restApi.isConnectable()
                 && _restApi.isAuthenticated() && IsInitialized();
     }
 
@@ -125,16 +121,11 @@ public class OmnipodPdm {
     }
 
     public boolean IsConnecting() {
-        if (!_restApi.isConfigured())
+        if (!_restApi.isConnectable())
             return true;
-        else
-        {
-            if (!_restApi.isConnectable())
-                return true;
-            if (!_restApi.isAuthenticated())
-                return true;
-            return false;
-        }
+        if (!_restApi.isAuthenticated())
+            return true;
+        return false;
     }
 
     public void StopConnecting() {
@@ -153,39 +144,6 @@ public class OmnipodPdm {
     public synchronized void onResultReceived(final EventOmnipyApiResult or) {
         OmnipyResult result = or.getResult();
         onResultReceived(result);
-    }
-
-    @Subscribe
-    public void onStatusEvent(final EventPreferenceChange s) {
-        if (s.isChanged(R.string.key_omnipy_autodetect_host)
-                || s.isChanged(R.string.key_omnipy_host)
-                ||s.isChanged(R.string.key_omnipy_password))
-        {
-            _restApi.StartConfiguring();
-        }
-
-        if (s.isChanged(R.string.key_omnipod_limit_max_temp)) {
-        }
-        if (s.isChanged(R.string.key_omnipod_limit_max_bolus)) {
-        }
-
-        if (s.isChanged(R.string.key_omnipod_remind_low_reservoir_units)) {
-        }
-        if (s.isChanged(R.string.key_omnipod_remind_pod_expiry_minutes)) {
-        }
-
-        if (s.isChanged(R.string.key_omnipod_remind_basal_change)) {
-        }
-        if (s.isChanged(R.string.key_omnipod_remind_bolus_start)) {
-        }
-        if (s.isChanged(R.string.key_omnipod_remind_bolus_cancel)) {
-        }
-        if (s.isChanged(R.string.key_omnipod_remind_temp_start)) {
-        }
-        if (s.isChanged(R.string.key_omnipod_remind_temp_running)) {
-        }
-        if (s.isChanged(R.string.key_omnipod_remind_temp_cancel)) {
-        }
     }
 
     public synchronized void onResultReceived(OmnipyResult result) {
@@ -266,75 +224,6 @@ public class OmnipodPdm {
             SP.putString(R.string.key_omnipod_status, _lastStatus.asJson());
         }
         MainApp.bus().post(new EventOmnipodUpdateGui());
-    }
-
-    @Subscribe
-    public void onConfigurationComplete(final EventOmnipyConfigurationComplete confResult) {
-        if (_pingTimer != null) {
-            _pingTimer.cancel();
-            _pingTimer = null;
-        }
-        MainApp.bus().post(new EventOmnipodUpdateGui());
-        String errorMessage;
-        if (!confResult.isConnectable)
-        {
-            if (confResult.isDiscovered)
-            {
-                errorMessage = MainApp.gs(R.string.omnipod_network_status_located_no_connection_txt1) + confResult.hostName +         //"Omnipy located at network address "
-                        MainApp.gs(R.string.omnipod_network_status_located_no_connection_txt2);                                    //" but connection cannot be established"
-            }
-            else
-            {
-                errorMessage = MainApp.gs(R.string.omnipod_network_status_not_located_no_connection_txt1) + confResult.hostName      //"Omnipy connection cannot be established at the configured address: "
-                        + MainApp.gs(R.string.omnipod_network_status_not_located_no_connection_txt2);                                                       //" Please verify the address in configuration."
-            }
-            MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_CONNECTION_STATUS));
-            Notification notification = new Notification(Notification.OMNIPY_CONNECTION_STATUS, errorMessage, Notification.NORMAL);
-            MainApp.bus().post(new EventNewNotification(notification));
-
-            _pingTimer = new Timer();
-            _pingTimer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    _restApi.StartConfiguring();
-                }
-            }, 30000);
-
-        }
-        else if (!confResult.isAuthenticated)
-        {
-            errorMessage = MainApp.gs(R.string.omnipod_network_status_located_no_authentication_txt1) + confResult.hostName +                          //"Omnipy connection established at address "
-                    MainApp.gs(R.string.omnipod_network_status_located_no_authentication_txt2);                             //" but authentication failed. Please verify your password in settings."
-            MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_CONNECTION_STATUS));
-            Notification notification = new Notification(Notification.OMNIPY_CONNECTION_STATUS, errorMessage, Notification.NORMAL);
-            MainApp.bus().post(new EventNewNotification(notification));
-
-            _pingTimer = new Timer();
-            _pingTimer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    _restApi.StartConfiguring();
-                }
-            }, 30000);
-        }
-        else
-        {
-            MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_CONNECTION_STATUS));
-            Notification notification = new Notification(Notification.OMNIPY_CONNECTION_STATUS,
-                    MainApp.gs(R.string.omnipod_network_status_located_and_connected) + confResult.hostName, Notification.INFO, 1);             //"Connected to omnipy running at "
-            MainApp.bus().post(new EventNewNotification(notification));
-
-            UpdateStatus();
-
-            _pingTimer = new Timer();
-            _pingTimer.scheduleAtFixedRate(new TimerTask() {
-                @Override
-                public void run() {
-                    pingOmnipy();
-                }
-            }, 30000, 30000);
-        }
-
     }
 
     private long _lastStatusRequest = 0;
@@ -436,57 +325,6 @@ public class OmnipodPdm {
         Date date = new Date((long)_lastStatus.state_last_updated * 1000);
         DateFormat dateFormat = android.text.format.DateFormat.getTimeFormat(_context);
         sb.append("\n" + MainApp.gs(R.string.omnipod_pod_status_Status_updated)).append(dateFormat.format(date));        //"Status updated: "
-
-        return sb.toString();
-    }
-
-    public String getConnectionStatusText()
-    {
-        StringBuilder sb = new StringBuilder();
-
-        if (!_restApi.isConfigured())
-        {
-            sb.append(MainApp.gs(R.string.omnipod_pod_connection_status_Address_configuration_in_progress));      //"Address configuration in progress..."
-        }
-        else
-        {
-            if (_restApi.isDiscovered())
-                sb.append(MainApp.gs(R.string.omnipod_pod_connection_status_Discovered_Address)).append(_restApi.getHost());       //"Discovered Address: "
-            else
-                sb.append(MainApp.gs(R.string.omnipod_pod_connection_status_Configured_Address)).append(_restApi.getHost());       //"Configured Address: "
-
-            if (!_restApi.isConnectable())
-                sb.append("\n" + MainApp.gs(R.string.omnipod_pod_connection_status_Connectable_No));     //"Connectable: No"
-            else
-            {
-                sb.append("\n" + MainApp.gs(R.string.omnipod_pod_connection_status_Connectable_Yes));        //"Connectable: Yes"
-                if (_restApi.isAuthenticated())
-                    sb.append("\n" + MainApp.gs(R.string.omnipod_pod_connection_status_Authentication_Verified));        //"Authentication: Verified"
-                else
-                    sb.append("\n" + MainApp.gs(R.string.omnipod_pod_connection_status_Authentication_Failed));      //"Authentication: Failed"
-                if (_lastResult != null && _lastResult.api != null)
-                {
-                    sb.append(String.format("\n" + MainApp.gs(R.string.omnipod_pod_connection_status_Omnipy_API_Version) + "%d.%d.%d.%d",         //"Omnipy API Version: v"
-                            _lastResult.api.version_major,
-                            _lastResult.api.version_minor,
-                            _lastResult.api.version_revision,
-                            _lastResult.api.version_build));
-                }
-            }
-        }
-
-        sb.append("\n" + MainApp.gs(R.string.omnipod_pod_connection_status_Last_successful_connection));        //"Last successful connection: "
-        long tx = _restApi.getLastSuccessfulConnection();
-        if (tx == 0)
-        {
-            sb.append(MainApp.gs(R.string.omnipod_pod_connection_status_NA));   //"N/A"
-        }
-        else
-        {
-            Date date = new Date(tx);
-            DateFormat dateFormat = android.text.format.DateFormat.getTimeFormat(_context);
-            sb.append(dateFormat.format(date));
-        }
 
         return sb.toString();
     }

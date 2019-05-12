@@ -69,11 +69,8 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_omnipod, container, false);
 
-        view.findViewById(R.id.omnipy_btn_check_connection).setOnClickListener(this);
         view.findViewById(R.id.omnipy_btn_update_status).setOnClickListener(this);
         view.findViewById(R.id.omnipy_btn_clear_alerts).setOnClickListener(this);
-        view.findViewById(R.id.omnipy_btn_shutdown_remote_host).setOnClickListener(this);
-        view.findViewById(R.id.omnipy_btn_restart_remote_host).setOnClickListener(this);
         view.findViewById(R.id.omnipy_btn_deactivate_pod).setOnClickListener(this);
         view.findViewById(R.id.omnipy_btn_archive_pod).setOnClickListener(this);
         view.findViewById(R.id.omnipy_btn_activate_pod).setOnClickListener(this);
@@ -98,52 +95,6 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
             }
         });
     }
-
-    private void CheckConnection(Button b) {
-        OmnipyRestApi rest = _pdm.GetRestApi();
-        DialogMessage(MainApp.gs(R.string.omnipod_CheckConnection_Trying_to_connect));         //"Trying to connect"
-        rest.CheckAuthentication(result -> {
-            if (result.success) {
-                DialogMessageWithOK(MainApp.gs(R.string.omnipod_CheckConnection_Connection_successful));      //"Connection successful!"
-            } else {
-                if (result.response != null)
-                    DialogMessageWithOK(MainApp.gs(R.string.omnipod_CheckConnection_Connection_failed1) + "\n " + result.response.toString());       //"Connection failed:"
-                else
-                    DialogMessageWithOK(MainApp.gs(R.string.omnipod_CheckConnection_Connection_failed2));       //"Connection failed"
-            }
-        });
-    }
-
-    private void Shutdown(Button b) {
-        OmnipyRestApi rest = _pdm.GetRestApi();
-        DialogMessage(MainApp.gs(R.string.omnipod_Shutdown_Requesting_shutdown));       //"Requesting shutdown"
-        rest.Shutdown (result -> {
-            if (result.success) {
-                DialogMessageWithOK(MainApp.gs(R.string.omnipod_Shutdown_Shutdown_request_sent));          //"Shutdown request sent."
-            } else {
-                if (result.response != null)
-                    DialogMessageWithOK(MainApp.gs(R.string.omnipod_Shutdown_Shutdown_failed1) + "\n " + result.response.toString());         //"Shutdown failed:"
-                else
-                    DialogMessageWithOK(MainApp.gs(R.string.omnipod_Shutdown_Shutdown_failed2));         //"Shutdown failed"
-            }
-        });
-    }
-
-    private void Restart(Button b) {
-        OmnipyRestApi rest = _pdm.GetRestApi();
-        DialogMessage(MainApp.gs(R.string.omnipod_Restart_Requesting_Restart));            //"Requesting restart"
-        rest.Restart (result -> {
-            if (result.success) {
-                DialogMessageWithOK(MainApp.gs(R.string.omnipod_Restart_Restart_request_sent));       //"Restart request sent."
-            } else {
-                if (result.response != null)
-                    DialogMessageWithOK(MainApp.gs(R.string.omnipod_Restart_Restart_failed1) + "\n " + result.response.toString());      //"Restart failed:"
-                else
-                    DialogMessageWithOK(MainApp.gs(R.string.omnipod_Restart_Restart_failed2));      //"Restart failed"
-            }
-        });
-    }
-
 
     private void ClearAlerts(Button b) {
         OmnipyRestApi rest = _pdm.GetRestApi();
@@ -275,46 +226,34 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
     protected void updateGUI() {
         View vw = this.getView();
 
-        TextView tv = vw.findViewById(R.id.omnipy_txt_connection_status);
-        tv.setText(_pdm.getConnectionStatusText());
-
-        tv = vw.findViewById(R.id.omnipy_txt_pod_status);
+        TextView tv = vw.findViewById(R.id.omnipy_txt_pod_status);
         tv.setText(_pdm.getPodStatusText());
 
         OmnipodStatus pod = _pdm.getStatus();
         OmnipyRestApi rest = _pdm.getRestApi();
 
-        Button b = (Button)vw.findViewById(R.id.omnipy_btn_check_connection);
-        b.setEnabled(rest.isConfigured() & rest.isConnectable());
-
-        b = vw.findViewById(R.id.omnipy_btn_shutdown_remote_host);
-        b.setEnabled(rest.isConfigured() & rest.isConnectable() & rest.isAuthenticated());
-
-        b = vw.findViewById(R.id.omnipy_btn_restart_remote_host);
-        b.setEnabled(rest.isConfigured() & rest.isConnectable() & rest.isAuthenticated());
-
-        b = vw.findViewById(R.id.omnipy_btn_update_status);
-        b.setEnabled(rest.isConfigured() & rest.isConnectable() & rest.isAuthenticated()
+        Button b = vw.findViewById(R.id.omnipy_btn_update_status);
+        b.setEnabled(rest.isConnectable() & rest.isAuthenticated()
                 & (pod.state_progress > 0) & (pod.state_progress<15) & pod.radio_address != 0);
 
         b = vw.findViewById(R.id.omnipy_btn_clear_alerts);
-        b.setEnabled(rest.isConfigured() & rest.isConnectable() & rest.isAuthenticated()
+        b.setEnabled(rest.isConnectable() & rest.isAuthenticated()
                 & (pod.state_alert > 0) & (pod.state_progress >= 8) & (pod.state_progress<15) & pod.radio_address != 0);
 
         b = vw.findViewById(R.id.omnipy_btn_deactivate_pod);
-        b.setEnabled(rest.isConfigured() & rest.isConnectable() & rest.isAuthenticated() &
+        b.setEnabled(rest.isConnectable() & rest.isAuthenticated() &
                 (pod.state_progress >= 3) & (pod.state_progress<15) & pod.radio_address != 0);
 
         b = vw.findViewById(R.id.omnipy_btn_archive_pod);
-        b.setEnabled(rest.isConfigured() & rest.isConnectable() & rest.isAuthenticated() &
+        b.setEnabled(rest.isConnectable() & rest.isAuthenticated() &
                 pod.radio_address != 0);
 
         b = vw.findViewById(R.id.omnipy_btn_activate_pod);
-        b.setEnabled(rest.isConfigured() & rest.isConnectable() & rest.isAuthenticated() &
+        b.setEnabled(rest.isConnectable() & rest.isAuthenticated() &
                 pod.state_progress < 5);
 
         b = vw.findViewById(R.id.omnipy_btn_start_pod);
-        b.setEnabled(rest.isConfigured() & rest.isConnectable() & rest.isAuthenticated() &
+        b.setEnabled(rest.isConnectable() & rest.isAuthenticated() &
                 (pod.state_progress == 5) & pod.radio_address != 0);
     }
 
@@ -323,22 +262,11 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
         int id = view.getId();
         switch(id)
         {
-            case R.id.omnipy_btn_check_connection:
-                CheckConnection((Button)view);
-                break;
             case R.id.omnipy_btn_update_status:
                 UpdateStatus((Button)view);
                 break;
             case R.id.omnipy_btn_clear_alerts:
                 ClearAlerts((Button)view);
-                break;
-            case R.id.omnipy_btn_restart_remote_host:
-                Confirm(MainApp.gs(R.string.omnipod_restart_Pi_prompt), () -> {            //"Are you sure you want to restart the omnipy host?"
-                    Restart((Button)view); });
-                break;
-            case R.id.omnipy_btn_shutdown_remote_host:
-                Confirm(MainApp.gs(R.string.omnipod_shutdown_pi_prompt), () -> {          //"Are you sure you want to shut down the omnipy host?"
-                    Shutdown((Button)view); });
                 break;
             case R.id.omnipy_btn_deactivate_pod:
                 Confirm(MainApp.gs(R.string.omnipod_pod_deactivation__prompt), () -> {        //"Are you sure you want to deactivate the pod? The pod will be turned off completely and you will not be able to access it."
