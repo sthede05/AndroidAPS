@@ -122,25 +122,25 @@ public class LoopPlugin extends PluginBase {
         MainApp.bus().register(this);
         createNotificationChannel();
         super.onStart();
-        if (_loopInvoker != null) {
-            _loopInvoker.cancel();
-        }
-        _loopInvoker = new Timer();
-        _loopInvoker.scheduleAtFixedRate( new TimerTask() {
-            @Override
-            public void run() {
-
-                if (lastRun == null || lastRun.lastAPSRun == null || lastRun.lastAPSRun.getTime() < System.currentTimeMillis() - 30000)
-                {
-                    Constraint<Boolean> closedLoopEnabled = MainApp.getConstraintChecker().isClosedLoopAllowed();
-                    if (loopPlugin.isEnabled(loopPlugin.getType()) && !loopPlugin.isSuspended()
-                            && !loopPlugin.isDisconnected() && closedLoopEnabled.value()) {
-
-                        loopPlugin.invoke("self-timer", false);
-                    }
-                }
-            }
-        }, 5000,120000);
+//        if (_loopInvoker != null) {
+//            _loopInvoker.cancel();
+//        }
+//        _loopInvoker = new Timer();
+//        _loopInvoker.scheduleAtFixedRate( new TimerTask() {
+//            @Override
+//            public void run() {
+//
+//                if (lastRun == null || lastRun.lastAPSRun == null || lastRun.lastAPSRun.getTime() < System.currentTimeMillis() - 30000)
+//                {
+//                    Constraint<Boolean> closedLoopEnabled = MainApp.getConstraintChecker().isClosedLoopAllowed();
+//                    if (loopPlugin.isEnabled(loopPlugin.getType()) && !loopPlugin.isSuspended()
+//                            && !loopPlugin.isDisconnected() && closedLoopEnabled.value()) {
+//
+//                        loopPlugin.invoke("self-timer", false);
+//                    }
+//                }
+//            }
+//        }, 5000,120000);
     }
 
     private void createNotificationChannel() {
@@ -159,10 +159,10 @@ public class LoopPlugin extends PluginBase {
     protected void onStop() {
         super.onStop();
         MainApp.bus().unregister(this);
-        if (_loopInvoker != null) {
-            _loopInvoker.cancel();
-            _loopInvoker = null;
-        }
+//        if (_loopInvoker != null) {
+//            _loopInvoker.cancel();
+//            _loopInvoker = null;
+//        }
 
     }
 
