@@ -365,7 +365,7 @@ public class OmnipodFragment extends SubscriberFragment implements View.OnClickL
     private void DialogMessage(String text)
     {
         CloseDialog();
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext()).setCancelable(false);
         builder.setMessage(text);
         _currentDialog = builder.show();
     }
