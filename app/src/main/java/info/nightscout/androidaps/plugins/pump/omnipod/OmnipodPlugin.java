@@ -348,35 +348,32 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
     public void stopBolusDelivering() {
         log.debug("omnipod plugin StopBolusDelivering()");
         if (_runningBolusInfo != null) {
-            _pdm.CancelBolus(result ->
-            {
-                double canceled = -1d;
-                if (result.success) {
-                    canceled = result.status.insulin_canceled;
-                }
-
-                EventOverviewBolusProgress bolusingEvent = EventOverviewBolusProgress.getInstance();
-
-                Double supposedToDeliver = _runningBolusInfo.insulin;
-                if (canceled <= 0d) {
-                    if (bolusingEvent != null)
-                        bolusingEvent.status = String.format("Couldn't stop bolus in time, delivered: %f.2u", supposedToDeliver);
-                } else {
-                    if (bolusingEvent != null)
-                        bolusingEvent.status = MainApp.gs(R.string.bolusstopped);
-                    _runningBolusInfo.insulin = supposedToDeliver - canceled;
-                }
-                if (bolusingEvent != null) {
-                    MainApp.bus().post(bolusingEvent);
-                    MainApp.bus().post(new EventOmnipodUpdateGui());
-                }
-                SystemClock.sleep(100);
-                if (canceled > 0d)
-                    _runningBolusInfo.notes = String.format("Delivery stopped at %f.2u. Original bolus request was: %f.2u", supposedToDeliver - canceled, supposedToDeliver);
-                TreatmentsPlugin.getPlugin().addToHistoryTreatment(_runningBolusInfo, true);
-            });
+            OmnipyResult result = _pdm.CancelBolus();
+            double canceled = -1d;
+            if (result.success) {
+                canceled = result.status.insulin_canceled;
+            }
 
             EventOverviewBolusProgress bolusingEvent = EventOverviewBolusProgress.getInstance();
+
+            Double supposedToDeliver = _runningBolusInfo.insulin;
+            if (canceled <= 0d) {
+                if (bolusingEvent != null)
+                    bolusingEvent.status = String.format("Couldn't stop bolus in time, delivered: %f.2u", supposedToDeliver);
+            } else {
+                if (bolusingEvent != null)
+                    bolusingEvent.status = MainApp.gs(R.string.bolusstopped);
+                _runningBolusInfo.insulin = supposedToDeliver - canceled;
+            }
+            if (bolusingEvent != null) {
+                MainApp.bus().post(bolusingEvent);
+                MainApp.bus().post(new EventOmnipodUpdateGui());
+            }
+            SystemClock.sleep(100);
+            if (canceled > 0d)
+                _runningBolusInfo.notes = String.format("Delivery stopped at %f.2u. Original bolus request was: %f.2u", supposedToDeliver - canceled, supposedToDeliver);
+            TreatmentsPlugin.getPlugin().addToHistoryTreatment(_runningBolusInfo, true);
+
             if (bolusingEvent != null) {
                 bolusingEvent.status = MainApp.gs(R.string.bolusstopping);
                 MainApp.bus().post(bolusingEvent);

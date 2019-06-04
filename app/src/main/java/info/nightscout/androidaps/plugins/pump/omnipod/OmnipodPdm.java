@@ -14,20 +14,17 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.TimeZone;
 import java.util.Timer;
-import java.util.TimerTask;
 
 import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.Profile;
-import info.nightscout.androidaps.events.EventPreferenceChange;
 import info.nightscout.androidaps.plugins.general.overview.events.EventDismissNotification;
 import info.nightscout.androidaps.plugins.general.overview.events.EventNewNotification;
 import info.nightscout.androidaps.plugins.general.overview.notifications.Notification;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.OmnipodStatus;
-import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmnipyCallback;
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipyApiResult;
 import info.nightscout.androidaps.logging.L;
-import info.nightscout.androidaps.plugins.pump.omnipod.api.OmnipyRestApi;
+import info.nightscout.androidaps.plugins.pump.omnipod.api.OmniCoreApi;
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipodUpdateGui;
 import info.nightscout.androidaps.utils.SP;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmnipyResult;
@@ -35,12 +32,10 @@ import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmnipyResult;
 public class OmnipodPdm {
 
     private final Context _context;
-    private OmnipyRestApi _restApi;
+    private OmniCoreApi _restApi;
     private OmnipyResult _lastResult;
     private OmnipodStatus _lastStatus;
     private int _lastKnownBatteryLevel = -1;
-
-    private Timer _pingTimer;
 
     private final Logger _log;
 
@@ -51,7 +46,7 @@ public class OmnipodPdm {
     }
 
     public void OnStart() {
-        _restApi = new OmnipyRestApi(_context);
+        _restApi = new OmniCoreApi(_context);
         MainApp.bus().register(this);
         MainApp.bus().register(_restApi);
         _lastStatus = OmnipodStatus.fromJson(SP.getString(R.string.key_omnipod_status, null));
@@ -61,30 +56,6 @@ public class OmnipodPdm {
         MainApp.bus().unregister(_restApi);
         MainApp.bus().unregister(this);
         _restApi = null;
-    }
-
-    private long _lastPing = 0;
-    private void pingOmnipy()
-    {
-        long t0 = System.currentTimeMillis();
-        if (t0 - _lastPing > 5000) {
-            _lastPing = t0;
-            _restApi.Ping(result -> {
-                if (!result.canceled && !result.success) {
-                    handleDisconnect();
-                }
-            });
-        }
-    }
-
-    private void handleDisconnect()
-    {
-        if (_pingTimer != null) {
-            _pingTimer.cancel();
-            _pingTimer = null;
-        }
-        MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_CONNECTION_STATUS));
-        MainApp.bus().post(new Notification(Notification.OMNIPY_CONNECTION_STATUS, "Disconnected from omnipy", Notification.NORMAL));
     }
 
     public boolean IsInitialized() {
@@ -108,23 +79,18 @@ public class OmnipodPdm {
     }
 
     public boolean IsConnected() {
-        return _restApi.isConnectable()
-                && _restApi.isAuthenticated() && IsInitialized();
+        return true;
     }
 
     public void Connect() {
     }
 
-    public OmnipyRestApi GetRestApi()
+    public OmniCoreApi GetRestApi()
     {
         return _restApi;
     }
 
     public boolean IsConnecting() {
-        if (!_restApi.isConnectable())
-            return true;
-        if (!_restApi.isAuthenticated())
-            return true;
         return false;
     }
 
@@ -138,7 +104,6 @@ public class OmnipodPdm {
     }
 
     public void Disconnect() {}
-
 
     @Subscribe
     public synchronized void onResultReceived(final EventOmnipyApiResult or) {
@@ -232,7 +197,7 @@ public class OmnipodPdm {
             long t0 = System.currentTimeMillis();
             if (t0 - _lastStatusRequest > 60000) {
                 _lastStatusRequest = t0;
-                _restApi.UpdateStatus(null);
+                _restApi.UpdateStatus(0);
             }
         }
     }
@@ -380,7 +345,7 @@ public class OmnipodPdm {
             TimeZone tz = profile.getTimeZone();
             int offset_minutes = (tz.getRawOffset() + tz.getDSTSavings()) / (60 * 1000);
             BigDecimal[] basalSchedule = getBasalScheduleFromProfile(profile);
-            result = _restApi.setBasalSchedule(basalSchedule, offset_minutes, null).waitForResult();
+            result = _restApi.setBasalSchedule(basalSchedule, offset_minutes);
             this.onResultReceived(result);
         }
         return result;
@@ -389,22 +354,20 @@ public class OmnipodPdm {
     public OmnipyResult Bolus(BigDecimal bolusUnits) {
         OmnipyResult r = null;
         if (IsConnected() && IsInitialized()) {
-            r = _restApi.Bolus(bolusUnits, null).waitForResult();
+            r = _restApi.Bolus(bolusUnits);
             this.onResultReceived(r);
         }
         return r;
     }
 
-    public void CancelBolus(OmnipyCallback cb) {
-        if (IsConnected() && IsInitialized()) {
-            _restApi.CancelBolus(cb);
-        }
+    public OmnipyResult CancelBolus() {
+        return _restApi.CancelBolus();
     }
 
     public OmnipyResult SetTempBasal(BigDecimal iuRate, BigDecimal durationHours) {
         OmnipyResult r = null;
         if (IsConnected() && IsInitialized()) {
-            r = _restApi.SetTempBasal(iuRate, durationHours, null).waitForResult();
+            r = _restApi.SetTempBasal(iuRate, durationHours);
             this.onResultReceived(r);
         }
         return r;
@@ -413,7 +376,7 @@ public class OmnipodPdm {
     public OmnipyResult CancelTempBasal() {
         OmnipyResult result = null;
         if (IsConnected() && IsInitialized()) {
-            result = _restApi.CancelTempBasal(null).waitForResult();
+            result = _restApi.CancelTempBasal();
             this.onResultReceived(result);
         }
         return result;
@@ -471,7 +434,7 @@ public class OmnipodPdm {
         return _lastStatus;
     }
 
-    public OmnipyRestApi getRestApi() {
+    public OmniCoreApi getRestApi() {
         return _restApi;
     }
 
