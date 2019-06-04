@@ -59,8 +59,9 @@ public class OmnipodPdm {
     }
 
     public boolean IsInitialized() {
-        return (_lastStatus != null &&
-                (_lastStatus.state_progress == 8 || _lastStatus.state_progress == 9));
+        return true;
+//        return (_lastStatus != null &&
+//                (_lastStatus.state_progress == 8 || _lastStatus.state_progress == 9));
     }
 
     public boolean IsSuspended() {
@@ -68,14 +69,7 @@ public class OmnipodPdm {
     }
 
     public boolean IsBusy() {
-        _lastResult = _restApi.IsBusy();
-
-        if (_lastResult.success)
-        {
-            return _lastResult.response.get("busy").getAsBoolean();
-        }
-        else
-            return true;
+        return false;
     }
 
     public boolean IsConnected() {
@@ -295,7 +289,7 @@ public class OmnipodPdm {
     }
 
     public boolean IsProfileSet(Profile profile) {
-        if (IsInitialized()) {
+        if (IsInitialized() && _lastStatus != null) {
             if (_lastStatus.var_basal_schedule == null || _lastStatus.var_basal_schedule.length == 0)
             {
                 return false;
@@ -321,7 +315,7 @@ public class OmnipodPdm {
     }
 
     public double GetBaseBasalRate() {
-        if (IsInitialized() && _lastStatus.var_basal_schedule != null
+        if (IsInitialized() && _lastStatus != null && _lastStatus.var_basal_schedule != null
                 && _lastStatus.var_basal_schedule.length > 0) {
             long t = System.currentTimeMillis();
             t += _lastStatus.var_utc_offset;
@@ -336,7 +330,7 @@ public class OmnipodPdm {
             return _lastStatus.var_basal_schedule[index].doubleValue();
         }
         else
-            return -1d;
+            return 0d;
     }
 
     public OmnipyResult SetNewBasalProfile(Profile profile) {
