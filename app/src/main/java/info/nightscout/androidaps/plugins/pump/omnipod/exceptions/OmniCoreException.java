@@ -1,10 +1,10 @@
 package info.nightscout.androidaps.plugins.pump.omnipod.exceptions;
 
-public class OmnipyException extends Exception {
+public class OmniCoreException extends Exception {
     public Exception innerException;
 
-    public OmnipyException() {}
-    public OmnipyException(Exception e)
+    public OmniCoreException() {}
+    public OmniCoreException(Exception e)
     {
         innerException = e;
     }

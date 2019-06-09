@@ -8,9 +8,9 @@ import org.slf4j.LoggerFactory;
 import info.nightscout.androidaps.logging.L;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.OmnipodStatus;
 
-public class OmnipyResult {
+public class OmniCoreResult {
 
-    public transient OmnipyRequest originalRequest;
+    public transient OmniCoreRequest originalRequest;
 
     public boolean canceled;
     public boolean success;
@@ -21,10 +21,10 @@ public class OmnipyResult {
     public Exception exception;
     public int battery_level = -1;
 
-    public static OmnipyResult fromJson(String jsonResponse, OmnipyRequest request) {
+    public static OmniCoreResult fromJson(String jsonResponse, OmniCoreRequest request) {
         try {
             Gson gson = new Gson();
-            OmnipyResult result = gson.fromJson(jsonResponse, OmnipyResult.class);
+            OmniCoreResult result = gson.fromJson(jsonResponse, OmniCoreResult.class);
             result.originalRequest = request;
             return result;
         } catch (Exception e)

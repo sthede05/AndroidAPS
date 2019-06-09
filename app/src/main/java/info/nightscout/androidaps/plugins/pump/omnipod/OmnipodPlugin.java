@@ -35,7 +35,7 @@ import info.nightscout.androidaps.plugins.general.overview.events.EventNewNotifi
 import info.nightscout.androidaps.plugins.general.overview.events.EventOverviewBolusProgress;
 import info.nightscout.androidaps.plugins.general.overview.notifications.Notification;
 import info.nightscout.androidaps.plugins.pump.common.defs.PumpType;
-import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmnipyResult;
+import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreResult;
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipodUpdateGui;
 import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
 import info.nightscout.androidaps.utils.DateUtil;
@@ -157,7 +157,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
         _pdm.UpdateStatus();
     }
 
-    private String getCommentString(OmnipyResult result)
+    private String getCommentString(OmniCoreResult result)
     {
         String comment = "";
         if (result != null)
@@ -185,7 +185,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
         return comment;
     }
 
-    private long getHistoryId(OmnipyResult result)
+    private long getHistoryId(OmniCoreResult result)
     {
         if (result.status != null)
         {
@@ -226,7 +226,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
             }
         }
 
-        OmnipyResult result = _pdm.SetNewBasalProfile(profile);
+        OmniCoreResult result = _pdm.SetNewBasalProfile(profile);
         if (result != null) {
             r.enacted = result.success;
             r.success = result.success;
@@ -303,7 +303,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
         r.success = false;
 
         BigDecimal units = _pdm.GetExactInsulinUnits(detailedBolusInfo.insulin);
-        OmnipyResult result = _pdm.Bolus(units);
+        OmniCoreResult result = _pdm.Bolus(units);
         if (result != null)
         {
             r.enacted = result.success;
@@ -348,7 +348,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
     public void stopBolusDelivering() {
         log.debug("omnipod plugin StopBolusDelivering()");
         if (_runningBolusInfo != null) {
-            OmnipyResult result = _pdm.CancelBolus();
+            OmniCoreResult result = _pdm.CancelBolus();
             double canceled = -1d;
             if (result.success) {
                 canceled = result.status.insulin_canceled;
@@ -390,7 +390,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
 
         BigDecimal iuRate = _pdm.GetExactInsulinUnits(absoluteRate);
         BigDecimal durationHours = _pdm.GetExactHourUnits(durationInMinutes);
-        OmnipyResult result = _pdm.SetTempBasal(iuRate, durationHours);
+        OmniCoreResult result = _pdm.SetTempBasal(iuRate, durationHours);
 
         if (result != null) {
             r.enacted = result.success;
@@ -426,7 +426,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
         r.enacted = false;
         r.success = false;
 
-        OmnipyResult result = _pdm.CancelTempBasal();
+        OmniCoreResult result = _pdm.CancelTempBasal();
         if (result != null) {
             r.enacted = result.success;
             r.success = result.success;
