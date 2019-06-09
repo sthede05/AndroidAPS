@@ -2,8 +2,6 @@ package info.nightscout.androidaps.plugins.pump.omnipod;
 
 import android.content.Context;
 
-import com.squareup.otto.Subscribe;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +25,6 @@ import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreCancelBo
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreCancelTempBasalRequest;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreStatusRequest;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreTempBasalRequest;
-import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmniCoreResult;
 import info.nightscout.androidaps.logging.L;
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipodUpdateGui;
 import info.nightscout.androidaps.utils.SP;
@@ -49,12 +46,10 @@ public class OmnipodPdm {
     }
 
     public void OnStart() {
-        MainApp.bus().register(this);
         _lastStatus = OmnipodStatus.fromJson(SP.getString(R.string.key_omnipod_status, null));
     }
 
     public void OnStop() {
-        MainApp.bus().unregister(this);
     }
 
     public boolean IsInitialized() {
@@ -92,12 +87,6 @@ public class OmnipodPdm {
     }
 
     public void Disconnect() {}
-
-    @Subscribe
-    public synchronized void onResultReceived(final EventOmniCoreResult or) {
-        OmniCoreResult result = or.getResult();
-        onResultReceived(result);
-    }
 
     public synchronized void onResultReceived(OmniCoreResult result) {
         if (result != null && !result.canceled && result.status != null) {
