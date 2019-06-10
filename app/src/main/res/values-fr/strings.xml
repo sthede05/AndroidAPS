@@ -1250,7 +1250,7 @@ L\'ENSEMBLE DES RISQUES LIÉS À LA QUALITÉ ET À LA PERFORMANCE DU PROGRAMME S
     <string name="omnipod_pod_alerts_Insulin_Suspended">Arrêt de l\'insuline</string>
     <string name="omnipod_pod_alerts_End_of_insulin_suspend">Fin de l\'arrêt de l\'insuline</string>
     <string name="omnipod_pod_alerts_Pod_expired">POD expiré</string>
-    <string name="omnipod_pod_state_POD_IDs_has_been_removed">Le POD N° Lot %d et N° Série %d a été supprimé</string>
+    <string name="omnipod_pod_state_POD_IDs_has_been_removed">Le POD %s a été supprimé</string>
     <string name="omnipod_pod_state_No_pod_registered">Aucun POD enregistré</string>
     <string name="omnipod_pod_state_Pod_in_activation_progress">Activation du POD en cours</string>
     <string name="omnipod_pod_state_Pod_is_activated_and_running">POD activé et actif</string>

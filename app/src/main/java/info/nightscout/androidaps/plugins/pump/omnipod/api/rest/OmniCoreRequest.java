@@ -18,7 +18,6 @@ public abstract class OmniCoreRequest {
 
     public long created;
     public long requested;
-    public long responseReceived;
 
     protected JsonObject joRequest;
 
@@ -28,12 +27,7 @@ public abstract class OmniCoreRequest {
         joRequest = new JsonObject();
     }
 
-    protected String getRequestJson()
-    {
-        return joRequest.toString();
-    }
-
-    public OmniCoreResult getResult() {
+    public OmniCoreResult getResult(long lastResultId) {
         OmniCoreResult result = new OmniCoreResult();
         result.originalRequest = this;
         this.requested = System.currentTimeMillis();
@@ -49,7 +43,9 @@ public abstract class OmniCoreRequest {
 
         Intent intent = new Intent();
         intent.setClassName("net.balya.OmniCore.Mobile.Android","OmniCore.Mobile.Droid.OmniCoreIntentService");
-        intent.putExtra("request", getRequestJson());
+        joRequest.addProperty("lastResult", lastResultId);
+        String jsonRequest = joRequest.toString();
+        intent.putExtra("request", jsonRequest);
         intent.putExtra("messenger", messenger);
 
         synchronized (omniCoreHandler)

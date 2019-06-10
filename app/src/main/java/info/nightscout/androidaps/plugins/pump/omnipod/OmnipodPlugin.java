@@ -162,24 +162,11 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
         String comment = "";
         if (result != null)
         {
-            if (result.success) {
-                long entry_id = -1;
-                int lot = -1;
-                int tid = -1;
-                if (result.response != null && result.response.has("history_entry_id")) {
-                    entry_id = result.response.get("history_entry_id").getAsLong();
-                }
-                if (result.status != null) {
-                    lot = result.status.id_lot;
-                    tid = result.status.id_t;
-                }
-                comment = String.format("%d/%d/%d", lot, tid, entry_id);
+            if (result.success && result.status != null) {
+                comment = result.status.PodId + "_" + result.status.ResultId;
             }
             else {
-                if (result.response != null)
-                {
-                    comment = result.response.toString();
-                }
+                comment = "";
             }
         }
         return comment;
@@ -189,7 +176,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
     {
         if (result.status != null)
         {
-            return result.status.last_command_db_id;
+            return result.status.ResultId;
         }
         return -1;
     }
@@ -351,7 +338,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
             OmniCoreResult result = _pdm.CancelBolus();
             double canceled = -1d;
             if (result.success) {
-                canceled = result.status.insulin_canceled;
+                canceled = result.status.InsulinCanceled;
             }
 
             EventOverviewBolusProgress bolusingEvent = EventOverviewBolusProgress.getInstance();

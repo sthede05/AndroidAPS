@@ -1450,7 +1450,7 @@
     <string name="omnipod_pod_alerts_Pod_expired">Pod expired</string>
 
 
-    <string name="omnipod_pod_state_POD_IDs_has_been_removed">Pod with Lot %d and Serial %d has been removed.</string>
+    <string name="omnipod_pod_state_POD_IDs_has_been_removed">Pod %s has been removed.</string>
     <string name="omnipod_pod_state_No_pod_registered">No pod registered</string>
     <string name="omnipod_pod_state_Pod_in_activation_progress">Pod in activation progress</string>
     <string name="omnipod_pod_state_Pod_is_activated_and_running">Pod is activated and running</string>
