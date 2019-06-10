@@ -162,8 +162,8 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
         String comment = "";
         if (result != null)
         {
-            if (result.success && result.status != null) {
-                comment = result.status.PodId + "_" + result.status.ResultId;
+            if (result.Success && result.Status != null) {
+                comment = result.Status.PodId + "_" + result.Status.ResultId;
             }
             else {
                 comment = "";
@@ -174,9 +174,9 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
 
     private long getHistoryId(OmniCoreResult result)
     {
-        if (result.status != null)
+        if (result.Status != null)
         {
-            return result.status.ResultId;
+            return result.Status.ResultId;
         }
         return -1;
     }
@@ -215,9 +215,9 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
 
         OmniCoreResult result = _pdm.SetNewBasalProfile(profile);
         if (result != null) {
-            r.enacted = result.success;
-            r.success = result.success;
-            if (result.success) {
+            r.enacted = result.Success;
+            r.success = result.Success;
+            if (result.Success) {
                 MainApp.bus().post(new EventDismissNotification(Notification.PROFILE_SET_OK));
                 MainApp.bus().post(new EventDismissNotification(Notification.PROFILE_SET_FAILED));
                 Notification notification = new Notification(Notification.PROFILE_SET_OK, MainApp.gs(R.string.profile_set_ok), Notification.INFO, 60);
@@ -293,14 +293,14 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
         OmniCoreResult result = _pdm.Bolus(units);
         if (result != null)
         {
-            r.enacted = result.success;
-            r.success = result.success;
-            if (!result.success) {
+            r.enacted = result.Success;
+            r.success = result.Success;
+            if (!result.Success) {
                 r.bolusDelivered = 0;
                 r.comment = getCommentString(result);
             }
             else {
-                detailedBolusInfo.deliverAt = result.status.LastUpdated;
+                detailedBolusInfo.deliverAt = result.Status.LastUpdated;
                 detailedBolusInfo.pumpId = getHistoryId(result);
                 TreatmentsPlugin.getPlugin().addToHistoryTreatment(detailedBolusInfo, false);
 
@@ -337,8 +337,8 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
         if (_runningBolusInfo != null) {
             OmniCoreResult result = _pdm.CancelBolus();
             double canceled = -1d;
-            if (result.success) {
-                canceled = result.status.InsulinCanceled;
+            if (result.Success) {
+                canceled = result.Status.InsulinCanceled;
             }
 
             EventOverviewBolusProgress bolusingEvent = EventOverviewBolusProgress.getInstance();
@@ -380,16 +380,16 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
         OmniCoreResult result = _pdm.SetTempBasal(iuRate, durationHours);
 
         if (result != null) {
-            r.enacted = result.success;
-            r.success = result.success;
-            if (result.success)
+            r.enacted = result.Success;
+            r.success = result.Success;
+            if (result.Success)
             {
                 r.absolute = iuRate.doubleValue();
                 r.duration = durationHours.multiply(new BigDecimal(60)).intValue();
                 r.isPercent = false;
 
                 TemporaryBasal tempBasal = new TemporaryBasal()
-                        .date(result.status.LastUpdated)
+                        .date(result.Status.LastUpdated)
                         .absolute(r.absolute)
                         .duration(r.duration)
                         .pumpId(getHistoryId(result))
@@ -415,12 +415,12 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
 
         OmniCoreResult result = _pdm.CancelTempBasal();
         if (result != null) {
-            r.enacted = result.success;
-            r.success = result.success;
-            if (result.success) {
+            r.enacted = result.Success;
+            r.success = result.Success;
+            if (result.Success) {
                 r.isTempCancel = true;
                 if (TreatmentsPlugin.getPlugin().isTempBasalInProgress()) {
-                    TemporaryBasal tempStop = new TemporaryBasal().date(result.status.LastUpdated).source(Source.USER);
+                    TemporaryBasal tempStop = new TemporaryBasal().date(result.Status.LastUpdated).source(Source.USER);
                     TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempStop);
                     MainApp.bus().post(new EventOmnipodUpdateGui());
                 }

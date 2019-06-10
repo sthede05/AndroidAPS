@@ -52,7 +52,7 @@ public abstract class OmniCoreRequest {
             try {
                 omniCoreHandler.wait();
                 //result.response = omniCoreHandler.response;
-                return OmniCoreResult.fromJson(omniCoreHandler.response, this);
+                return OmniCoreResult.fromJson(omniCoreHandler.response);
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 return null;

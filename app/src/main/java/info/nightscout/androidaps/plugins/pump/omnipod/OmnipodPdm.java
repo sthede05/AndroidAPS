@@ -85,9 +85,9 @@ public class OmnipodPdm {
     public void Disconnect() {}
 
     public synchronized void onResultReceived(OmniCoreResult result) {
-        if (result != null && !result.canceled && result.status != null) {
+        if (result != null && !result.canceled && result.Status != null) {
 
-            if (_lastStatus != null && _lastStatus.PodRunning && !result.status.PodRunning)
+            if (_lastStatus != null && _lastStatus.PodRunning && !result.Status.PodRunning)
             {
                 MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_CHANGE));
                 Notification notification = new Notification(Notification.OMNIPY_POD_CHANGE,
@@ -95,7 +95,7 @@ public class OmnipodPdm {
                 MainApp.bus().post(new EventNewNotification(notification));
             }
 
-            if (_lastStatus != null && !_lastStatus.PodRunning && result.status.PodRunning)
+            if (_lastStatus != null && !_lastStatus.PodRunning && result.Status.PodRunning)
             {
                 // TODO: log pod activated
                 MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
@@ -103,7 +103,7 @@ public class OmnipodPdm {
                 MainApp.bus().post(new EventNewNotification(notification));
             }
 
-            _lastStatus = result.status;
+            _lastStatus = result.Status;
 
             SP.putString(R.string.key_omnipod_status, _lastStatus.asJson());
         }
