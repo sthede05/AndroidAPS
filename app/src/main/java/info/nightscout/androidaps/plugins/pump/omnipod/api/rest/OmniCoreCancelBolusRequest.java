@@ -5,6 +5,6 @@ public class OmniCoreCancelBolusRequest extends OmniCoreRequest {
     public OmniCoreCancelBolusRequest()
     {
         super();
-        joRequest.addProperty("type", "CancelBolus");
+        joRequest.addProperty("Type", "CancelBolus");
     }
 }

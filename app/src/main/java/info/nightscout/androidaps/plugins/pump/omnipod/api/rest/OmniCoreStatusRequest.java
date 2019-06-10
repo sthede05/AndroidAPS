@@ -7,7 +7,7 @@ public class OmniCoreStatusRequest extends OmniCoreRequest {
     public OmniCoreStatusRequest(int statusRequestType)
     {
         super();
-        joRequest.addProperty("type", "UpdateStatus");
-        joRequest.addProperty("requestType", statusRequestType);
+        joRequest.addProperty("Type", "UpdateStatus");
+        joRequest.addProperty("StatusRequestType", statusRequestType);
     }
 }

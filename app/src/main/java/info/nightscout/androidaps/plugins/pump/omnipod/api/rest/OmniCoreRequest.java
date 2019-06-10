@@ -41,7 +41,7 @@ public abstract class OmniCoreRequest {
 
         Intent intent = new Intent();
         intent.setClassName("net.balya.OmniCore.Mobile.Android","OmniCore.Mobile.Droid.OmniCoreIntentService");
-        joRequest.addProperty("lastResult", lastResultId);
+        joRequest.addProperty("LastResultId", lastResultId);
         String jsonRequest = joRequest.toString();
         intent.putExtra("request", jsonRequest);
         intent.putExtra("messenger", messenger);

@@ -5,6 +5,6 @@ public class OmniCoreCancelTempBasalRequest extends OmniCoreRequest {
     public OmniCoreCancelTempBasalRequest()
     {
         super();
-        joRequest.addProperty("type", "CancelTempBasal");
+        joRequest.addProperty("Type", "CancelTempBasal");
     }
 }
