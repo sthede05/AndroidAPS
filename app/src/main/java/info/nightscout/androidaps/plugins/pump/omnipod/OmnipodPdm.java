@@ -7,8 +7,6 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.text.DateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -33,7 +31,6 @@ import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreResult;
 public class OmnipodPdm {
 
     private final Context _context;
-    private OmniCoreResult _lastResult;
     private OmnipodStatus _lastStatus;
 
     private final Logger _log;
@@ -89,14 +86,12 @@ public class OmnipodPdm {
 
     public synchronized void onResultReceived(OmniCoreResult result) {
         if (result != null && !result.canceled && result.status != null) {
-            _lastResult = result;
 
             if (_lastStatus != null && _lastStatus.PodRunning && !result.status.PodRunning)
             {
                 MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_CHANGE));
                 Notification notification = new Notification(Notification.OMNIPY_POD_CHANGE,
                         String.format(MainApp.gs(R.string.omnipod_pod_state_POD_IDs_has_been_removed), _lastStatus.PodId), Notification.NORMAL);       //"Pod with Lot %d and Serial %d has been removed."
-                _lastStatus = null;
                 MainApp.bus().post(new EventNewNotification(notification));
             }
 
@@ -109,6 +104,7 @@ public class OmnipodPdm {
             }
 
             _lastStatus = result.status;
+
             SP.putString(R.string.key_omnipod_status, _lastStatus.asJson());
         }
         MainApp.bus().post(new EventOmnipodUpdateGui());
@@ -120,7 +116,7 @@ public class OmnipodPdm {
             long t0 = System.currentTimeMillis();
             if (t0 - _lastStatusRequest > 60000) {
                 _lastStatusRequest = t0;
-                onResultReceived(new OmniCoreStatusRequest(0).getResult());
+                onResultReceived(new OmniCoreStatusRequest(0).getResult(getLastId()));
             }
         }
     }
@@ -130,13 +126,6 @@ public class OmnipodPdm {
             return  (long)_lastStatus.LastUpdated * 1000;
         else
             return 0;
-    }
-
-    public long GetLastResultDate() {
-        if (_lastResult != null)
-            return  (long)_lastResult.datetime * 1000;
-        else
-            return System.currentTimeMillis();
     }
 
     public String getPodStatusText()
@@ -198,7 +187,7 @@ public class OmnipodPdm {
             TimeZone tz = profile.getTimeZone();
             int offset_minutes = (tz.getRawOffset() + tz.getDSTSavings()) / (60 * 1000);
             BigDecimal[] basalSchedule = getBasalScheduleFromProfile(profile);
-            result = new OmniCoreBasalScheduleRequest(basalSchedule, offset_minutes).getResult();
+            result = new OmniCoreBasalScheduleRequest(basalSchedule, offset_minutes).getResult(getLastId());
             onResultReceived(result);
         }
         return result;
@@ -207,20 +196,20 @@ public class OmnipodPdm {
     public OmniCoreResult Bolus(BigDecimal bolusUnits) {
         OmniCoreResult r = null;
         if (IsConnected() && IsInitialized()) {
-            r = new OmniCoreBolusRequest(bolusUnits).getResult();
+            r = new OmniCoreBolusRequest(bolusUnits).getResult(getLastId());
             this.onResultReceived(r);
         }
         return r;
     }
 
     public OmniCoreResult CancelBolus() {
-        return new OmniCoreCancelBolusRequest().getResult();
+        return new OmniCoreCancelBolusRequest().getResult(getLastId());
     }
 
     public OmniCoreResult SetTempBasal(BigDecimal iuRate, BigDecimal durationHours) {
         OmniCoreResult r = null;
         if (IsConnected() && IsInitialized()) {
-            r = new OmniCoreTempBasalRequest(iuRate, durationHours).getResult();
+            r = new OmniCoreTempBasalRequest(iuRate, durationHours).getResult(getLastId());
             this.onResultReceived(r);
         }
         return r;
@@ -229,7 +218,7 @@ public class OmnipodPdm {
     public OmniCoreResult CancelTempBasal() {
         OmniCoreResult result = null;
         if (IsConnected() && IsInitialized()) {
-            result = new OmniCoreCancelTempBasalRequest().getResult();
+            result = new OmniCoreCancelTempBasalRequest().getResult(getLastId());
             this.onResultReceived(result);
         }
         return result;
@@ -289,5 +278,13 @@ public class OmnipodPdm {
 
     public int getBatteryLevel() {
         return -1;
+    }
+
+    private long getLastId()
+    {
+        if (_lastStatus == null)
+            return 0;
+        else
+            return _lastStatus.ResultId;
     }
 }

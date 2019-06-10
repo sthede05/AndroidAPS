@@ -28,8 +28,6 @@ public abstract class OmniCoreRequest {
     }
 
     public OmniCoreResult getResult(long lastResultId) {
-        OmniCoreResult result = new OmniCoreResult();
-        result.originalRequest = this;
         this.requested = System.currentTimeMillis();
 
         Intent startIntent = new Intent("OmniCoreIntentService.START_SERVICE");
@@ -54,11 +52,10 @@ public abstract class OmniCoreRequest {
             try {
                 omniCoreHandler.wait();
                 //result.response = omniCoreHandler.response;
-                return result;
+                return OmniCoreResult.fromJson(omniCoreHandler.response, this);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-                result.success = false;
-                return result;
+                return null;
             }
         }
     }
