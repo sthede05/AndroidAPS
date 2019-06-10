@@ -3,8 +3,11 @@ package info.nightscout.androidaps.plugins.pump.omnipod.api.rest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.os.Messenger;
+
+import com.google.gson.JsonObject;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,12 +20,18 @@ public abstract class OmniCoreRequest {
     public long requested;
     public long responseReceived;
 
+    protected JsonObject joRequest;
+
     public OmniCoreRequest()
     {
         created = System.currentTimeMillis();
+        joRequest = new JsonObject();
     }
 
-    protected abstract String getRequestJson();
+    protected String getRequestJson()
+    {
+        return joRequest.toString();
+    }
 
     public OmniCoreResult getResult() {
         OmniCoreResult result = new OmniCoreResult();
@@ -59,6 +68,11 @@ public abstract class OmniCoreRequest {
     }
 
     class OmniCoreHandler extends Handler {
+
+        public OmniCoreHandler()
+        {
+            super(Looper.getMainLooper());
+        }
 
         public String response;
 

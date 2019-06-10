@@ -14,12 +14,11 @@ public class OmniCoreResult {
 
     public boolean canceled;
     public boolean success;
+
     public JsonObject response;
     public OmnipodStatus status;
 
     public double datetime;
-    public Exception exception;
-    public int battery_level = -1;
 
     public static OmniCoreResult fromJson(String jsonResponse, OmniCoreRequest request) {
         try {

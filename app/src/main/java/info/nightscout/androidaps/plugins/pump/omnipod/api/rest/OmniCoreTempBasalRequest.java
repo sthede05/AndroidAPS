@@ -6,11 +6,10 @@ public class OmniCoreTempBasalRequest extends OmniCoreRequest {
 
     public OmniCoreTempBasalRequest(BigDecimal temporaryRate, BigDecimal durationInHours)
     {
-
+        super();
+        joRequest.addProperty("type", "SetTempBasal");
+        joRequest.addProperty("temporaryRate", temporaryRate);
+        joRequest.addProperty("durationHours", durationInHours);
     }
 
-    @Override
-    protected String getRequestJson() {
-        return null;
-    }
 }
