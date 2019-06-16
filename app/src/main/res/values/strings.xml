@@ -1554,6 +1554,12 @@
     <string name="Trying_to_connect_to_omnipy_at_address">Trying to connect to omnipy at address:</string>
     <string name="omnipod_activate_err_no_profile_set">Error: Cannot activate a pod without an active user profile. Please set it up using AndroidAPS profile actions.</string>
     <string name="omnicore_settings">Open the OmniCore app to configure your Omnipod</string>
+    <string name="key_omnipod_lastresultid">omnipod_lastresultid</string>
+    <string name="key_omnipod_currentpodid">omnipod_currentpodid</string>
+
+    <string name="omnicore_connected">Connected to OmniCore</string>
+    <string name="omnicore_not_connected">Not connected to OmniCore</string>
+    <string name="key_omnicore_last_result">omnicore_last_result</string>
 
 
     <plurals name="objective_days">

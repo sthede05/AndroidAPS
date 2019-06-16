@@ -6,22 +6,46 @@ import com.google.gson.JsonObject;
 
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
+
 import info.nightscout.androidaps.logging.L;
-import info.nightscout.androidaps.plugins.pump.omnipod.api.OmnipodStatus;
 
 public class OmniCoreResult {
 
     public boolean Success;
-    public OmnipodStatus Status;
-    public JsonArray RequestsToDate;
+    public Boolean PodRunning;
+    public String PodId;
+    public long ResultId;
+    public long ResultDate;
+
+    public BigDecimal[] BasalSchedule;
+    public int UtcOffset;
+
+    public double InsulinCanceled;
+    public double ReservoirLevel;
+    public int BatteryLevel;
+
+    public long LastResultId;
+    public OmniCoreHistoricalResult[] ResultsToDate;
 
     public static OmniCoreResult fromJson(String jsonResponse) {
         try {
             return new Gson().fromJson(jsonResponse, OmniCoreResult.class);
         } catch (Exception e)
         {
-            LoggerFactory.getLogger(L.PUMP).debug(jsonResponse);
-            throw e;
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public String asJson()
+    {
+        try {
+            return new Gson().toJson(this);
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+            return null;
         }
     }
 }

@@ -4,10 +4,10 @@ import com.google.gson.JsonArray;
 
 import java.math.BigDecimal;
 
-public class OmniCoreBasalScheduleRequest extends OmniCoreRequest {
-    public OmniCoreBasalScheduleRequest(BigDecimal[] schedule, int utcOffsetMinutes){
+public class OmniCoreSetProfileRequest extends OmniCoreRequest {
+    public OmniCoreSetProfileRequest(BigDecimal[] schedule, int utcOffsetMinutes){
         super();
-        joRequest.addProperty("Type", "SetBasalSchedule");
+        joRequest.addProperty("Type", "SetProfile");
         joRequest.addProperty("UtcOffsetMinutes", utcOffsetMinutes);
 
         JsonArray scheduleArray = new JsonArray();

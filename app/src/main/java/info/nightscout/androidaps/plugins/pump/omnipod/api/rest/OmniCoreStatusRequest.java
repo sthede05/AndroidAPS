@@ -4,10 +4,9 @@ import com.google.gson.JsonObject;
 
 public class OmniCoreStatusRequest extends OmniCoreRequest {
 
-    public OmniCoreStatusRequest(int statusRequestType)
+    public OmniCoreStatusRequest()
     {
         super();
-        joRequest.addProperty("Type", "UpdateStatus");
-        joRequest.addProperty("StatusRequestType", statusRequestType);
+        joRequest.addProperty("Type", "GetStatus");
     }
 }

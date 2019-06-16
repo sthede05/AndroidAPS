@@ -8,5 +8,4 @@ public class OmniCoreBolusRequest extends OmniCoreRequest {
         joRequest.addProperty("Type", "Bolus");
         joRequest.addProperty("ImmediateUnits", bolusAmount);
     }
-
 }
