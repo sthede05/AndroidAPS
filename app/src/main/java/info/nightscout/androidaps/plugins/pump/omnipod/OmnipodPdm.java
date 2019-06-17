@@ -22,7 +22,9 @@ import java.util.TimerTask;
 
 import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
+import info.nightscout.androidaps.data.DetailedBolusInfo;
 import info.nightscout.androidaps.data.Profile;
+import info.nightscout.androidaps.db.CareportalEvent;
 import info.nightscout.androidaps.db.Source;
 import info.nightscout.androidaps.db.TemporaryBasal;
 import info.nightscout.androidaps.plugins.general.overview.events.EventDismissNotification;
@@ -192,6 +194,8 @@ public class OmnipodPdm {
 
         boolean podWasRunning = _lastResult.PodRunning;
 
+        DetailedBolusInfo cancelBolusCandidate = null;
+
         for (JsonElement historicalResultJson : result.ResultsToDate) {
 
             OmniCoreHistoricalResult historicalResult = new Gson()
@@ -223,14 +227,32 @@ public class OmnipodPdm {
                 case SetBasalSchedule:
                     break;
                 case Bolus:
+                    BolusParameters p1 = new Gson().fromJson(historicalResult.Parameters, BolusParameters.class);
+                    DetailedBolusInfo detailedBolusInfo = new DetailedBolusInfo();
+                    detailedBolusInfo.eventType = CareportalEvent.CORRECTIONBOLUS;
+                    detailedBolusInfo.pumpId = historicalResult.ResultId;
+                    detailedBolusInfo.insulin = p1.ImmediateUnits.doubleValue();
+                    detailedBolusInfo.isSMB = false;
+                    detailedBolusInfo.date = historicalResult.ResultDate;
+                    detailedBolusInfo.source = Source.PUMP;
+                    detailedBolusInfo.deliverAt = historicalResult.ResultDate;
+                    TreatmentsPlugin.getPlugin().addToHistoryTreatment(detailedBolusInfo, true);
+                    cancelBolusCandidate = detailedBolusInfo;
                     break;
                 case CancelBolus:
+                    if (cancelBolusCandidate != null)
+                    {
+                        CancelBolusParameters p2 = new Gson().fromJson(historicalResult.Parameters, CancelBolusParameters.class);
+                        cancelBolusCandidate.insulin -= p2.NotDeliveredInsulin.doubleValue();
+                        cancelBolusCandidate.pumpId = historicalResult.ResultId;
+                        TreatmentsPlugin.getPlugin().addToHistoryTreatment(cancelBolusCandidate, true);
+                    }
                     break;
                 case SetTempBasal:
-                    BasalParameters p = new Gson().fromJson(historicalResult.Parameters, BasalParameters.class);
+                    BasalParameters p3 = new Gson().fromJson(historicalResult.Parameters, BasalParameters.class);
 
-                    double basalRate = p.BasalRate.doubleValue();
-                    int minutes = p.Duration.multiply(new BigDecimal(60)).intValue();
+                    double basalRate = p3.BasalRate.doubleValue();
+                    int minutes = p3.Duration.multiply(new BigDecimal(60)).intValue();
                     TemporaryBasal tempBasal = new TemporaryBasal()
                             .date(historicalResult.ResultDate)
                             .absolute(basalRate)
@@ -261,6 +283,13 @@ public class OmnipodPdm {
         public BigDecimal Duration;
     }
 
+    public class BolusParameters {
+        public BigDecimal ImmediateUnits;
+    }
+
+    public class CancelBolusParameters {
+        public BigDecimal NotDeliveredInsulin;
+    }
 
     private long _lastStatusRequest = 0;
     public void UpdateStatus() {

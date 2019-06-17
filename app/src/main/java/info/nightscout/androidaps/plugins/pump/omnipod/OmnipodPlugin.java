@@ -324,9 +324,9 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
                 r.comment = getCommentString(result);
             }
             else {
-                detailedBolusInfo.deliverAt = result.ResultDate;
-                detailedBolusInfo.pumpId = getHistoryId(result);
-                TreatmentsPlugin.getPlugin().addToHistoryTreatment(detailedBolusInfo, false);
+                //detailedBolusInfo.deliverAt = result.ResultDate;
+                //detailedBolusInfo.pumpId = getHistoryId(result);
+                //TreatmentsPlugin.getPlugin().addToHistoryTreatment(detailedBolusInfo, false);
 
                 r.carbsDelivered = detailedBolusInfo.carbs;
 
@@ -375,7 +375,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
             } else {
                 if (bolusingEvent != null)
                     bolusingEvent.status = MainApp.gs(R.string.bolusstopped);
-                _runningBolusInfo.insulin = supposedToDeliver - canceled;
+                //_runningBolusInfo.insulin = supposedToDeliver - canceled;
             }
             if (bolusingEvent != null) {
                 MainApp.bus().post(bolusingEvent);
@@ -383,12 +383,12 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
             }
             SystemClock.sleep(100);
             if (canceled > 0d)
-                _runningBolusInfo.notes = String.format("Delivery stopped at %f.2u. Original bolus request was: %f.2u", supposedToDeliver - canceled, supposedToDeliver);
+                //_runningBolusInfo.notes = String.format("Delivery stopped at %f.2u. Original bolus request was: %f.2u", supposedToDeliver - canceled, supposedToDeliver);
 
             if (result.Success) {
-                _runningBolusInfo.pumpId = getHistoryId(result);
+                //_runningBolusInfo.pumpId = getHistoryId(result);
             }
-            TreatmentsPlugin.getPlugin().addToHistoryTreatment(_runningBolusInfo, true);
+            //TreatmentsPlugin.getPlugin().addToHistoryTreatment(_runningBolusInfo, true);
 
             if (bolusingEvent != null) {
                 bolusingEvent.status = MainApp.gs(R.string.bolusstopping);
