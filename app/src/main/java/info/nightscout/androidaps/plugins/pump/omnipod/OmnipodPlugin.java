@@ -419,13 +419,13 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
                 r.duration = durationHours.multiply(new BigDecimal(60)).intValue();
                 r.isPercent = false;
 
-                TemporaryBasal tempBasal = new TemporaryBasal()
-                        .date(result.ResultDate)
-                        .absolute(r.absolute)
-                        .duration(r.duration)
-                        .pumpId(getHistoryId(result))
-                        .source(Source.USER);
-                TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempBasal);
+//                TemporaryBasal tempBasal = new TemporaryBasal()
+//                        .date(result.ResultDate)
+//                        .absolute(r.absolute)
+//                        .duration(r.duration)
+//                        .pumpId(getHistoryId(result))
+//                        .source(Source.USER);
+//                TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempBasal);
                 if (L.isEnabled(L.PUMPCOMM))
                     log.debug("Setting temp basal absolute: " + result);
             }
@@ -452,14 +452,14 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
             r.success = result.Success;
             if (result.Success) {
                 r.isTempCancel = true;
-                if (TreatmentsPlugin.getPlugin().isTempBasalInProgress()) {
-                    TemporaryBasal tempStop = new TemporaryBasal()
-                            .date(result.ResultDate)
-                            .pumpId(getHistoryId(result))
-                            .source(Source.USER);
-                    TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempStop);
-                    MainApp.bus().post(new EventOmnipodUpdateGui());
-                }
+//                if (TreatmentsPlugin.getPlugin().isTempBasalInProgress()) {
+//                    TemporaryBasal tempStop = new TemporaryBasal()
+//                            .date(result.ResultDate)
+//                            .pumpId(getHistoryId(result))
+//                            .source(Source.USER);
+//                    TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempStop);
+//                    MainApp.bus().post(new EventOmnipodUpdateGui());
+//                }
             }
             else
             {

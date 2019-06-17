@@ -7,5 +7,5 @@ public class OmniCoreHistoricalResult {
         public long ResultDate;
         public HistoricalResultType Type;
         public Boolean PodRunning;
-        public JsonObject Parameters;
+        public String Parameters;
 }

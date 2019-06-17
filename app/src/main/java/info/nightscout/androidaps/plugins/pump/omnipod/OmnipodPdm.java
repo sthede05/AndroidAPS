@@ -2,6 +2,11 @@ package info.nightscout.androidaps.plugins.pump.omnipod;
 
 import android.content.Context;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -187,7 +192,10 @@ public class OmnipodPdm {
 
         boolean podWasRunning = _lastResult.PodRunning;
 
-        for (OmniCoreHistoricalResult historicalResult : result.ResultsToDate) {
+        for (JsonElement historicalResultJson : result.ResultsToDate) {
+
+            OmniCoreHistoricalResult historicalResult = new Gson()
+                    .fromJson(historicalResultJson.toString(), OmniCoreHistoricalResult.class);
 
             if (podWasRunning && !historicalResult.PodRunning)
             {
@@ -219,25 +227,25 @@ public class OmnipodPdm {
                 case CancelBolus:
                     break;
                 case SetTempBasal:
-                    double basalRate = historicalResult.Parameters.get("BasalRate")
-                            .getAsBigDecimal().doubleValue();
-                    int minutes = historicalResult.Parameters.get("Duration")
-                            .getAsBigDecimal().multiply(new BigDecimal(60)).intValue();
+                    BasalParameters p = new Gson().fromJson(historicalResult.Parameters, BasalParameters.class);
+
+                    double basalRate = p.BasalRate.doubleValue();
+                    int minutes = p.Duration.multiply(new BigDecimal(60)).intValue();
                     TemporaryBasal tempBasal = new TemporaryBasal()
-                            .date(result.ResultDate)
+                            .date(historicalResult.ResultDate)
                             .absolute(basalRate)
                             .duration(minutes)
                             .pumpId(historicalResult.ResultId)
                             .source(Source.PUMP);
                     TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempBasal);
+                    break;
                 case CancelTempBasal:
-                    if (TreatmentsPlugin.getPlugin().isTempBasalInProgress()) {
-                        TemporaryBasal tempStop = new TemporaryBasal()
-                                .date(result.ResultDate)
-                                .pumpId(historicalResult.ResultId)
-                                .source(Source.PUMP);
-                        TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempStop);
-                    }
+                    TemporaryBasal tempStop = new TemporaryBasal()
+                            .date(historicalResult.ResultDate)
+                            .pumpId(historicalResult.ResultId)
+                            .source(Source.PUMP);
+                    TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempStop);
+                    break;
                 case StartExtendedBolus:
                     break;
                 case StopExtendedBolus:
@@ -247,6 +255,12 @@ public class OmnipodPdm {
             }
         }
     }
+
+    public class BasalParameters {
+        public BigDecimal BasalRate;
+        public BigDecimal Duration;
+    }
+
 
     private long _lastStatusRequest = 0;
     public void UpdateStatus() {

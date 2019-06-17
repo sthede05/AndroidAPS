@@ -16,6 +16,7 @@ import com.google.gson.JsonObject;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.mozilla.javascript.tools.jsc.Main;
 
 import java.util.List;
 
@@ -36,6 +37,9 @@ public abstract class OmniCoreRequest {
 
     public OmniCoreResult getResult(long lastResultId) {
         this.requested = System.currentTimeMillis();
+
+        PackageManager pm = MainApp.instance().getPackageManager();
+
 
         Intent startIntent = new Intent("OmniCoreIntentService.START_SERVICE");
         startIntent.setClassName("net.balya.OmniCore.Mobile.Android", "somethingsomething.OmniCoreIntentService");

@@ -26,7 +26,7 @@ public class OmniCoreResult {
     public int BatteryLevel;
 
     public long LastResultId;
-    public OmniCoreHistoricalResult[] ResultsToDate;
+    public JsonArray ResultsToDate;
 
     public static OmniCoreResult fromJson(String jsonResponse) {
         try {
