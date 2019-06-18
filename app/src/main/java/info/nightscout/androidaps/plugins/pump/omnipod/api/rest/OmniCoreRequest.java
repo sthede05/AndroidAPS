@@ -6,7 +6,9 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Bundle;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Messenger;
@@ -19,6 +21,8 @@ import org.json.JSONObject;
 import org.mozilla.javascript.tools.jsc.Main;
 
 import java.util.List;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import info.nightscout.androidaps.MainApp;
 
@@ -28,6 +32,7 @@ public abstract class OmniCoreRequest {
     public long requested;
 
     protected JsonObject joRequest;
+    private static HandlerThread mHandlerThread;
 
     public OmniCoreRequest()
     {
@@ -35,61 +40,106 @@ public abstract class OmniCoreRequest {
         joRequest = new JsonObject();
     }
 
-    public OmniCoreResult getResult(long lastResultId) {
+    public OmniCoreResult getRemoteResult(long lastResultDateTime) {
         this.requested = System.currentTimeMillis();
 
-        PackageManager pm = MainApp.instance().getPackageManager();
-
-
-        Intent startIntent = new Intent("OmniCoreIntentService.START_SERVICE");
-        startIntent.setClassName("net.balya.OmniCore.Mobile.Android", "somethingsomething.OmniCoreIntentService");
-        final ComponentName componentName = MainApp.instance().startService(startIntent);
-
-        if (componentName == null)
-        {
-            return null;
+        if (mHandlerThread == null) {
+            mHandlerThread = new HandlerThread("OmniCoreHandler");
+            mHandlerThread.start();
         }
 
-        @SuppressLint("HandlerLeak")
-        OmniCoreHandler omniCoreHandler = new OmniCoreHandler();
+        Semaphore semaphore = new Semaphore(0);
+        OmniCoreHandler handler = new OmniCoreHandler(mHandlerThread.getLooper(), semaphore);
 
-        Messenger messenger = new Messenger(omniCoreHandler);
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("OMNICORE_AAPS", "getRemoteResult: Start Service intent ");
+                Intent startIntent = new Intent("OmniCoreIntentService.START_SERVICE");
+                startIntent.setClassName("net.balya.OmniCore.Mobile.Android", "somethingsomething.OmniCoreIntentService");
+                ComponentName componentName = MainApp.instance().startService(startIntent);
+                if (componentName == null)
+                {
+                    Log.d("OMNICORE_AAPS", "getRemoteResult: Start Service failed");
+                    semaphore.release();
+                    return;
+                }
+                Log.d("OMNICORE_AAPS", "getRemoteResult: Start Service success");
 
-        Intent intent = new Intent("OmniCoreIntentService.REQUEST_COMMAND");
-        intent.setClassName("net.balya.OmniCore.Mobile.Android","somethingsomething.OmniCoreIntentService");
-        joRequest.addProperty("LastResultId", lastResultId);
-        String jsonRequest = joRequest.toString();
-        intent.putExtra("request", jsonRequest);
-        intent.putExtra("messenger", messenger);
+                Messenger messenger = new Messenger(handler);
+                Intent intent = new Intent("OmniCoreIntentService.REQUEST_COMMAND");
+                intent.setClassName("net.balya.OmniCore.Mobile.Android","somethingsomething.OmniCoreIntentService");
+                joRequest.addProperty("LastResultDateTime", lastResultDateTime);
+                String jsonRequest = joRequest.toString();
+                intent.putExtra("request", jsonRequest);
+                intent.putExtra("messenger", messenger);
+                Log.d("OMNICORE_AAPS", "getRemoteResult sending request: " + jsonRequest);
+                componentName = MainApp.instance().startService(intent);
+                if (componentName == null)
+                {
+                    Log.d("OMNICORE_AAPS", "getRemoteResult: send request failed");
+                    semaphore.release();
+                    return;
+                }
+                Log.d("OMNICORE_AAPS", "getRemoteResult: request sent");
+            }
+        });
 
-        synchronized (omniCoreHandler)
+        while(true)
         {
-            MainApp.instance().startService(intent);
-            try {
-                omniCoreHandler.wait();
-                return OmniCoreResult.fromJson(omniCoreHandler.response);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                return null;
+            try
+            {
+                if (semaphore.tryAcquire(15000, TimeUnit.MILLISECONDS))
+                    break;
+
+                if (System.currentTimeMillis() - handler.LastBusy > 15000)
+                {
+                    Log.e("OMNICORE_AAPS", "geRemoteResult: timed out");
+                    return null;
+                }
+            }
+            catch (InterruptedException e)
+            {
+                    return null;
             }
         }
+
+        Log.d("OMNICORE_AAPS", "getRemoteResult: response received");
+        if (handler.Response == null)
+            return null;
+        Log.d("OMNICORE_AAPS", "getRemoteResult: " + handler.Response);
+        return OmniCoreResult.fromJson(handler.Response);
     }
 
     class OmniCoreHandler extends Handler {
 
-        public OmniCoreHandler()
+        public OmniCoreHandler(Looper looper, Semaphore semaphore)
         {
-            super(Looper.getMainLooper());
+            super(looper);
+            Semaphore = semaphore;
         }
 
-        public String response;
+        private Semaphore Semaphore;
+        public String Response;
+        public long LastBusy = 0;
 
         @Override
-        public synchronized void handleMessage(Message msg) {
-            response = msg.getData().getString("response");
-            this.notify();
+        public void handleMessage(Message msg) {
+            Bundle b = msg.getData();
+            boolean busy = b.getBoolean("busy", false);
+            if (busy)
+            {
+                Log.d("OMNICORE_AAPS", "handleMessage: keep-alive received");
+                LastBusy = System.currentTimeMillis();
+            }
+            boolean finished = b.getBoolean("finished", false);
+            if (finished)
+            {
+                Log.d("OMNICORE_AAPS", "handleMessage: finished received");
+                Response = b.getString("response", null);
+                Semaphore.release();
+            }
         }
     }
-
 }
 

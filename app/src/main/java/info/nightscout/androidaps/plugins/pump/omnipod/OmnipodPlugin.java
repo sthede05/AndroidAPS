@@ -185,14 +185,9 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
         String comment = "0";
         if (result != null)
         {
-            comment = Long.toString(result.ResultId);
+            comment = Long.toString(result.ResultDate);
         }
         return comment;
-    }
-
-    private long getHistoryId(OmniCoreResult result)
-    {
-        return result.ResultId;
     }
 
     @Override
@@ -375,7 +370,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
             } else {
                 if (bolusingEvent != null)
                     bolusingEvent.status = MainApp.gs(R.string.bolusstopped);
-                //_runningBolusInfo.insulin = supposedToDeliver - canceled;
+                _runningBolusInfo.insulin = supposedToDeliver - canceled;
             }
             if (bolusingEvent != null) {
                 MainApp.bus().post(bolusingEvent);
@@ -383,11 +378,11 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
             }
             SystemClock.sleep(100);
             if (canceled > 0d)
-                //_runningBolusInfo.notes = String.format("Delivery stopped at %f.2u. Original bolus request was: %f.2u", supposedToDeliver - canceled, supposedToDeliver);
+                _runningBolusInfo.notes = String.format("Delivery stopped at %f.2u. Original bolus request was: %f.2u", supposedToDeliver - canceled, supposedToDeliver);
 
-            if (result.Success) {
+            //if (result.Success) {
                 //_runningBolusInfo.pumpId = getHistoryId(result);
-            }
+            //}
             //TreatmentsPlugin.getPlugin().addToHistoryTreatment(_runningBolusInfo, true);
 
             if (bolusingEvent != null) {

@@ -1,6 +1,7 @@
 package info.nightscout.androidaps.plugins.pump.omnipod;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -74,17 +75,13 @@ public class OmnipodPdm {
             SP.putString(R.string.key_omnicore_last_result, _lastResult.asJson());
         }
         _connectionStatusKnown = false;
-        _omniCoreTimer = new Timer();
-        _omniCoreTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-            onResultReceived(new OmniCoreStatusRequest().getResult(_lastResult.LastResultId));
-            }
-        }, 0, 30000);
+        getResult(new OmniCoreStatusRequest());
     }
 
     public void OnStop() {
-        _omniCoreTimer.cancel();
+        synchronized (this) {
+            _omniCoreTimer.cancel();
+        }
     }
 
     public boolean IsInitialized() {
@@ -121,7 +118,16 @@ public class OmnipodPdm {
 
     public void Disconnect() {}
 
-    public synchronized void onResultReceived(OmniCoreResult result) {
+    public synchronized OmniCoreResult getResult(OmniCoreRequest request) {
+
+        if (_omniCoreTimer != null)
+        {
+            _omniCoreTimer.cancel();
+            _omniCoreTimer = null;
+        }
+
+        OmniCoreResult result = request.getRemoteResult(_lastResult.LastResultDateTime);
+
         if (result != null) {
 
             if (!_connected || !_connectionStatusKnown)
@@ -164,11 +170,31 @@ public class OmnipodPdm {
             _connectionStatusKnown = true;
             _connected = false;
         }
+
         MainApp.bus().post(new EventOmnipodUpdateGui());
+
+        long delay = 60000;
+        if (_connected) {
+            if (_lastResult.PodRunning)
+                delay = 150000;
+            else
+                delay = 30000;
+        }
+
+        _omniCoreTimer = new Timer();
+        _omniCoreTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                _omniCoreTimer = null;
+                getResult(new OmniCoreStatusRequest());
+            }
+        }, delay);
+
+        return result;
     }
 
     private void processHistory(OmniCoreResult result) {
-        if (_lastResult.ResultId == 0 && !_lastResult.PodRunning)
+        if (_lastResult.ResultDate == 0 && !_lastResult.PodRunning)
         {
             TemporaryBasal tempBasalCurrent = TreatmentsPlugin.getPlugin()
                     .getTempBasalFromHistory(System.currentTimeMillis());
@@ -201,24 +227,25 @@ public class OmnipodPdm {
             OmniCoreHistoricalResult historicalResult = new Gson()
                     .fromJson(historicalResultJson.toString(), OmniCoreHistoricalResult.class);
 
-            if (podWasRunning && !historicalResult.PodRunning)
-            {
-                TemporaryBasal tempBasal = new TemporaryBasal()
-                        .date(result.ResultDate)
-                        .absolute(0)
-                        .duration(24*60*14)
-                        .pumpId(historicalResult.ResultId)
-                        .source(Source.PUMP);
-                TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempBasal);
-            }
-
-            if (!podWasRunning && historicalResult.PodRunning) {
-                if (TreatmentsPlugin.getPlugin().isTempBasalInProgress()) {
-                    TemporaryBasal tempStop = new TemporaryBasal()
+            if (historicalResult.ResultDate > _lastResult.ResultDate) {
+                if (podWasRunning && !historicalResult.PodRunning) {
+                    TemporaryBasal tempBasal = new TemporaryBasal()
                             .date(result.ResultDate)
+                            .absolute(0)
+                            .duration(24 * 60 * 14)
                             .pumpId(historicalResult.ResultId)
                             .source(Source.PUMP);
-                    TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempStop);
+                    TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempBasal);
+                }
+
+                if (!podWasRunning && historicalResult.PodRunning) {
+                    if (TreatmentsPlugin.getPlugin().isTempBasalInProgress()) {
+                        TemporaryBasal tempStop = new TemporaryBasal()
+                                .date(result.ResultDate)
+                                .pumpId(historicalResult.ResultId)
+                                .source(Source.PUMP);
+                        TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempStop);
+                    }
                 }
             }
 
@@ -297,7 +324,7 @@ public class OmnipodPdm {
             long t0 = System.currentTimeMillis();
             if (t0 - _lastStatusRequest > 60000) {
                 _lastStatusRequest = t0;
-                onResultReceived(new OmniCoreStatusRequest().getResult(_lastResult.LastResultId));
+                getResult(new OmniCoreStatusRequest());
             }
         }
     }
@@ -348,8 +375,7 @@ public class OmnipodPdm {
             TimeZone tz = profile.getTimeZone();
             int offset_minutes = (tz.getRawOffset() + tz.getDSTSavings()) / (60 * 1000);
             BigDecimal[] basalSchedule = getBasalScheduleFromProfile(profile);
-            result = new OmniCoreSetProfileRequest(basalSchedule, offset_minutes).getResult(_lastResult.LastResultId);
-            onResultReceived(result);
+            result = getResult(new OmniCoreSetProfileRequest(basalSchedule, offset_minutes));
         }
         return result;
     }
@@ -357,8 +383,7 @@ public class OmnipodPdm {
     public OmniCoreResult Bolus(BigDecimal bolusUnits) {
         OmniCoreResult r = null;
         if (IsConnected() && IsInitialized()) {
-            r = new OmniCoreBolusRequest(bolusUnits).getResult(_lastResult.LastResultId);
-            this.onResultReceived(r);
+            r = getResult(new OmniCoreBolusRequest(bolusUnits));
         }
         return r;
     }
@@ -366,8 +391,7 @@ public class OmnipodPdm {
     public OmniCoreResult CancelBolus() {
         OmniCoreResult r = null;
         if (IsConnected() && IsInitialized()) {
-            r = new OmniCoreCancelBolusRequest().getResult(_lastResult.LastResultId);
-            this.onResultReceived(r);
+            r = getResult(new OmniCoreCancelBolusRequest());
         }
         return r;
     }
@@ -375,8 +399,7 @@ public class OmnipodPdm {
     public OmniCoreResult SetTempBasal(BigDecimal iuRate, BigDecimal durationHours) {
         OmniCoreResult r = null;
         if (IsConnected() && IsInitialized()) {
-            r = new OmniCoreTempBasalRequest(iuRate, durationHours).getResult(_lastResult.LastResultId);
-            this.onResultReceived(r);
+            r = getResult(new OmniCoreTempBasalRequest(iuRate, durationHours));
         }
         return r;
     }
@@ -384,8 +407,7 @@ public class OmnipodPdm {
     public OmniCoreResult CancelTempBasal() {
         OmniCoreResult result = null;
         if (IsConnected() && IsInitialized()) {
-            result = new OmniCoreCancelTempBasalRequest().getResult(_lastResult.LastResultId);
-            this.onResultReceived(result);
+            result = getResult(new OmniCoreCancelTempBasalRequest());
         }
         return result;
     }

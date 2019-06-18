@@ -13,9 +13,8 @@ import info.nightscout.androidaps.logging.L;
 public class OmniCoreResult {
 
     public boolean Success;
-    public Boolean PodRunning;
+    public boolean PodRunning;
     public String PodId;
-    public long ResultId;
     public long ResultDate;
 
     public BigDecimal[] BasalSchedule;
@@ -25,12 +24,15 @@ public class OmniCoreResult {
     public double ReservoirLevel;
     public int BatteryLevel;
 
-    public long LastResultId;
+    public long LastResultDateTime;
     public JsonArray ResultsToDate;
 
     public static OmniCoreResult fromJson(String jsonResponse) {
         try {
-            return new Gson().fromJson(jsonResponse, OmniCoreResult.class);
+            if (jsonResponse == null)
+                return null;
+            else
+                return new Gson().fromJson(jsonResponse, OmniCoreResult.class);
         } catch (Exception e)
         {
             e.printStackTrace();
