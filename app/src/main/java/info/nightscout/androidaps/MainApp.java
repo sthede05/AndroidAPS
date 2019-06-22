@@ -168,6 +168,7 @@ public class MainApp extends Application {
             pluginsList.add(SensitivityAAPSPlugin.getPlugin());
             pluginsList.add(SensitivityWeightedAveragePlugin.getPlugin());
             pluginsList.add(SensitivityOref1Plugin.getPlugin());
+            pluginsList.add(NSClientPlugin.getPlugin());
             if (Config.PUMPDRIVERS) pluginsList.add(DanaRPlugin.getPlugin());
             if (Config.PUMPDRIVERS) pluginsList.add(DanaRKoreanPlugin.getPlugin());
             if (Config.PUMPDRIVERS) pluginsList.add(DanaRv2Plugin.getPlugin());
@@ -205,7 +206,6 @@ public class MainApp extends Application {
             pluginsList.add(WearPlugin.initPlugin(this));
             pluginsList.add(StatuslinePlugin.initPlugin(this));
             pluginsList.add(PersistentNotificationPlugin.getPlugin());
-            pluginsList.add(NSClientPlugin.getPlugin());
             pluginsList.add(MaintenancePlugin.initPlugin(this));
 
             pluginsList.add(ConfigBuilderPlugin.getPlugin());
