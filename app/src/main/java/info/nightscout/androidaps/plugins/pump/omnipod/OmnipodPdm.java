@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -24,8 +25,11 @@ import java.util.TimerTask;
 import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.DetailedBolusInfo;
+import info.nightscout.androidaps.data.Intervals;
 import info.nightscout.androidaps.data.Profile;
+import info.nightscout.androidaps.data.ProfileIntervals;
 import info.nightscout.androidaps.db.CareportalEvent;
+import info.nightscout.androidaps.db.ProfileSwitch;
 import info.nightscout.androidaps.db.Source;
 import info.nightscout.androidaps.db.TemporaryBasal;
 import info.nightscout.androidaps.plugins.general.overview.events.EventDismissNotification;
@@ -41,6 +45,7 @@ import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreStatusRe
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreTempBasalRequest;
 import info.nightscout.androidaps.logging.L;
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipodUpdateGui;
+import info.nightscout.androidaps.plugins.treatments.Treatment;
 import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
 import info.nightscout.androidaps.utils.SP;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreResult;
@@ -64,6 +69,8 @@ public class OmnipodPdm {
 
     public void OnStart() {
         _lastResult = OmniCoreResult.fromJson(SP.getString(R.string.key_omnicore_last_result, null));
+        _lastResult.LastResultDateTime = 0;
+
         if (_lastResult == null)
         {
             _lastResult = new OmniCoreResult();
@@ -193,27 +200,38 @@ public class OmnipodPdm {
         return result;
     }
 
-    private void processHistory(OmniCoreResult result) {
-        if (_lastResult.ResultDate == 0 && !_lastResult.PodRunning)
-        {
-            TemporaryBasal tempBasalCurrent = TreatmentsPlugin.getPlugin()
-                    .getTempBasalFromHistory(System.currentTimeMillis());
-            if (_lastResult.PodRunning && tempBasalCurrent != null) {
-                TemporaryBasal tempStop = new TemporaryBasal()
-                        .date(result.ResultDate)
-                        .source(Source.USER);
-                TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempStop);
-            }
-            else if (!_lastResult.PodRunning && tempBasalCurrent == null)
+    private DetailedBolusInfo getBolusInfoFromTreatments(long pumpId, List<Treatment> treatments)
+    {
+        for (Treatment treatment : treatments) {
+            if (treatment.pumpId == pumpId)
             {
-                TemporaryBasal tempBasal = new TemporaryBasal()
-                        .date(result.ResultDate)
-                        .absolute(0)
-                        .duration(24*60*14)
-                        .source(Source.USER);
-                TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempBasal);
+                DetailedBolusInfo detailedBolusInfo = new DetailedBolusInfo();
+                detailedBolusInfo.pumpId = treatment.pumpId;
+                detailedBolusInfo.insulin = treatment.insulin;
+                detailedBolusInfo.isSMB = treatment.isSMB;
+                detailedBolusInfo.date = treatment.date;
+                detailedBolusInfo.source = treatment.source;
+                return detailedBolusInfo;
             }
         }
+        return null;
+    }
+
+    private TemporaryBasal getTempBasal(long pumpId, Intervals<TemporaryBasal> tempBasals)
+    {
+        for (TemporaryBasal tempBasal : tempBasals.getList()) {
+            if (tempBasal.pumpId == pumpId)
+                return tempBasal;
+        }
+        return null;
+    }
+
+    private void processHistory(OmniCoreResult result) {
+
+        TreatmentsPlugin treatmentsPlugin = TreatmentsPlugin.getPlugin();
+        List<Treatment> treatments = treatmentsPlugin.getTreatmentsFromHistory();
+        Intervals<TemporaryBasal> temporaryBasals = treatmentsPlugin.getTemporaryBasalsFromHistory();
+        //ProfileIntervals<ProfileSwitch> profileSwitches = treatmentsPlugin.getProfileSwitchesFromHistory();
 
         if (result.ResultsToDate == null)
             return;
@@ -221,85 +239,108 @@ public class OmnipodPdm {
         boolean podWasRunning = _lastResult.PodRunning;
 
         DetailedBolusInfo cancelBolusCandidate = null;
+        OmniCoreHistoricalResult cancelBolusHistoricalCandidate = null;
 
         for (JsonElement historicalResultJson : result.ResultsToDate) {
 
             OmniCoreHistoricalResult historicalResult = new Gson()
                     .fromJson(historicalResultJson.toString(), OmniCoreHistoricalResult.class);
 
-            if (historicalResult.ResultDate > _lastResult.ResultDate) {
-                if (podWasRunning && !historicalResult.PodRunning) {
-                    TemporaryBasal tempBasal = new TemporaryBasal()
-                            .date(result.ResultDate)
-                            .absolute(0)
-                            .duration(24 * 60 * 14)
-                            .pumpId(historicalResult.ResultId)
-                            .source(Source.PUMP);
-                    TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempBasal);
-                }
-
-                if (!podWasRunning && historicalResult.PodRunning) {
-                    if (TreatmentsPlugin.getPlugin().isTempBasalInProgress()) {
-                        TemporaryBasal tempStop = new TemporaryBasal()
-                                .date(result.ResultDate)
-                                .pumpId(historicalResult.ResultId)
-                                .source(Source.PUMP);
-                        TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempStop);
-                    }
-                }
-            }
-
             switch(historicalResult.Type)
             {
                 case SetBasalSchedule:
                     break;
                 case Bolus:
-                    BolusParameters p1 = new Gson().fromJson(historicalResult.Parameters, BolusParameters.class);
-                    DetailedBolusInfo detailedBolusInfo = new DetailedBolusInfo();
-                    detailedBolusInfo.eventType = CareportalEvent.CORRECTIONBOLUS;
-                    detailedBolusInfo.pumpId = historicalResult.ResultId;
-                    detailedBolusInfo.insulin = p1.ImmediateUnits.doubleValue();
-                    detailedBolusInfo.isSMB = false;
-                    detailedBolusInfo.date = historicalResult.ResultDate;
-                    detailedBolusInfo.source = Source.PUMP;
-                    detailedBolusInfo.deliverAt = historicalResult.ResultDate;
-                    TreatmentsPlugin.getPlugin().addToHistoryTreatment(detailedBolusInfo, true);
-                    cancelBolusCandidate = detailedBolusInfo;
+                    cancelBolusHistoricalCandidate = historicalResult;
+                    DetailedBolusInfo existingBolusInfo =
+                            getBolusInfoFromTreatments(historicalResult.ResultId, treatments);
+                    if (existingBolusInfo == null) {
+                        BolusParameters p1 = new Gson()
+                                .fromJson(historicalResult.Parameters, BolusParameters.class);
+                        DetailedBolusInfo detailedBolusInfo = new DetailedBolusInfo();
+                        detailedBolusInfo.pumpId = historicalResult.ResultId;
+                        detailedBolusInfo.insulin = p1.ImmediateUnits.doubleValue();
+                        detailedBolusInfo.isSMB = false;
+                        detailedBolusInfo.date = historicalResult.ResultDate;
+                        detailedBolusInfo.source = Source.PUMP;
+                        treatmentsPlugin.addToHistoryTreatment(detailedBolusInfo, true);
+                        cancelBolusCandidate = detailedBolusInfo;
+                    }
+                    else {
+                        cancelBolusCandidate = existingBolusInfo;
+                    }
+
                     break;
                 case CancelBolus:
-                    if (cancelBolusCandidate != null)
+                    if (cancelBolusCandidate != null && cancelBolusHistoricalCandidate != null)
                     {
+                        BolusParameters canceledBolusParameters = new Gson()
+                                .fromJson(cancelBolusHistoricalCandidate.Parameters, BolusParameters.class);
+
                         CancelBolusParameters p2 = new Gson().fromJson(historicalResult.Parameters, CancelBolusParameters.class);
-                        cancelBolusCandidate.insulin -= p2.NotDeliveredInsulin.doubleValue();
-                        cancelBolusCandidate.pumpId = historicalResult.ResultId;
-                        TreatmentsPlugin.getPlugin().addToHistoryTreatment(cancelBolusCandidate, true);
+                        cancelBolusCandidate.insulin = canceledBolusParameters.ImmediateUnits.subtract(p2.NotDeliveredInsulin).doubleValue();
+                        treatmentsPlugin.addToHistoryTreatment(cancelBolusCandidate, true);
                     }
                     break;
                 case SetTempBasal:
-                    BasalParameters p3 = new Gson().fromJson(historicalResult.Parameters, BasalParameters.class);
+                    TemporaryBasal tempBasalRecorded = getTempBasal(historicalResult.ResultId,
+                            temporaryBasals);
+                    if (tempBasalRecorded == null) {
+                        BasalParameters p3 = new Gson().fromJson(historicalResult.Parameters,
+                                BasalParameters.class);
 
-                    double basalRate = p3.BasalRate.doubleValue();
-                    int minutes = p3.Duration.multiply(new BigDecimal(60)).intValue();
-                    TemporaryBasal tempBasal = new TemporaryBasal()
-                            .date(historicalResult.ResultDate)
-                            .absolute(basalRate)
-                            .duration(minutes)
-                            .pumpId(historicalResult.ResultId)
-                            .source(Source.PUMP);
-                    TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempBasal);
+                        double basalRate = p3.BasalRate.doubleValue();
+                        int minutes = p3.Duration.multiply(new BigDecimal(60)).intValue();
+                        TemporaryBasal tempBasal = new TemporaryBasal()
+                                .date(historicalResult.ResultDate)
+                                .absolute(basalRate)
+                                .duration(minutes)
+                                .pumpId(historicalResult.ResultId)
+                                .source(Source.PUMP);
+                        treatmentsPlugin.addToHistoryTempBasal(tempBasal);
+                    }
                     break;
                 case CancelTempBasal:
-                    TemporaryBasal tempStop = new TemporaryBasal()
-                            .date(historicalResult.ResultDate)
-                            .pumpId(historicalResult.ResultId)
-                            .source(Source.PUMP);
-                    TreatmentsPlugin.getPlugin().addToHistoryTempBasal(tempStop);
+                    TemporaryBasal tempBasalCancelRecorded = getTempBasal(historicalResult.ResultId,
+                            temporaryBasals);
+                    if (tempBasalCancelRecorded == null) {
+                        TemporaryBasal tempStop = new TemporaryBasal()
+                                .date(historicalResult.ResultDate)
+                                .pumpId(historicalResult.ResultId)
+                                .source(Source.PUMP);
+
+                        treatmentsPlugin.addToHistoryTempBasal(tempStop);
+                    }
                     break;
                 case StartExtendedBolus:
                     break;
                 case StopExtendedBolus:
                     break;
                 case Status:
+                    TemporaryBasal tempBasalPodStatusChange = getTempBasal(historicalResult.ResultId,
+                            temporaryBasals);
+
+                    if (tempBasalPodStatusChange == null) {
+                        if (podWasRunning && !historicalResult.PodRunning) {
+                            TemporaryBasal tempBasalPodNotRunning = new TemporaryBasal()
+                                    .date(result.ResultDate)
+                                    .absolute(0)
+                                    .duration(24 * 60 * 14)
+                                    .pumpId(historicalResult.ResultId)
+                                    .source(Source.PUMP);
+                            treatmentsPlugin.addToHistoryTempBasal(tempBasalPodNotRunning);
+                        }
+
+                        if (!podWasRunning && historicalResult.PodRunning) {
+                            if (treatmentsPlugin.isTempBasalInProgress()) {
+                                TemporaryBasal tempBasalCancelPodRunning = new TemporaryBasal()
+                                        .date(result.ResultDate)
+                                        .pumpId(historicalResult.ResultId)
+                                        .source(Source.PUMP);
+                                treatmentsPlugin.addToHistoryTempBasal(tempBasalCancelPodRunning);
+                            }
+                        }
+                    }
                     break;
             }
         }

@@ -57,13 +57,22 @@ public abstract class OmniCoreRequest {
                 Log.d("OMNICORE_AAPS", "getRemoteResult: Start Service intent ");
                 Intent startIntent = new Intent("OmniCoreIntentService.START_SERVICE");
                 startIntent.setClassName("net.balya.OmniCore.Mobile.Android", "somethingsomething.OmniCoreIntentService");
-                ComponentName componentName = MainApp.instance().startService(startIntent);
-                if (componentName == null)
+                try {
+                    ComponentName componentName = MainApp.instance().startService(startIntent);
+                    if (componentName == null)
+                    {
+                        Log.d("OMNICORE_AAPS", "getRemoteResult: Start Service failed");
+                        semaphore.release();
+                        return;
+                    }
+                }
+                catch(IllegalStateException e)
                 {
-                    Log.d("OMNICORE_AAPS", "getRemoteResult: Start Service failed");
+                    Log.d("OMNICORE_AAPS", "getRemoteResult: Start Service failed due to it being in background");
                     semaphore.release();
                     return;
                 }
+
                 Log.d("OMNICORE_AAPS", "getRemoteResult: Start Service success");
 
                 Messenger messenger = new Messenger(handler);
@@ -74,10 +83,17 @@ public abstract class OmniCoreRequest {
                 intent.putExtra("request", jsonRequest);
                 intent.putExtra("messenger", messenger);
                 Log.d("OMNICORE_AAPS", "getRemoteResult sending request: " + jsonRequest);
-                componentName = MainApp.instance().startService(intent);
-                if (componentName == null)
+                try {
+                    ComponentName componentName = MainApp.instance().startService(intent);
+                    if (componentName == null) {
+                        Log.d("OMNICORE_AAPS", "getRemoteResult: send request failed");
+                        semaphore.release();
+                        return;
+                    }
+                }
+                catch(IllegalStateException e)
                 {
-                    Log.d("OMNICORE_AAPS", "getRemoteResult: send request failed");
+                    Log.d("OMNICORE_AAPS", "getRemoteResult: Request Command failed due to service being in background");
                     semaphore.release();
                     return;
                 }
