@@ -105,7 +105,7 @@ public abstract class OmniCoreRequest {
         {
             try
             {
-                if (semaphore.tryAcquire(15000, TimeUnit.MILLISECONDS))
+                if (semaphore.tryAcquire(45000, TimeUnit.MILLISECONDS))
                     break;
 
                 if (System.currentTimeMillis() - handler.LastBusy > 15000)
