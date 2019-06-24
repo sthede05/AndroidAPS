@@ -69,7 +69,6 @@ public class OmnipodPdm {
 
     public void OnStart() {
         _lastResult = OmniCoreResult.fromJson(SP.getString(R.string.key_omnicore_last_result, null));
-        _lastResult.LastResultDateTime = 0;
 
         if (_lastResult == null)
         {
@@ -81,6 +80,7 @@ public class OmnipodPdm {
             }
             SP.putString(R.string.key_omnicore_last_result, _lastResult.asJson());
         }
+        _lastResult.LastResultDateTime = 0;
         _connectionStatusKnown = false;
         getResult(new OmniCoreStatusRequest());
     }
