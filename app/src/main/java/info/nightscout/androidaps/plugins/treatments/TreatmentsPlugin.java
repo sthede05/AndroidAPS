@@ -498,6 +498,17 @@ public class TreatmentsPlugin extends PluginBase implements TreatmentsInterface 
         return newRecordCreated;
     }
 
+    public void addToHistoryCarbTreatment(DetailedBolusInfo detailedBolusInfo)
+    {
+        Treatment carbsTreatment = new Treatment();
+        carbsTreatment.source = detailedBolusInfo.source;
+        carbsTreatment.pumpId = detailedBolusInfo.pumpId; // but this should never happen
+        carbsTreatment.date = detailedBolusInfo.date + detailedBolusInfo.carbTime * 60 * 1000L + 1000L; // add 1 sec to make them different records
+        carbsTreatment.carbs = detailedBolusInfo.carbs;
+        carbsTreatment.source = detailedBolusInfo.source;
+        getService().createOrUpdate(carbsTreatment);
+    }
+
     // return true if new record is created
     @Override
     public boolean addToHistoryTreatment(DetailedBolusInfo detailedBolusInfo, boolean allowUpdate) {

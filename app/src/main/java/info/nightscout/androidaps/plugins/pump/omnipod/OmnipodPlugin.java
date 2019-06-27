@@ -319,10 +319,11 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
                 r.comment = getCommentString(result);
             }
             else {
-                //detailedBolusInfo.deliverAt = result.ResultDate;
-                //detailedBolusInfo.pumpId = getHistoryId(result);
-                //TreatmentsPlugin.getPlugin().addToHistoryTreatment(detailedBolusInfo, false);
-
+                detailedBolusInfo.deliverAt = result.ResultDate;
+                if (detailedBolusInfo.carbTime != 0)
+                {
+                    TreatmentsPlugin.getPlugin().addToHistoryCarbTreatment(detailedBolusInfo);
+                }
                 r.carbsDelivered = detailedBolusInfo.carbs;
 
                 _runningBolusInfo = detailedBolusInfo;
