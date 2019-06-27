@@ -58,7 +58,14 @@ public abstract class OmniCoreRequest {
                 Intent startIntent = new Intent("OmniCoreIntentService.START_SERVICE");
                 startIntent.setClassName("net.balya.OmniCore.Mobile.Android", "somethingsomething.OmniCoreIntentService");
                 try {
-                    ComponentName componentName = MainApp.instance().startService(startIntent);
+                    ComponentName componentName = null;
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                        componentName = MainApp.instance().startForegroundService(startIntent);
+                    }
+                    else
+                    {
+                        componentName = MainApp.instance().startService(startIntent);
+                    }
                     if (componentName == null)
                     {
                         Log.d("OMNICORE_AAPS", "getRemoteResult: Start Service failed");
