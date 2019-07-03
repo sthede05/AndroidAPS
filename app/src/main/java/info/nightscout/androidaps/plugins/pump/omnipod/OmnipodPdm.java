@@ -94,7 +94,7 @@ public class OmnipodPdm {
     }
 
     public boolean IsInitialized() {
-        return _lastResult.PodRunning;
+        return IsConnected();
     }
 
     public boolean IsSuspended() {
