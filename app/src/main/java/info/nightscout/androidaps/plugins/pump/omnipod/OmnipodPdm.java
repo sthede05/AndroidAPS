@@ -34,6 +34,9 @@ import info.nightscout.androidaps.db.CareportalEvent;
 import info.nightscout.androidaps.db.ProfileSwitch;
 import info.nightscout.androidaps.db.Source;
 import info.nightscout.androidaps.db.TemporaryBasal;
+import info.nightscout.androidaps.interfaces.Interval;
+import info.nightscout.androidaps.plugins.configBuilder.ConfigBuilderPlugin;
+import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;
 import info.nightscout.androidaps.plugins.general.overview.events.EventDismissNotification;
 import info.nightscout.androidaps.plugins.general.overview.events.EventNewNotification;
 import info.nightscout.androidaps.plugins.general.overview.notifications.Notification;
@@ -149,7 +152,10 @@ public class OmnipodPdm {
             _connectionStatusKnown = true;
             _connected = true;
 
-            processHistory(result);
+            if (_lastResult.LastResultDateTime == 0)
+                processHistory(result, false);
+            else
+                processHistory(result, _lastResult.PodRunning);
 
             if (_lastResult.PodRunning && !result.PodRunning)
             {
@@ -203,12 +209,12 @@ public class OmnipodPdm {
     }
 
 
-    private synchronized void processHistory(OmniCoreResult result) {
+    private synchronized void processHistory(OmniCoreResult result, boolean wasRunning) {
 
         if (result.ResultsToDate == null)
             return;
 
-        new HistoryProcessor(_lastResult.PodRunning).execute(result);
+        new HistoryProcessor(wasRunning).execute(result);
     }
 
     private long _lastStatusRequest = 0;
@@ -400,6 +406,7 @@ class HistoryProcessor extends AsyncTask<OmniCoreResult,Void,Void>
         return null;
     }
 
+
     @Override
     protected Void doInBackground(OmniCoreResult... omniCoreResults) {
         OmniCoreResult result = (OmniCoreResult)omniCoreResults[0];
@@ -484,32 +491,46 @@ class HistoryProcessor extends AsyncTask<OmniCoreResult,Void,Void>
                 case StopExtendedBolus:
                     break;
                 case Status:
-                    TemporaryBasal tempBasalPodStatusChange = getTempBasal(historicalResult.ResultId,
-                            temporaryBasals);
-
-                    if (tempBasalPodStatusChange == null) {
-                        if (_podWasRunning && !historicalResult.PodRunning) {
-                            TemporaryBasal tempBasalPodNotRunning = new TemporaryBasal()
-                                    .date(result.ResultDate)
-                                    .absolute(0)
-                                    .duration(24 * 60 * 14)
-                                    .pumpId(historicalResult.ResultId)
-                                    .source(Source.PUMP);
-                            treatmentsPlugin.addToHistoryTempBasal(tempBasalPodNotRunning);
-                        }
-
-                        if (!_podWasRunning && historicalResult.PodRunning) {
-                            if (treatmentsPlugin.isTempBasalInProgress()) {
-                                TemporaryBasal tempBasalCancelPodRunning = new TemporaryBasal()
-                                        .date(result.ResultDate)
-                                        .pumpId(historicalResult.ResultId)
-                                        .source(Source.PUMP);
-                                treatmentsPlugin.addToHistoryTempBasal(tempBasalCancelPodRunning);
-                            }
-                        }
-                    }
                     break;
             }
+
+            TemporaryBasal zeroBasal = new TemporaryBasal()
+                    .date(historicalResult.ResultDate)
+                    .absolute(0)
+                    .duration(24 * 60 * 14)
+                    .pumpId(historicalResult.ResultId)
+                    .source(Source.PUMP);
+
+            if (!_podWasRunning)
+            {
+                TemporaryBasal tempBasalAtTime = treatmentsPlugin.getTempBasalFromHistory(historicalResult.ResultDate);
+                if (!historicalResult.PodRunning)
+                {
+                    if (tempBasalAtTime == null)
+                    {
+                        treatmentsPlugin.addToHistoryTempBasal(zeroBasal);
+                    }
+                }
+                else
+                {
+                    if (tempBasalAtTime != null)
+                    {
+                        TemporaryBasal tempBasalCancel = new TemporaryBasal()
+                                .date(historicalResult.ResultDate)
+                                .pumpId(historicalResult.ResultId)
+                                .source(Source.PUMP);
+                        treatmentsPlugin.addToHistoryTempBasal(tempBasalCancel);
+                    }
+                }
+            }
+            else
+            {
+                if (!historicalResult.PodRunning)
+                {
+                    treatmentsPlugin.addToHistoryTempBasal(zeroBasal);
+                }
+            }
+            _podWasRunning = historicalResult.PodRunning;
         }
         return null;
     }
