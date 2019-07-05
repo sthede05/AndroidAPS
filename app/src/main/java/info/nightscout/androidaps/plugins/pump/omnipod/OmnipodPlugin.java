@@ -204,24 +204,16 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
 
         if (isInitialized() && TreatmentsPlugin.getPlugin().isTempBasalInProgress())
         {
-//            PumpEnactResult cancelResult = this.cancelTempBasal(false);
-//
-//            if (!cancelResult.success)
-//            {
-//                r.comment = "Failed to cancel existing temp basal";
-//                return r;
-//            }
-
-            Constraint<Boolean> closedLoopEnabled = MainApp.getConstraintChecker().isClosedLoopAllowed();
-            if (loopPlugin.isEnabled(loopPlugin.getType()) && !loopPlugin.isSuspended()
-                    && !loopPlugin.isDisconnected() && closedLoopEnabled.value()) {
-                runLoop = true;
-            }
-            else
-            {
-                warnUser = true;
-            }
+            warnUser = true;
         }
+
+        Constraint<Boolean> closedLoopEnabled = MainApp.getConstraintChecker().isClosedLoopAllowed();
+        if (loopPlugin.isEnabled(loopPlugin.getType()) && !loopPlugin.isSuspended()
+                && !loopPlugin.isDisconnected() && closedLoopEnabled.value()) {
+            runLoop = true;
+            warnUser = false;
+        }
+
 
         OmniCoreResult result = _pdm.SetNewBasalProfile(profile);
         if (result != null) {
