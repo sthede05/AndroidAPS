@@ -204,13 +204,13 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
 
         if (isInitialized() && TreatmentsPlugin.getPlugin().isTempBasalInProgress())
         {
-            PumpEnactResult cancelResult = this.cancelTempBasal(false);
-
-            if (!cancelResult.success)
-            {
-                r.comment = "Failed to cancel existing temp basal";
-                return r;
-            }
+//            PumpEnactResult cancelResult = this.cancelTempBasal(false);
+//
+//            if (!cancelResult.success)
+//            {
+//                r.comment = "Failed to cancel existing temp basal";
+//                return r;
+//            }
 
             Constraint<Boolean> closedLoopEnabled = MainApp.getConstraintChecker().isClosedLoopAllowed();
             if (loopPlugin.isEnabled(loopPlugin.getType()) && !loopPlugin.isSuspended()
