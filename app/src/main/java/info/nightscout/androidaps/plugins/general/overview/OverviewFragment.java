@@ -110,6 +110,7 @@ import info.nightscout.androidaps.plugins.iob.iobCobCalculator.CobInfo;
 import info.nightscout.androidaps.plugins.iob.iobCobCalculator.IobCobCalculatorPlugin;
 import info.nightscout.androidaps.plugins.iob.iobCobCalculator.events.EventAutosensCalculationFinished;
 import info.nightscout.androidaps.plugins.iob.iobCobCalculator.events.EventIobCalculationProgress;
+import info.nightscout.androidaps.plugins.pump.common.defs.PumpType;
 import info.nightscout.androidaps.plugins.source.SourceDexcomG5Plugin;
 import info.nightscout.androidaps.plugins.source.SourceDexcomG6Plugin;
 import info.nightscout.androidaps.plugins.source.SourceXdripPlugin;
@@ -1239,7 +1240,7 @@ public class OverviewFragment extends Fragment implements View.OnClickListener, 
         }
 
         if (omnicoreButton != null) {
-            if (SP.getBoolean(R.string.key_show_omnicore_button, false)) {
+            if ((ConfigBuilderPlugin.getPlugin().getActivePump().getPumpDescription().pumpType == PumpType.Omnipy_Omnipod) && SP.getBoolean(R.string.key_show_omnicore_button, false)) {
                 omnicoreButton.setVisibility(View.VISIBLE);
             } else {
                 omnicoreButton.setVisibility(View.GONE);

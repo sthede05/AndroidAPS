@@ -967,9 +967,9 @@
     <string name="show_calibration_button_summary">Sends a calibration to xDrip+ or open G5 calibration dialog</string>
     <string name="show_cgm_button_summary">Opens xDrip+, back buttons returns to AAPS</string>
 
-    <string name="show_omnicore_button_summary">Opens Omnicore App, back buttons returns to AAPS</string>
+    <string name="show_omnicore_button_summary">Enable Omnicore button in Overview tab</string>
     <string name="key_show_omnicore_button" translatable="false">show_omnicore_button</string>
-    <string name="omnicore_button">OmniCore</string>
+    <string name="omnicore_button">OmniCore Button</string>
     <string name="overview_omnicore">OmniCore</string>
     <string name="error_starting_omnicore">Error starting OmniCore. Make sure it is installed.</string>
 

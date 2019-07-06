@@ -122,11 +122,7 @@
                 android:summary="@string/show_cgm_button_summary"
                 android:title="@string/cgm" />
 
-            <SwitchPreference
-                android:defaultValue="true"
-                android:key="@string/key_show_omnicore_button"
-                android:summary="@string/show_omnicore_button_summary"
-                android:title="@string/omnicore_button" />
+
 
             <SwitchPreference
                 android:defaultValue="true"
