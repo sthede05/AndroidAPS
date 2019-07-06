@@ -113,7 +113,19 @@ public abstract class OmniCoreRequest {
             Messenger messenger = new Messenger(this);
             intent.putExtra("messenger", messenger);
 
-            this.post(() -> MainApp.instance().startService(intent));
+            this.post(() -> {
+                try {
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                        MainApp.instance().startForegroundService(intent);
+                    } else {
+                        MainApp.instance().startService(intent);
+                    }
+                }
+                catch(Exception e) {
+                    e.printStackTrace();
+                }
+            });
+
             lastBusy = System.currentTimeMillis();
             while(true)
             {
