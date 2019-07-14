@@ -1558,7 +1558,7 @@
     <string name="key_omnipod_currentpodid">omnipod_currentpodid</string>
 
     <string name="omnicore_connected">Connected to OmniCore</string>
-    <string name="omnicore_not_connected">Not connected to OmniCore</string>
+    <string name="omnicore_not_connected">Disconnected from OmniCore</string>
     <string name="key_omnicore_last_result">omnicore_last_result</string>
 
 
