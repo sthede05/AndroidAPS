@@ -429,12 +429,12 @@ class HistoryProcessor extends AsyncTask<OmniCoreResult,Void,Void>
                 case Bolus:
                     cancelBolusHistoricalCandidate = historicalResult;
                     DetailedBolusInfo existingBolusInfo =
-                            getBolusInfoFromTreatments(historicalResult.ResultId, treatments);
+                            getBolusInfoFromTreatments(historicalResult.ResultDate, treatments);
                     if (existingBolusInfo == null) {
                         BolusParameters p1 = new Gson()
                                 .fromJson(historicalResult.Parameters, BolusParameters.class);
                         DetailedBolusInfo detailedBolusInfo = new DetailedBolusInfo();
-                        detailedBolusInfo.pumpId = historicalResult.ResultId;
+                        detailedBolusInfo.pumpId = historicalResult.ResultDate;
                         detailedBolusInfo.insulin = p1.ImmediateUnits.doubleValue();
                         detailedBolusInfo.isSMB = false;
                         detailedBolusInfo.date = historicalResult.ResultDate;
@@ -457,7 +457,7 @@ class HistoryProcessor extends AsyncTask<OmniCoreResult,Void,Void>
                     }
                     break;
                 case SetTempBasal:
-                    TemporaryBasal tempBasalRecorded = getTempBasal(historicalResult.ResultId,
+                    TemporaryBasal tempBasalRecorded = getTempBasal(historicalResult.ResultDate,
                             temporaryBasals);
                     if (tempBasalRecorded == null) {
                         BasalParameters p3 = new Gson().fromJson(historicalResult.Parameters,
@@ -469,18 +469,18 @@ class HistoryProcessor extends AsyncTask<OmniCoreResult,Void,Void>
                                 .date(historicalResult.ResultDate)
                                 .absolute(basalRate)
                                 .duration(minutes)
-                                .pumpId(historicalResult.ResultId)
+                                .pumpId(historicalResult.ResultDate)
                                 .source(Source.PUMP);
                         treatmentsPlugin.addToHistoryTempBasal(tempBasal);
                     }
                     break;
                 case CancelTempBasal:
-                    TemporaryBasal tempBasalCancelRecorded = getTempBasal(historicalResult.ResultId,
+                    TemporaryBasal tempBasalCancelRecorded = getTempBasal(historicalResult.ResultDate,
                             temporaryBasals);
                     if (tempBasalCancelRecorded == null) {
                         TemporaryBasal tempStop = new TemporaryBasal()
                                 .date(historicalResult.ResultDate)
-                                .pumpId(historicalResult.ResultId)
+                                .pumpId(historicalResult.ResultDate)
                                 .source(Source.PUMP);
 
                         treatmentsPlugin.addToHistoryTempBasal(tempStop);
@@ -498,7 +498,7 @@ class HistoryProcessor extends AsyncTask<OmniCoreResult,Void,Void>
                     .date(historicalResult.ResultDate)
                     .absolute(0)
                     .duration(24 * 60 * 14)
-                    .pumpId(historicalResult.ResultId)
+                    .pumpId(historicalResult.ResultDate)
                     .source(Source.PUMP);
 
             if (!_podWasRunning)
@@ -517,7 +517,7 @@ class HistoryProcessor extends AsyncTask<OmniCoreResult,Void,Void>
                     {
                         TemporaryBasal tempBasalCancel = new TemporaryBasal()
                                 .date(historicalResult.ResultDate)
-                                .pumpId(historicalResult.ResultId)
+                                .pumpId(historicalResult.ResultDate)
                                 .source(Source.PUMP);
                         treatmentsPlugin.addToHistoryTempBasal(tempBasalCancel);
                     }
