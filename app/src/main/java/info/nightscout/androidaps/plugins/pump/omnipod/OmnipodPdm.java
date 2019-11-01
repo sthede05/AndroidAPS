@@ -464,7 +464,7 @@ class HistoryProcessor extends AsyncTask<OmniCoreResult,Void,Void>
                                 .absolute(basalRate)
                                 .duration(minutes)
                                 .pumpId(historicalResult.ResultId)
-                                .source(Source.PUMP);
+                                .source(Source.USER);
                         treatmentsPlugin.addToHistoryTempBasal(tempBasal);
                     }
                     break;
@@ -475,7 +475,7 @@ class HistoryProcessor extends AsyncTask<OmniCoreResult,Void,Void>
                         TemporaryBasal tempStop = new TemporaryBasal()
                                 .date(historicalResult.ResultDate)
                                 .pumpId(historicalResult.ResultId)
-                                .source(Source.PUMP);
+                                .source(Source.USER);
 
                         treatmentsPlugin.addToHistoryTempBasal(tempStop);
                     }
@@ -495,7 +495,7 @@ class HistoryProcessor extends AsyncTask<OmniCoreResult,Void,Void>
                                     .absolute(0)
                                     .duration(24 * 60 * 14)
                                     .pumpId(historicalResult.ResultId)
-                                    .source(Source.PUMP);
+                                    .source(Source.USER);
                             treatmentsPlugin.addToHistoryTempBasal(tempBasalPodNotRunning);
                         }
 
@@ -504,7 +504,7 @@ class HistoryProcessor extends AsyncTask<OmniCoreResult,Void,Void>
                                 TemporaryBasal tempBasalCancelPodRunning = new TemporaryBasal()
                                         .date(result.ResultDate)
                                         .pumpId(historicalResult.ResultId)
-                                        .source(Source.PUMP);
+                                        .source(Source.USER);
                                 treatmentsPlugin.addToHistoryTempBasal(tempBasalCancelPodRunning);
                             }
                         }
