@@ -516,18 +516,6 @@ class CommandHistory {
         return _commandHistory;
     }
 
-    public String getHistoryList() {
-        String historyList =  "";
-        for (int i = _commandHistory.size(); i-->0;) {
-            historyList += "Command: " + _commandHistory.get(i).request.getRequestType()
-                    + "\nStatus: " + _commandHistory.get(i).Status
-                    +"\nTime: " + DateUtil.dateAndTimeString(_commandHistory.get(i).request.requested);
-       //     if ( _commandHistory.get(i).result != null) {
-       //         historyList += "\nFullResponse: " + _commandHistory.get(i).result.asJson();
-       //     }
-        }
-        return historyList;
-    }
 
     public HistoryEntry getLastSuccess() {
         HistoryEntry _lastSuccess = null;

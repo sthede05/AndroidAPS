@@ -117,8 +117,20 @@ class OmniCorePumpFragment : Fragment() {
                 omnicorestatus_lastsuccess_time?.text = DateUtil.minAgo(lastSuccessfulResult.result.ResultDate)
             }
         }
-        omnicorestatus_commandhistory?.text = omnicorePump.pdm.commandHistory.historyList
 
+        var historyList = ""
+        val commandHistory = omnicorePump.pdm.commandHistory.allHistory
+        var i = commandHistory.size
+        while (i-- > 0) {
+            historyList += ("Command: " + commandHistory.get(i).request.getRequestType()
+                    + "\nStatus: " + commandHistory.get(i).Status
+                    + "\nTime: " + DateUtil.dateAndTimeString(commandHistory.get(i).request.requested))+"\n\n"
+            //     if ( _commandHistory.get(i).result != null) {
+            //         historyList += "\nFullResponse: " + _commandHistory.get(i).result.asJson();
+            //     }
+        }
+
+        omnicorestatus_commandhistory?.text = historyList
 /*
         omnicore_connectionstatus?.text = omnicorePump.pdm.podStatusText
         omnicore_podid?.text = omnicorePump.serialNumber()
