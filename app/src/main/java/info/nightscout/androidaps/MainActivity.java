@@ -351,6 +351,7 @@ public class MainActivity extends NoSplashAppCompatActivity {
                 builder.setIcon(MainApp.getIcon());
                 String message = "Build: " + BuildConfig.BUILDVERSION + "\n";
                 message += "Flavor: " + BuildConfig.FLAVOR + BuildConfig.BUILD_TYPE + "\n";
+                message += "Variant: " + BuildConfig.VARIANT + "\n";
                 message += MainApp.gs(R.string.configbuilder_nightscoutversion_label) + " " + NSSettingsStatus.getInstance().nightscoutVersionName;
                 if (MainApp.engineeringMode)
                     message += "\n" + MainApp.gs(R.string.engineering_mode_enabled);

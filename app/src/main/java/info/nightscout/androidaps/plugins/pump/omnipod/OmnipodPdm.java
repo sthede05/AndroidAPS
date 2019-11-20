@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
@@ -53,6 +54,7 @@ import info.nightscout.androidaps.plugins.bus.RxBus;
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipodUpdateGui;
 import info.nightscout.androidaps.plugins.treatments.Treatment;
 import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
+import info.nightscout.androidaps.utils.DateUtil;
 import info.nightscout.androidaps.utils.SP;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreResult;
 
@@ -67,10 +69,13 @@ public class OmnipodPdm {
 
     private final Logger _log;
 
+    private CommandHistory _commandHistory;
+
     public OmnipodPdm(Context context)
     {
         _context = context;
         _log =  LoggerFactory.getLogger(L.PUMP);
+        _commandHistory = new CommandHistory();
     }
 
     public void OnStart() {
@@ -138,11 +143,19 @@ public class OmnipodPdm {
             _omniCoreTimer.cancel();
             _omniCoreTimer = null;
         }
+        if (L.isEnabled(L.PUMP)) {
+            _log.debug("OMNICORE getResult() for request: " + request.getRequestType());
+        }
+        SP.putString(R.string.key_omnicore_last_command, request.getRequestType());
+        SP.putString(R.string.key_omnicore_last_commandstate, "Pending");
+
 
         OmniCoreResult result = request.getRemoteResult(_lastResult.LastResultDateTime);
 
         if (result != null) {
-
+            if (L.isEnabled(L.PUMP)) {
+                _log.debug("OMNICORE result Returned. Result: " + result.asJson());
+            }
             if (!_connected || !_connectionStatusKnown)
             {
                 RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_CONNECTION_STATUS));
@@ -172,6 +185,15 @@ public class OmnipodPdm {
                 RxBus.INSTANCE.send(new EventNewNotification(notification));
             }
             SP.putString(R.string.key_omnicore_last_result, _lastResult.asJson());
+            if (result.Success) {
+//                SP.putString(R.string.key_omnicore_last_successful_result, _lastResult.asJson());
+                SP.putString(R.string.key_omnicore_last_commandstate, "Success");
+
+            }
+            else {
+                SP.putString(R.string.key_omnicore_last_commandstate, "Failure");
+
+            }
             _lastResult = result;
         }
         else
@@ -224,7 +246,13 @@ public class OmnipodPdm {
             long t0 = System.currentTimeMillis();
             if (t0 - _lastStatusRequest > 60000) {
                 _lastStatusRequest = t0;
-                getResult(new OmniCoreStatusRequest());
+
+                OmniCoreStatusRequest request = new OmniCoreStatusRequest();
+                _commandHistory.addHistory(request,null);
+
+                OmniCoreResult result = getResult(request);
+
+                _commandHistory.updateHistoryResult(request,result);
             }
         }
     }
@@ -275,39 +303,55 @@ public class OmnipodPdm {
             TimeZone tz = profile.getTimeZone();
             int offset_minutes = (tz.getRawOffset() + tz.getDSTSavings()) / (60 * 1000);
             BigDecimal[] basalSchedule = getBasalScheduleFromProfile(profile);
-            result = getResult(new OmniCoreSetProfileRequest(basalSchedule, offset_minutes));
+
+            OmniCoreSetProfileRequest request = new OmniCoreSetProfileRequest(basalSchedule, offset_minutes);
+            _commandHistory.addHistory(request,null);
+            result = getResult(request);
+            _commandHistory.updateHistoryResult(request,result);
         }
         return result;
     }
 
     public OmniCoreResult Bolus(BigDecimal bolusUnits) {
-        OmniCoreResult r = null;
+        OmniCoreResult result = null;
         if (IsConnected() && IsInitialized()) {
-            r = getResult(new OmniCoreBolusRequest(bolusUnits));
+            OmniCoreBolusRequest request = new OmniCoreBolusRequest(bolusUnits);
+            _commandHistory.addHistory(request,null);
+            result = getResult(request);
+            _commandHistory.updateHistoryResult(request,result);
         }
-        return r;
+        return result;
     }
 
     public OmniCoreResult CancelBolus() {
-        OmniCoreResult r = null;
+        OmniCoreResult result = null;
         if (IsConnected() && IsInitialized()) {
-            r = getResult(new OmniCoreCancelBolusRequest());
+            OmniCoreCancelBolusRequest request = new OmniCoreCancelBolusRequest();
+            _commandHistory.addHistory(request,null);
+            result = getResult(request);
+            _commandHistory.updateHistoryResult(request,result);
         }
-        return r;
+        return result;
     }
 
     public OmniCoreResult SetTempBasal(BigDecimal iuRate, BigDecimal durationHours) {
-        OmniCoreResult r = null;
+        OmniCoreResult result = null;
         if (IsConnected() && IsInitialized()) {
-            r = getResult(new OmniCoreTempBasalRequest(iuRate, durationHours));
+            OmniCoreTempBasalRequest request = new OmniCoreTempBasalRequest(iuRate, durationHours);
+            _commandHistory.addHistory(request,null);
+            result = getResult(request);
+            _commandHistory.updateHistoryResult(request,result);
         }
-        return r;
+        return result;
     }
 
     public OmniCoreResult CancelTempBasal() {
         OmniCoreResult result = null;
         if (IsConnected() && IsInitialized()) {
-            result = getResult(new OmniCoreCancelTempBasalRequest());
+            OmniCoreCancelTempBasalRequest request = new OmniCoreCancelTempBasalRequest();
+            _commandHistory.addHistory(request,null);
+            result = getResult(request);
+            _commandHistory.updateHistoryResult(request,result);
         }
         return result;
     }
@@ -326,6 +370,10 @@ public class OmnipodPdm {
         return "NO POD";
     }
 
+ /*   public OmniCoreResult getLastResult() {
+        return _lastResult;
+    }
+*/
     public BigDecimal GetExactInsulinUnits(double iu)
     {
         BigDecimal big20 = new BigDecimal("20");
@@ -357,6 +405,162 @@ public class OmnipodPdm {
 
     public int getBatteryLevel() {
         return _lastResult.BatteryLevel;
+    }
+
+    public long getStartTime() { return 0;}
+
+    public CommandHistory getCommandHistory() {
+        return _commandHistory;
+    }
+}
+
+class HistoryEntry {
+    public OmniCoreResult result;
+    public OmniCoreRequest request;
+    public String Status;
+}
+
+class CommandHistory {
+
+
+
+    private final Logger _log;
+
+    private int _historyMaxSize = 10;
+    private List<HistoryEntry> _commandHistory;
+
+    public CommandHistory() {
+        _log =  LoggerFactory.getLogger(L.PUMP);
+
+        _commandHistory = new ArrayList<>();
+    }
+
+    public void addHistory( OmniCoreRequest request, OmniCoreResult result) {
+
+        if (L.isEnabled(L.PUMP)) {
+            _log.debug("OMNICORE Command History. Adding: " + request.getRequestType());
+            if (result != null) {
+                _log.debug("Adding Result: " + result.asJson());
+            }
+         }
+
+
+        HistoryEntry h = new HistoryEntry();
+        h.request = request;
+
+        if (result == null) {
+            h.Status = "Pending";
+        }
+        else {
+            if (result.Success) {
+                h.Status = "Success";
+            }
+            else {
+                h.Status = "Failure";
+            }
+        }
+
+        h.result = result;
+        _commandHistory.add(h);
+
+        while (_commandHistory.size() > _historyMaxSize) {
+            _commandHistory.remove(0);
+        }
+        RxBus.INSTANCE.send(new EventOmnipodUpdateGui());
+    }
+
+    public void updateHistoryResult(OmniCoreRequest request, OmniCoreResult result) {
+        Boolean found = false;
+        if (L.isEnabled(L.PUMP)) {
+            _log.debug("OMNICORE Command History. Updating request at time: " + request.requested);
+            if (result != null) {
+                _log.debug("Adding Result: " + result.asJson());
+            }
+        }
+
+        for (HistoryEntry h : _commandHistory) {
+            if (L.isEnabled(L.PUMP)) {
+                _log.debug("OMNICORE Command History. Comparing to History Entry: " + h.request.requested);
+            }
+            if (h.request.requested == request.requested) {
+                found = true;
+                _log.debug("Found Matching History Entry");
+                h.result = result;
+                if (h.result == null) {
+                    h.Status = "Pending";
+                }
+                else {
+                    if (h.result.Success) {
+                        h.Status = "Success";
+                    }
+                    else {
+                        h.Status = "Failure";
+                    }
+                }
+                break;
+            }
+        }
+
+        if (!found) {
+            if (L.isEnabled(L.PUMP)) {
+                _log.debug("OMNICORE Command History. Could not find matching request. Adding it");
+            }
+            addHistory(request,result);
+        }
+        else {
+            RxBus.INSTANCE.send(new EventOmnipodUpdateGui());
+        }
+    }
+
+    public List<HistoryEntry> getAllHistory() {
+        return _commandHistory;
+    }
+
+    public String getHistoryList() {
+        String historyList =  "";
+        for (int i = _commandHistory.size(); i-->0;) {
+            historyList += "Command: " + _commandHistory.get(i).request.getRequestType()
+                    + "\nStatus: " + _commandHistory.get(i).Status
+                    +"\nTime: " + DateUtil.dateAndTimeString(_commandHistory.get(i).request.requested);
+       //     if ( _commandHistory.get(i).result != null) {
+       //         historyList += "\nFullResponse: " + _commandHistory.get(i).result.asJson();
+       //     }
+        }
+        return historyList;
+    }
+
+    public HistoryEntry getLastSuccess() {
+        HistoryEntry _lastSuccess = null;
+
+        for (HistoryEntry h : _commandHistory) {
+            if (h.Status == "Success") {
+                if (_lastSuccess == null || h.result.ResultDate > _lastSuccess.result.ResultDate) {
+                    _lastSuccess = h;
+                }
+            }
+        }
+        return _lastSuccess;
+    }
+
+    public HistoryEntry getLastCommand() {
+        HistoryEntry lastCommand = null;
+        if (_commandHistory.size() > 0) {
+            lastCommand = _commandHistory.get(_commandHistory.size() -1);
+        }
+        return lastCommand;
+    }
+
+    public HistoryEntry getLastFailure() {
+        HistoryEntry _lastFailure = null;
+
+        for (HistoryEntry h : _commandHistory) {
+            if (h.Status == "Failure") {
+                if (_lastFailure == null || h.result.ResultDate > _lastFailure.result.ResultDate) {
+                    _lastFailure = h;
+                }
+            }
+        }
+        return _lastFailure;
     }
 }
 

@@ -44,6 +44,10 @@ public abstract class OmniCoreRequest {
         joRequest = new JsonObject();
     }
 
+    public String getRequestType() {
+        return joRequest.get("Type").getAsString();
+    }
+
     public synchronized OmniCoreResult getRemoteResult(long lastResultDateTime) {
         this.requested = System.currentTimeMillis();
 

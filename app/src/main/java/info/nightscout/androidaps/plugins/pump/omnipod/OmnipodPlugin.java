@@ -68,7 +68,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
     public OmnipodPlugin() {
         super(new PluginDescription()
                 .mainType(PluginType.PUMP)
-                //.fragmentClass(OmnipodFragment.class.getName())
+                .fragmentClass(OmniCorePumpFragment.class.getName())
                 .pluginName(R.string.omnipod)
                 .shortName(R.string.omnipod_shortname)
                 .preferencesId(R.xml.pref_omnipod)
@@ -294,6 +294,10 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
         return _pdm.getBatteryLevel();
     }
 
+  /*  public OmniCoreResult lastResult() {
+        return _pdm.getLastResult();
+    }
+*/
     @Override
     public PumpEnactResult deliverTreatment(DetailedBolusInfo detailedBolusInfo) {
 
@@ -515,7 +519,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
 
     @Override
     public String serialNumber() {
-        return InstanceId.INSTANCE.instanceId(); // TODO replace by real serial
+        return _pdm.GetPodId();
     }
 
     @Override
