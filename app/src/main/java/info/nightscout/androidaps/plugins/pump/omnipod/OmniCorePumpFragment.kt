@@ -49,7 +49,7 @@ class OmniCorePumpFragment : Fragment() {
         omnicore_updatestatusbutton.setOnClickListener {
             if (L.isEnabled(L.PUMP))
                 log.debug("Omnicore Status Button clicked")
-            OmnipodPlugin.getPlugin().getPumpStatus()
+            OmnipodPlugin.getPlugin().pdm.getPodStatus()
         }
 
     }
@@ -100,15 +100,18 @@ class OmniCorePumpFragment : Fragment() {
             omnicorestatus_podage?.text = "Not Available"
         }
 
+        if (omnicorePump.pdm.lastStatusResponse > 0) {
+            omnicorestatus_laststatustime?.text = DateUtil.minAgo(omnicorePump.pdm.lastStatusResponse)
+        }
+        else {
+            omnicorestatus_laststatustime?.text = "Never"
+        }
+
         if (lastResult != null) {
             omnicorestatus_lastcommand?.text = lastResult.request.requestType
-            omnicorestatus_lastresult?.text = lastResult.Status
-            if (lastResult.result == null) {
-                omnicorestatus_lastresulttime?.text = ""
-            }
-            else {
-                omnicorestatus_lastresulttime?.text = DateUtil.minAgo(lastResult.result.ResultDate)
-            }
+            omnicorestatus_lastresult?.text = lastResult.status
+            omnicorestatus_lastresulttime?.text = DateUtil.minAgo(lastResult.request.requested)
+
         }
 
         if (lastSuccessfulResult != null) {
@@ -123,8 +126,9 @@ class OmniCorePumpFragment : Fragment() {
         var i = commandHistory.size
         while (i-- > 0) {
             historyList += ("Command: " + commandHistory.get(i).request.getRequestType()
-                    + "\nStatus: " + commandHistory.get(i).Status
-                    + "\nTime: " + DateUtil.dateAndTimeString(commandHistory.get(i).request.requested))+"\n\n"
+                    + "\nStatus: " + commandHistory.get(i).status
+                    + "\nTime: " + DateUtil.dateAndTimeString(commandHistory.get(i).request.requested)
+                    + "\nProcessing: " + commandHistory.get(i).runTime + "ms\n\n")
             //     if ( _commandHistory.get(i).result != null) {
             //         historyList += "\nFullResponse: " + _commandHistory.get(i).result.asJson();
             //     }

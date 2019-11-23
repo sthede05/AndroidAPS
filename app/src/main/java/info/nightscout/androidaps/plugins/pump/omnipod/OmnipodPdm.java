@@ -52,6 +52,7 @@ import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreTempBasa
 import info.nightscout.androidaps.logging.L;
 import info.nightscout.androidaps.plugins.bus.RxBus;
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipodUpdateGui;
+import info.nightscout.androidaps.plugins.pump.omnipod.history.OmniCoreCommandHistory;
 import info.nightscout.androidaps.plugins.treatments.Treatment;
 import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
 import info.nightscout.androidaps.utils.DateUtil;
@@ -66,16 +67,18 @@ public class OmnipodPdm {
     private Timer _omniCoreTimer;
     private boolean _connected;
     private boolean _connectionStatusKnown;
+    private long _lastStatusRequest = 0;
+    private long _lastStatusResponse = 0;
 
     private final Logger _log;
 
-    private CommandHistory _commandHistory;
+    private OmniCoreCommandHistory _commandHistory;
 
     public OmnipodPdm(Context context)
     {
         _context = context;
         _log =  LoggerFactory.getLogger(L.PUMP);
-        _commandHistory = new CommandHistory();
+        _commandHistory = new OmniCoreCommandHistory();
     }
 
     public void OnStart() {
@@ -93,7 +96,8 @@ public class OmnipodPdm {
         }
         _lastResult.LastResultDateTime = 0;
         _connectionStatusKnown = false;
-        getResult(new OmniCoreStatusRequest());
+        getPodStatus();
+      //  getResult(new OmniCoreStatusRequest());
     }
 
     public void OnStop() {
@@ -137,6 +141,7 @@ public class OmnipodPdm {
     public void Disconnect() {}
 
     public synchronized OmniCoreResult getResult(OmniCoreRequest request) {
+     //   RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_COMMAND_STATUS));
 
         if (_omniCoreTimer != null)
         {
@@ -192,12 +197,18 @@ public class OmnipodPdm {
             }
             else {
                 SP.putString(R.string.key_omnicore_last_commandstate, "Failure");
-
+                Notification notification = new Notification(Notification.OMNIPY_COMMAND_STATUS,
+                        String.format(MainApp.gs(R.string.omnipod_command_state_lastcommand_failed), request.getRequestType()), Notification.NORMAL);
+                RxBus.INSTANCE.send(new EventNewNotification(notification));
             }
             _lastResult = result;
         }
         else
         {
+            Notification cmdFailNotification = new Notification(Notification.OMNIPY_COMMAND_STATUS,
+                    String.format(MainApp.gs(R.string.omnipod_command_state_lastcommand_failed), request.getRequestType()), Notification.NORMAL);
+            RxBus.INSTANCE.send(new EventNewNotification(cmdFailNotification));
+
             if (_connected || !_connectionStatusKnown)
             {
                 RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_CONNECTION_STATUS));
@@ -207,6 +218,8 @@ public class OmnipodPdm {
             }
             _connectionStatusKnown = true;
             _connected = false;
+            _commandHistory.setRequestFailed(request);
+            SP.putString(R.string.key_omnicore_last_commandstate, MainApp.gs(R.string.omnicore_not_connected));
         }
 
         RxBus.INSTANCE.send(new EventOmnipodUpdateGui());
@@ -224,7 +237,8 @@ public class OmnipodPdm {
             @Override
             public void run() {
                 _omniCoreTimer = null;
-                getResult(new OmniCoreStatusRequest());
+                getPodStatus();
+                //getResult(new OmniCoreStatusRequest());
             }
         }, delay);
 
@@ -240,25 +254,23 @@ public class OmnipodPdm {
         new HistoryProcessor(wasRunning).execute(result);
     }
 
-    private long _lastStatusRequest = 0;
     public void UpdateStatus() {
         if (IsConnected() && IsInitialized() && !IsBusy()) {
             long t0 = System.currentTimeMillis();
             if (t0 - _lastStatusRequest > 60000) {
                 _lastStatusRequest = t0;
 
-                OmniCoreStatusRequest request = new OmniCoreStatusRequest();
-                _commandHistory.addHistory(request,null);
-
-                OmniCoreResult result = getResult(request);
-
-                _commandHistory.updateHistoryResult(request,result);
+                getPodStatus();
             }
         }
     }
 
     public long GetLastUpdated() {
         return _lastResult.ResultDate;
+    }
+
+    public long getLastStatusResponse() {
+        return _lastStatusResponse;
     }
 
     public String getPodStatusText()
@@ -297,6 +309,19 @@ public class OmnipodPdm {
         return _lastResult.BasalSchedule[index].doubleValue();
 }
 
+    public OmniCoreResult getPodStatus() {
+        OmniCoreStatusRequest request = new OmniCoreStatusRequest();
+        _commandHistory.addOrUpdateHistory(request,null);
+
+        OmniCoreResult result = getResult(request);
+
+        _commandHistory.addOrUpdateHistory(request,result);
+        if (result != null && result.Success) {
+            _lastStatusResponse = result.ResultDate;
+        }
+        return result;
+    }
+
     public OmniCoreResult SetNewBasalProfile(Profile profile) {
         OmniCoreResult result = null;
         if (IsConnected()) {
@@ -305,9 +330,9 @@ public class OmnipodPdm {
             BigDecimal[] basalSchedule = getBasalScheduleFromProfile(profile);
 
             OmniCoreSetProfileRequest request = new OmniCoreSetProfileRequest(basalSchedule, offset_minutes);
-            _commandHistory.addHistory(request,null);
+            _commandHistory.addOrUpdateHistory(request,null);
             result = getResult(request);
-            _commandHistory.updateHistoryResult(request,result);
+            _commandHistory.addOrUpdateHistory(request,result);
         }
         return result;
     }
@@ -316,9 +341,9 @@ public class OmnipodPdm {
         OmniCoreResult result = null;
         if (IsConnected() && IsInitialized()) {
             OmniCoreBolusRequest request = new OmniCoreBolusRequest(bolusUnits);
-            _commandHistory.addHistory(request,null);
+            _commandHistory.addOrUpdateHistory(request,null);
             result = getResult(request);
-            _commandHistory.updateHistoryResult(request,result);
+            _commandHistory.addOrUpdateHistory(request,result);
         }
         return result;
     }
@@ -327,9 +352,9 @@ public class OmnipodPdm {
         OmniCoreResult result = null;
         if (IsConnected() && IsInitialized()) {
             OmniCoreCancelBolusRequest request = new OmniCoreCancelBolusRequest();
-            _commandHistory.addHistory(request,null);
+            _commandHistory.addOrUpdateHistory(request,null);
             result = getResult(request);
-            _commandHistory.updateHistoryResult(request,result);
+            _commandHistory.addOrUpdateHistory(request,result);
         }
         return result;
     }
@@ -338,9 +363,9 @@ public class OmnipodPdm {
         OmniCoreResult result = null;
         if (IsConnected() && IsInitialized()) {
             OmniCoreTempBasalRequest request = new OmniCoreTempBasalRequest(iuRate, durationHours);
-            _commandHistory.addHistory(request,null);
+            _commandHistory.addOrUpdateHistory(request,null);
             result = getResult(request);
-            _commandHistory.updateHistoryResult(request,result);
+            _commandHistory.addOrUpdateHistory(request,result);
         }
         return result;
     }
@@ -349,9 +374,9 @@ public class OmnipodPdm {
         OmniCoreResult result = null;
         if (IsConnected() && IsInitialized()) {
             OmniCoreCancelTempBasalRequest request = new OmniCoreCancelTempBasalRequest();
-            _commandHistory.addHistory(request,null);
+            _commandHistory.addOrUpdateHistory(request,null);
             result = getResult(request);
-            _commandHistory.updateHistoryResult(request,result);
+            _commandHistory.addOrUpdateHistory(request,result);
         }
         return result;
     }
@@ -370,10 +395,7 @@ public class OmnipodPdm {
         return "NO POD";
     }
 
- /*   public OmniCoreResult getLastResult() {
-        return _lastResult;
-    }
-*/
+
     public BigDecimal GetExactInsulinUnits(double iu)
     {
         BigDecimal big20 = new BigDecimal("20");
@@ -409,148 +431,11 @@ public class OmnipodPdm {
 
     public long getStartTime() { return 0;}
 
-    public CommandHistory getCommandHistory() {
+    public OmniCoreCommandHistory getCommandHistory() {
         return _commandHistory;
     }
 }
 
-class HistoryEntry {
-    public OmniCoreResult result;
-    public OmniCoreRequest request;
-    public String Status;
-}
-
-class CommandHistory {
-
-
-
-    private final Logger _log;
-
-    private int _historyMaxSize = 10;
-    private List<HistoryEntry> _commandHistory;
-
-    public CommandHistory() {
-        _log =  LoggerFactory.getLogger(L.PUMP);
-
-        _commandHistory = new ArrayList<>();
-    }
-
-    public void addHistory( OmniCoreRequest request, OmniCoreResult result) {
-
-        if (L.isEnabled(L.PUMP)) {
-            _log.debug("OMNICORE Command History. Adding: " + request.getRequestType());
-            if (result != null) {
-                _log.debug("Adding Result: " + result.asJson());
-            }
-         }
-
-
-        HistoryEntry h = new HistoryEntry();
-        h.request = request;
-
-        if (result == null) {
-            h.Status = "Pending";
-        }
-        else {
-            if (result.Success) {
-                h.Status = "Success";
-            }
-            else {
-                h.Status = "Failure";
-            }
-        }
-
-        h.result = result;
-        _commandHistory.add(h);
-
-        while (_commandHistory.size() > _historyMaxSize) {
-            _commandHistory.remove(0);
-        }
-        RxBus.INSTANCE.send(new EventOmnipodUpdateGui());
-    }
-
-    public void updateHistoryResult(OmniCoreRequest request, OmniCoreResult result) {
-        Boolean found = false;
-        if (L.isEnabled(L.PUMP)) {
-            _log.debug("OMNICORE Command History. Updating request at time: " + request.requested);
-            if (result != null) {
-                _log.debug("Adding Result: " + result.asJson());
-            }
-        }
-
-        for (HistoryEntry h : _commandHistory) {
-            if (L.isEnabled(L.PUMP)) {
-                _log.debug("OMNICORE Command History. Comparing to History Entry: " + h.request.requested);
-            }
-            if (h.request.requested == request.requested) {
-                found = true;
-                _log.debug("Found Matching History Entry");
-                h.result = result;
-                if (h.result == null) {
-                    h.Status = "Pending";
-                }
-                else {
-                    if (h.result.Success) {
-                        h.Status = "Success";
-                    }
-                    else {
-                        h.Status = "Failure";
-                    }
-                }
-                break;
-            }
-        }
-
-        if (!found) {
-            if (L.isEnabled(L.PUMP)) {
-                _log.debug("OMNICORE Command History. Could not find matching request. Adding it");
-            }
-            addHistory(request,result);
-        }
-        else {
-            RxBus.INSTANCE.send(new EventOmnipodUpdateGui());
-        }
-    }
-
-    public List<HistoryEntry> getAllHistory() {
-        return _commandHistory;
-    }
-
-
-    public HistoryEntry getLastSuccess() {
-        HistoryEntry _lastSuccess = null;
-
-        for (HistoryEntry h : _commandHistory) {
-            if (h.Status == "Success") {
-                if (_lastSuccess == null || h.result.ResultDate > _lastSuccess.result.ResultDate) {
-                    _lastSuccess = h;
-                }
-            }
-        }
-        return _lastSuccess;
-    }
-
-    public HistoryEntry getLastCommand() {
-        HistoryEntry lastCommand = null;
-        if (_commandHistory.size() > 0) {
-            lastCommand = _commandHistory.get(_commandHistory.size() -1);
-        }
-        return lastCommand;
-    }
-
-    public HistoryEntry getLastFailure() {
-        HistoryEntry _lastFailure = null;
-
-        for (HistoryEntry h : _commandHistory) {
-            if (h.Status == "Failure") {
-                if (_lastFailure == null || h.result.ResultDate > _lastFailure.result.ResultDate) {
-                    _lastFailure = h;
-                }
-            }
-        }
-        return _lastFailure;
-    }
-}
 
 class HistoryProcessor extends AsyncTask<OmniCoreResult,Void,Void>
 {
