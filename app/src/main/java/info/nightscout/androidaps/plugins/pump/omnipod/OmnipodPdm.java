@@ -141,7 +141,7 @@ public class OmnipodPdm {
     public void Disconnect() {}
 
     public synchronized OmniCoreResult getResult(OmniCoreRequest request) {
-     //   RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_COMMAND_STATUS));
+        RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_COMMAND_STATUS));
 
         if (_omniCoreTimer != null)
         {
