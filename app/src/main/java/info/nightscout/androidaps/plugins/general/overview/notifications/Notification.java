@@ -154,15 +154,15 @@ public class Notification {
                 this.id = NSALARM;
                 this.level = NORMAL;
                 this.text = nsAlarm.getTile();
-                if (isAlarmForLow() && SP.getBoolean(R.string.key_nsalarm_low, false) || isAlarmForHigh() && SP.getBoolean(R.string.key_nsalarm_high, false) || isAlarmForStaleData() && SP.getBoolean(R.string.key_nsalarm_staledata, false))
-                    this.soundId = R.raw.alarm;
+//                if (isAlarmForLow() && SP.getBoolean(R.string.key_nsalarm_low, false) || isAlarmForHigh() && SP.getBoolean(R.string.key_nsalarm_high, false) || isAlarmForStaleData() && SP.getBoolean(R.string.key_nsalarm_staledata, false))
+//                    this.soundId = R.raw.alarm;
                 break;
             case 2:
                 this.id = NSURGENTALARM;
                 this.level = URGENT;
                 this.text = nsAlarm.getTile();
-                if (isAlarmForLow() && SP.getBoolean(R.string.key_nsalarm_urgent_low, false) || isAlarmForHigh() && SP.getBoolean(R.string.key_nsalarm_urgent_high, false))
-                    this.soundId = R.raw.urgentalarm;
+//                if (isAlarmForLow() && SP.getBoolean(R.string.key_nsalarm_urgent_low, false) || isAlarmForHigh() && SP.getBoolean(R.string.key_nsalarm_urgent_high, false))
+//                    this.soundId = R.raw.urgentalarm;
                 break;
         }
     }

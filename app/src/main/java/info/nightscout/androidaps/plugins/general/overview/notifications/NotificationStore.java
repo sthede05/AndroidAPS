@@ -65,17 +65,17 @@ public class NotificationStore {
 
         if (SP.getBoolean(MainApp.gs(R.string.key_raise_notifications_as_android_notifications), false) && !(n instanceof NotificationWithAction)) {
             raiseSystemNotification(n);
-            if (usesChannels && n.soundId != null) {
-                Intent alarm = new Intent(MainApp.instance().getApplicationContext(), AlarmSoundService.class);
-                alarm.putExtra("soundid", n.soundId);
-                MainApp.instance().startService(alarm);
-            }
+//            if (usesChannels && n.soundId != null) {
+//                Intent alarm = new Intent(MainApp.instance().getApplicationContext(), AlarmSoundService.class);
+//                alarm.putExtra("soundid", n.soundId);
+//                MainApp.instance().startService(alarm);
+//            }
 
         } else {
             if (n.soundId != null) {
-                Intent alarm = new Intent(MainApp.instance().getApplicationContext(), AlarmSoundService.class);
-                alarm.putExtra("soundid", n.soundId);
-                MainApp.instance().startService(alarm);
+//                Intent alarm = new Intent(MainApp.instance().getApplicationContext(), AlarmSoundService.class);
+//                alarm.putExtra("soundid", n.soundId);
+//                MainApp.instance().startService(alarm);
             }
         }
 
@@ -87,8 +87,8 @@ public class NotificationStore {
         for (int i = 0; i < store.size(); i++) {
             if (store.get(i).id == id) {
                 if (store.get(i).soundId != null) {
-                    Intent alarm = new Intent(MainApp.instance().getApplicationContext(), AlarmSoundService.class);
-                    MainApp.instance().stopService(alarm);
+//                    Intent alarm = new Intent(MainApp.instance().getApplicationContext(), AlarmSoundService.class);
+//                    MainApp.instance().stopService(alarm);
                 }
                 store.remove(i);
                 return true;
@@ -138,8 +138,8 @@ public class NotificationStore {
                         .setDeleteIntent(DismissNotificationService.deleteIntent(n.id));
         if (n.level == Notification.URGENT) {
             notificationBuilder.setVibrate(new long[]{1000, 1000, 1000, 1000})
-                    .setContentTitle(MainApp.gs(R.string.urgent_alarm))
-                    .setSound(sound, AudioAttributes.USAGE_ALARM);
+                    .setContentTitle(MainApp.gs(R.string.urgent_alarm));
+//                    .setSound(sound, AudioAttributes.USAGE_ALARM);
         } else {
             notificationBuilder.setVibrate(new long[]{0, 100, 50, 100, 50})
                     .setContentTitle(MainApp.gs(R.string.info))

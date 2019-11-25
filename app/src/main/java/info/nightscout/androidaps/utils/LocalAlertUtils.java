@@ -41,7 +41,7 @@ public class LocalAlertUtils {
                 && isStatusOutdated && alarmTimeoutExpired && nextAlarmOccurrenceReached && !LoopPlugin.getPlugin().isDisconnected()) {
             log.debug("Generating pump unreachable alarm. lastConnection: " + DateUtil.dateAndTimeString(lastConnection) + " isStatusOutdated: " + isStatusOutdated);
             Notification n = new Notification(Notification.PUMP_UNREACHABLE, MainApp.gs(R.string.pump_unreachable), Notification.URGENT);
-            n.soundId = R.raw.alarm;
+//            n.soundId = R.raw.alarm;
             SP.putLong("nextPumpDisconnectedAlarm", System.currentTimeMillis() + pumpUnreachableThreshold());
             MainApp.bus().post(new EventNewNotification(n));
             if (SP.getBoolean(R.string.key_ns_create_announcements_from_errors, true)) {
@@ -95,7 +95,7 @@ public class LocalAlertUtils {
                 && bgReading != null && bgReading.date + missedReadingsThreshold() < System.currentTimeMillis()
                 && SP.getLong("nextMissedReadingsAlarm", 0l) < System.currentTimeMillis()) {
             Notification n = new Notification(Notification.BG_READINGS_MISSED, MainApp.gs(R.string.missed_bg_readings), Notification.URGENT);
-            n.soundId = R.raw.alarm;
+//            n.soundId = R.raw.alarm;
             SP.putLong("nextMissedReadingsAlarm", System.currentTimeMillis() + missedReadingsThreshold());
             MainApp.bus().post(new EventNewNotification(n));
             if (SP.getBoolean(R.string.key_ns_create_announcements_from_errors, true)) {
