@@ -50,7 +50,7 @@ import info.nightscout.androidaps.plugins.general.nsclient.receivers.DBAccessRec
 import info.nightscout.androidaps.plugins.general.overview.OverviewPlugin;
 import info.nightscout.androidaps.plugins.general.persistentNotification.PersistentNotificationPlugin;
 import info.nightscout.androidaps.plugins.general.smsCommunicator.SmsCommunicatorPlugin;
-import info.nightscout.androidaps.plugins.general.versionChecker.VersionCheckerPlugin;
+//import info.nightscout.androidaps.plugins.general.versionChecker.VersionCheckerPlugin;
 import info.nightscout.androidaps.plugins.general.wear.WearPlugin;
 import info.nightscout.androidaps.plugins.general.xdripStatusline.StatuslinePlugin;
 import info.nightscout.androidaps.plugins.insulin.InsulinOrefFreePeakPlugin;
@@ -90,7 +90,7 @@ import info.nightscout.androidaps.services.Intents;
 import info.nightscout.androidaps.utils.FabricPrivacy;
 import io.fabric.sdk.android.Fabric;
 
-import static info.nightscout.androidaps.plugins.general.versionChecker.VersionCheckerUtilsKt.triggerCheckVersion;
+//import static info.nightscout.androidaps.plugins.general.versionChecker.VersionCheckerUtilsKt.triggerCheckVersion;
 
 
 public class MainApp extends Application {
@@ -153,7 +153,7 @@ public class MainApp extends Application {
         registerLocalBroadcastReceiver();
 
         //trigger here to see the new version on app start after an update
-        triggerCheckVersion();
+        //triggerCheckVersion();
 
         if (pluginsList == null) {
             pluginsList = new ArrayList<>();
@@ -187,7 +187,7 @@ public class MainApp extends Application {
             if (Config.OTHERPROFILES) pluginsList.add(LocalProfilePlugin.getPlugin());
             pluginsList.add(TreatmentsPlugin.getPlugin());
             if (Config.SAFETY) pluginsList.add(SafetyPlugin.getPlugin());
-            if (Config.SAFETY) pluginsList.add(VersionCheckerPlugin.INSTANCE);
+            //if (Config.SAFETY) pluginsList.add(VersionCheckerPlugin.INSTANCE);
             if (Config.SAFETY) pluginsList.add(StorageConstraintPlugin.getPlugin());
             if (Config.APS) pluginsList.add(ObjectivesPlugin.getPlugin());
             pluginsList.add(SourceXdripPlugin.getPlugin());
