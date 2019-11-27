@@ -141,7 +141,6 @@ public class OmnipodPdm {
     public void Disconnect() {}
 
     public synchronized OmniCoreResult getResult(OmniCoreRequest request) {
-        RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_COMMAND_STATUS));
 
         if (_omniCoreTimer != null)
         {
@@ -197,9 +196,7 @@ public class OmnipodPdm {
             }
             else {
                 SP.putString(R.string.key_omnicore_last_commandstate, "Failure");
-                Notification notification = new Notification(Notification.OMNIPY_COMMAND_STATUS,
-                        String.format(MainApp.gs(R.string.omnipod_command_state_lastcommand_failed), request.getRequestType()), Notification.NORMAL);
-                RxBus.INSTANCE.send(new EventNewNotification(notification));
+
             }
             _lastResult = result;
         }

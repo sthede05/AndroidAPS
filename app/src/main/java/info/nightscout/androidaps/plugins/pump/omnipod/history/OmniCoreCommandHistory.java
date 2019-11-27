@@ -21,6 +21,7 @@ public class OmniCoreCommandHistory {
 
     private final int _historyMaxSize = 10;
     private List<OmniCoreCommandHistoryItem> _commandHistory;
+    //private int consecutiveFailCount = 0;
 
     public OmniCoreCommandHistory() {
         _log =  LoggerFactory.getLogger(L.PUMP);

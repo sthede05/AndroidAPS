@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
-    <PreferenceCategory android:title="@string/omnipod_settings">
+    <PreferenceCategory android:title="@string/omnicore_prefs">
     </PreferenceCategory>
     <EditTextPreference
         android:defaultValue="Default value"
@@ -16,4 +16,10 @@
         android:key="@string/key_show_omnicore_button"
         android:summary="@string/show_omnicore_button_summary"
         android:title="@string/omnicore_button" />
+
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="@string/key_omnicore_log_failures"
+        android:summary="@string/omnicore_log_failures_summary"
+        android:title="@string/omnicore_log_failures" />
 </PreferenceScreen>

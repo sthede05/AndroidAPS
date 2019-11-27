@@ -870,7 +870,7 @@ public class OverviewFragment extends Fragment implements View.OnClickListener, 
                 }
                 break;
             case R.id.overview_omnicorebutton:
-                openOmnicore("net.balya.OmniCore.Mobile.Android");
+                openOmnicore(MainApp.gs(R.string.omnicore_package_name));
                 break;
             case R.id.overview_treatmentbutton:
                 NewTreatmentDialog treatmentDialogFragment = new NewTreatmentDialog();

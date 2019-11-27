@@ -17,7 +17,6 @@ import info.nightscout.androidaps.data.DetailedBolusInfo;
 import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.data.PumpEnactResult;
 import info.nightscout.androidaps.db.ExtendedBolus;
-import info.nightscout.androidaps.db.Source;
 import info.nightscout.androidaps.db.TemporaryBasal;
 import info.nightscout.androidaps.events.EventNetworkChange;
 import info.nightscout.androidaps.interfaces.Constraint;
@@ -41,7 +40,6 @@ import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreResult;
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipodUpdateGui;
 import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
 import info.nightscout.androidaps.utils.DateUtil;
-import info.nightscout.androidaps.utils.InstanceId;
 import info.nightscout.androidaps.utils.SP;
 
 
@@ -71,7 +69,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
                 .fragmentClass(OmniCorePumpFragment.class.getName())
                 .pluginName(R.string.omnipod)
                 .shortName(R.string.omnipod_shortname)
-                .preferencesId(R.xml.pref_omnipod)
+                .preferencesId(R.xml.pref_omnicore)
                 .neverVisible(Config.NSCLIENT)
                 .description(R.string.omnipod_description)
         );

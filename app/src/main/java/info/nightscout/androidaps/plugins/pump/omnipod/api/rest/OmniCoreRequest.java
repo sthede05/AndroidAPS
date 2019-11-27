@@ -27,6 +27,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import info.nightscout.androidaps.MainApp;
+import info.nightscout.androidaps.R;
 
 import static android.content.Context.ACTIVITY_SERVICE;
 
@@ -45,7 +46,11 @@ public abstract class OmniCoreRequest {
     }
 
     public String getRequestType() {
-        return joRequest.get("Type").getAsString();
+        String requestType = "Omnicore Request";
+        if (joRequest.has("Type")) {
+            requestType = joRequest.get("Type").getAsString();
+        }
+        return requestType;
     }
 
     public synchronized OmniCoreResult getRemoteResult(long lastResultDateTime) {
@@ -56,12 +61,12 @@ public abstract class OmniCoreRequest {
             mHandlerThread.start();
         }
 
-
         boolean initializeCalled = false;
         while(true) {
             OmniCoreHandler handler = new OmniCoreHandler(mHandlerThread.getLooper());
             Intent intent = new Intent("OmniCoreIntentService.REQUEST_COMMAND");
-            intent.setClassName("net.balya.OmniCore.Mobile.Android","OmniCore.IntentService");
+          //  intent.setClassName("net.balya.OmniCore.Mobile.Android","OmniCore.IntentService");
+            intent.setClassName(MainApp.gs(R.string.omnicore_package_name),"OmniCore.IntentService");
             joRequest.addProperty("LastResultDateTime", lastResultDateTime);
             String jsonRequest = joRequest.toString();
             intent.putExtra("request", jsonRequest);
@@ -72,7 +77,8 @@ public abstract class OmniCoreRequest {
             } else if (ir == OmniCoreIntentResult.ServiceNotInitialized) {
                 if (!initializeCalled) {
                     Intent activityIntent = new Intent("EnsureServiceRunning");
-                    activityIntent.setClassName("net.balya.OmniCore.Mobile.Android","OmniCore.MainActivity");
+      //              activityIntent.setClassName("net.balya.OmniCore.Mobile.Android","OmniCore.MainActivity");
+                    activityIntent.setClassName(MainApp.gs(R.string.omnicore_package_name),"OmniCore.MainActivity");
                     activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     MainApp.instance().startActivity(activityIntent);
                     initializeCalled = true;

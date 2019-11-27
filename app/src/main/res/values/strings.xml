@@ -911,12 +911,7 @@
     <string name="key_show_treatment_button" translatable="false">show_treatment_button</string>
     <string name="show_calibration_button_summary">Sends a calibration to xDrip+ or open G5 calibration dialog</string>
     <string name="show_cgm_button_summary">Opens xDrip+, back buttons returns to AAPS</string>
-    <string name="show_omnicore_button_summary">Enable Omnicore button in Overview tab</string>
-    <string name="key_show_omnicore_button" translatable="false">show_omnicore_button</string>
-    <string name="omnicore_button">OmniCore Button</string>
-    <string name="overview_omnicore">OmniCore</string>
-    <string name="omnicore_label">OmniCore</string>
-    <string name="error_starting_omnicore">Error starting OmniCore. Make sure it is installed.</string>
+
     <string name="key_insulin_button_increment_1" translatable="false">insulin_button_increment_1</string>
     <string name="key_insulin_button_increment_2" translatable="false">insulin_button_increment_2</string>
     <string name="key_insulin_button_increment_3" translatable="false">insulin_button_increment_3</string>
@@ -1411,87 +1406,37 @@
     <string name="remove_label">REMOVE</string>
     <string name="preconditions">Preconditions:</string>
 
-
-
-    <string name="omnipod_settings">Omnipod Settings</string>
-    <string name="omnipod_connection_settings">Connection Settings</string>
-    <string name="omnipy_set_http_password">Set password</string>
-    <string name="omnipy_connection_settings">Omnipy Connection</string>
-    <string name="omnipy_auto_detect_host">Auto detect address</string>
-    <string name="omnipy_host_ip">Set address manually</string>
-    <string name="omnipy_pod_settings">Pod Settings</string>
-    <string name="omnipy_bolus_alerts">Bolus</string>
-    <string name="omnipod_temp_basal_alerts">Temp. Basal</string>
-    <string name="omnipod_notification_Settings">Pod beeps</string>
-    <string name="omnipod_safety_limits">Safety</string>
-    <string name="omniod_max_temp_basal">Set maximum Temp-Basal</string>
-    <string name="omniod_max_bolus">Set maximum Bolus</string>
-    <string name="key_omnipy_password">key_omnipy_password</string>
-    <string name="key_omnipy_autodetect_host">key_omnipy_autodetect_host</string>
-    <string name="key_omnipy_host">key_omnipy_host</string>
-    <string name="omnipod_pdm_header">Omnipod PDM</string>
-    <string name="omnipy_connection">Omnipy Connection</string>
-
-
-    <string name="omnipy_host_text">Host:</string>
-    <string name="omnipy_last_conn">Last connection:</string>
-    <string name="omnipy_auth_status">Authentication:</string>
-    <string name="omnipy_check_conn">Check Connection</string>
-    <string name="omnipod_status_last_update">Last updated:</string>
-    <string name="omnipy_pod_lot">Lot:</string>
-    <string name="omnipy_pod_tid">Serial:</string>
-    <string name="omnipy_pod_address">Address:</string>
-
-    <string name="omnipod_cmd_new_pod">New Pod</string>
-
-
-    <string name="omnipy_history">History</string>
-    <string name="omnipy_restart_remote">Restart Omnipy Host</string>
-    <string name="omnipy_shutdown_remote">Shutdown Omnipy Host</string>
-    <string name="key_omnipod_status">key_omnipod_status</string>
-    <string name="key_omnipod_remind_bolus_start">key_omnipod_remind_bolus_start</string>
-    <string name="key_omnipod_remind_bolus_cancel">key_omnipod_remind_bolus_cancel</string>
-    <string name="key_omnipod_remind_temp_start">key_omnipod_remind_temp_start</string>
-    <string name="key_omnipod_remind_temp_running">key_omnipod_remind_temp_running</string>
-    <string name="key_omnipod_remind_temp_cancel">key_omnipod_remind_temp_cancel</string>
-    <string name="key_omnipod_remind_basal_change">key_omnipod_remind_basal_change</string>
-    <string name="key_omnipod_remind_low_reservoir_units">key_omnipod_remind_low_reservoir_units</string>
-    <string name="key_omnipod_remind_pod_expiry_minutes">key_omnipod_remind_pod_expiry_minutes</string>
-    <string name="key_omnipod_limit_max_temp">key_omnipod_limit_max_temp</string>
-    <string name="key_omnipod_limit_max_bolus">key_omnipod_limit_max_bolus</string>
-    <string name="key_omnipod_alert_deactivate_screamers">key_omnipod_alert_deactivate_screamers</string>
-    <string name="key_omnipod_alert_auto_acknowledge">key_omnipod_alert_auto_acknowledge</string>
-    <string name="key_omnipod_tz_auto_change">key_omnipod_tz_auto_change</string>
-
-    <string name="omnipod_activation_fragment_Activate_a_new_pod">Activate a new pod</string>
-    <string name="omnipod_activation_fragment_Register_an_activated_pod">Register an activated pod</string>
-    <string name="omnipod_activation_fragment_Lot_number">Lot Number:</string>
-    <string name="omnipod_activation_fragment_Serial_number">Serial Number:</string>
-    <string name="omnipod_activation_fragment_Activate_Pod">Activate pod</string>
-    <string name="omnipod_activation_fragment_Radio_address">Radio address:</string>
-    <string name="omnipod_activation_fragment_Determine_radio_address_by_listening_to_the_PDM">Determine radio address by listening to the PDM</string>
+    <!-- OmniCore -->
 
     <string name="omnipod">OmniCore</string>
     <string name="omnipod_shortname">Omni</string>
     <string name="omnipod_description">Plugin to connect to OmniCore</string>
+    <string name="omnicore_package_name">net.balya.OmniCore.Mobile.Android</string>
 
+    <!-- Preferences -->
+    <string name="omnicore_prefs">Omnipod Settings</string>
 
-    <string name="omnipy_connection_status">Connection Status</string>
+    <string name="omnicore_settings">Open the OmniCore app to configure your Omnipod</string>
+    <string name="show_omnicore_button_summary">Enable Omnicore button in Overview tab</string>
+    <string name="key_show_omnicore_button" translatable="false">show_omnicore_button</string>
+    <string name="omnicore_button">OmniCore Button</string>
+    <string name="omnicore_log_failures_summary">Log Command Failures to Nightscout</string>
+    <string name="key_omnicore_log_failures" translatable="false">show_omnicore_button</string>
+    <string name="omnicore_log_failures">Log Failures</string>
+    <string name="overview_omnicore">OmniCore</string>
+    <string name="omnicore_label">OmniCore</string>
+    <string name="error_starting_omnicore">Error starting OmniCore. Make sure it is installed.</string>
 
-    <string name="omnipod_pod_connection_status_check_connection">Check Connection</string>
-    <string name="omnipod_pod_connection_status_shutdownPi">Shutdown</string>
-    <string name="omnipod_pod_connection_status_RestartPi">Restart</string>
-    <string name="omnipod_pod_connection_status_Address_configuration_in_progress">Address configuration in progress..</string>
-    <string name="omnipod_pod_connection_status_Discovered_Address">Discovered Address: </string>
-    <string name="omnipod_pod_connection_status_Configured_Address">Configured Address: </string>
-    <string name="omnipod_pod_connection_status_Connectable_No">Connectable: No</string>
-    <string name="omnipod_pod_connection_status_Connectable_Yes">Connectable: Yes</string>
-    <string name="omnipod_pod_connection_status_Authentication_Verified">Authentification: Verified</string>
-    <string name="omnipod_pod_connection_status_Authentication_Failed">Authentification: Failed</string>
-    <string name="omnipod_pod_connection_status_Omnipy_API_Version">Omnipy API Version: v</string>
-    <string name="omnipod_pod_connection_status_Last_successful_connection">Last successful connection: </string>
-    <string name="omnipod_pod_connection_status_NA">N/A</string>
+    <string name="omnicore_connected">Connected to OmniCore</string>
+    <string name="omnicore_not_connected">Not connected to OmniCore</string>
 
+    <string name="key_omnicore_last_result">No Result</string>
+    <string name="key_omnicore_last_command">No Command</string>
+    <string name="key_omnicore_last_commandstate">No Result</string>
+
+    <string name="key_omnicore_last_successful_result">No Result</string>
+    <string name="key_omnicore_last_successful_command">No Command</string>
+    <string name="key_omnicore_last_successful_commandstate">No Command</string>
 
     <string name="omnipod_pod_status">Pod Status</string>
     <string name="omnipy_pod_status_clear_alerts">Clear Alerts</string>
@@ -1528,7 +1473,6 @@
 
 
     <string name="omnipod_pod_state_POD_IDs_has_been_removed">Pod %s has been removed.</string>
-    <string name="omnipod_command_state_lastcommand_failed">Last command failed: %s</string>
     <string name="omnipod_pod_state_No_pod_registered">No pod registered</string>
     <string name="omnipod_pod_state_Pod_in_activation_progress">Pod in activation progress</string>
     <string name="omnipod_pod_state_Pod_is_activated_and_running">Pod is activated and running</string>
@@ -1536,8 +1480,94 @@
     <string name="omnipod_pod_state_Pod_stopped">Pod stopped</string>
     <string name="omnipod_pod_state_Pod_alert">Pod alert: </string>
 
+    <string name="omnipod_command_state_lastcommand_failed">Last command failed: %s</string>
+    <string name="omnipod_command_bolus">Bolus  %1$.2fU</string>
+    <string name="omnipod_command_cancelbolus">Cancel Bolus</string>
+    <string name="omnipod_command_tbr">Temp Basal %1$.2fU/h for %2$dh</string>
+    <string name="omnipod_command_canceltbr">Cancel Temp Basal</string>
+    <string name="omnipod_command_setprofile">Set Profile</string>
+    <string name="omnipod_command_getstatus">Get Status</string>
+    <!-- <string name="omnipod_connection_settings">Connection Settings</string>
+     <string name="omnipy_set_http_password">Set password</string>
+     <string name="omnipy_connection_settings">Omnipy Connection</string>
+     <string name="omnipy_auto_detect_host">Auto detect address</string>
+     <string name="omnipy_host_ip">Set address manually</string>
+     <string name="omnipy_pod_settings">Pod Settings</string>
+     <string name="omnipy_bolus_alerts">Bolus</string>
+     <string name="omnipod_temp_basal_alerts">Temp. Basal</string>
+     <string name="omnipod_notification_Settings">Pod beeps</string>
+     <string name="omnipod_safety_limits">Safety</string>
+     <string name="omniod_max_temp_basal">Set maximum Temp-Basal</string>
+     <string name="omniod_max_bolus">Set maximum Bolus</string>
+     <string name="key_omnipy_password">key_omnipy_password</string>
+     <string name="key_omnipy_autodetect_host">key_omnipy_autodetect_host</string>
+     <string name="key_omnipy_host">key_omnipy_host</string>
+     <string name="omnipod_pdm_header">Omnipod PDM</string>
+     <string name="omnipy_connection">Omnipy Connection</string>
 
 
+     <string name="omnipy_host_text">Host:</string>
+     <string name="omnipy_last_conn">Last connection:</string>
+     <string name="omnipy_auth_status">Authentication:</string>
+     <string name="omnipy_check_conn">Check Connection</string>
+     <string name="omnipod_status_last_update">Last updated:</string>
+     <string name="omnipy_pod_lot">Lot:</string>
+     <string name="omnipy_pod_tid">Serial:</string>
+     <string name="omnipy_pod_address">Address:</string>
+
+     <string name="omnipod_cmd_new_pod">New Pod</string> -->
+
+<!--
+    <string name="omnipy_history">History</string>
+    <string name="omnipy_restart_remote">Restart Omnipy Host</string>
+    <string name="omnipy_shutdown_remote">Shutdown Omnipy Host</string>
+    <string name="key_omnipod_status">key_omnipod_status</string>
+    <string name="key_omnipod_remind_bolus_start">key_omnipod_remind_bolus_start</string>
+    <string name="key_omnipod_remind_bolus_cancel">key_omnipod_remind_bolus_cancel</string>
+    <string name="key_omnipod_remind_temp_start">key_omnipod_remind_temp_start</string>
+    <string name="key_omnipod_remind_temp_running">key_omnipod_remind_temp_running</string>
+    <string name="key_omnipod_remind_temp_cancel">key_omnipod_remind_temp_cancel</string>
+    <string name="key_omnipod_remind_basal_change">key_omnipod_remind_basal_change</string>
+    <string name="key_omnipod_remind_low_reservoir_units">key_omnipod_remind_low_reservoir_units</string>
+    <string name="key_omnipod_remind_pod_expiry_minutes">key_omnipod_remind_pod_expiry_minutes</string>
+    <string name="key_omnipod_limit_max_temp">key_omnipod_limit_max_temp</string>
+    <string name="key_omnipod_limit_max_bolus">key_omnipod_limit_max_bolus</string>
+    <string name="key_omnipod_alert_deactivate_screamers">key_omnipod_alert_deactivate_screamers</string>
+    <string name="key_omnipod_alert_auto_acknowledge">key_omnipod_alert_auto_acknowledge</string>
+    <string name="key_omnipod_tz_auto_change">key_omnipod_tz_auto_change</string>
+
+    <string name="omnipod_activation_fragment_Activate_a_new_pod">Activate a new pod</string>
+    <string name="omnipod_activation_fragment_Register_an_activated_pod">Register an activated pod</string>
+    <string name="omnipod_activation_fragment_Lot_number">Lot Number:</string>
+    <string name="omnipod_activation_fragment_Serial_number">Serial Number:</string>
+    <string name="omnipod_activation_fragment_Activate_Pod">Activate pod</string>
+    <string name="omnipod_activation_fragment_Radio_address">Radio address:</string>
+    <string name="omnipod_activation_fragment_Determine_radio_address_by_listening_to_the_PDM">Determine radio address by listening to the PDM</string>
+-->
+
+<!--
+
+    <string name="omnipy_connection_status">Connection Status</string>
+
+    <string name="omnipod_pod_connection_status_check_connection">Check Connection</string>
+    <string name="omnipod_pod_connection_status_shutdownPi">Shutdown</string>
+    <string name="omnipod_pod_connection_status_RestartPi">Restart</string>
+    <string name="omnipod_pod_connection_status_Address_configuration_in_progress">Address configuration in progress..</string>
+    <string name="omnipod_pod_connection_status_Discovered_Address">Discovered Address: </string>
+    <string name="omnipod_pod_connection_status_Configured_Address">Configured Address: </string>
+    <string name="omnipod_pod_connection_status_Connectable_No">Connectable: No</string>
+    <string name="omnipod_pod_connection_status_Connectable_Yes">Connectable: Yes</string>
+    <string name="omnipod_pod_connection_status_Authentication_Verified">Authentification: Verified</string>
+    <string name="omnipod_pod_connection_status_Authentication_Failed">Authentification: Failed</string>
+    <string name="omnipod_pod_connection_status_Omnipy_API_Version">Omnipy API Version: v</string>
+    <string name="omnipod_pod_connection_status_Last_successful_connection">Last successful connection: </string>
+    <string name="omnipod_pod_connection_status_NA">N/A</string>
+
+-->
+
+
+
+<!--
     <string name="omnipod_network_status_located_no_connection_txt1">Omnipy located at network address </string>
     <string name="omnipod_network_status_located_no_connection_txt2"> but connection cannot be established</string>
     <string name="omnipod_network_status_not_located_no_connection_txt1">Omnipy connection cannot be established at the configured address: </string>
@@ -1559,8 +1589,8 @@
     <string name="omnipod_Yes_prompt">Yes</string>
     <string name="omnipod_No_prompt">No</string>
 
-
-
+-->
+<!--
     <string name="omnipod_UpdateStatus_Requesting_status_update">Requesting status update</string>
     <string name="omnipod_UpdateStatus_Status_updated">Status updated</string>
     <string name="omnipod_UpdateStatus_Status_update_failed1">Status update failed:</string>
@@ -1618,8 +1648,8 @@
     <string name="omnipod_ActivatePod_15">Activation failed, please try again.</string>
     <string name="omnipod_ActivatePod_16">Pairing failed, please try again. Error:</string>
     <string name="omnipod_ActivatePod_17">Pairing failed, please try again.</string>
-
-
+-->
+<!--
     <string name="omnipodStartPod_1">When you\'re ready, click Yes to start the insertion and basal delivery process.</string>
     <string name="omnipodStartPod_2">Starting the pod</string>
     <string name="omnipodStartPod_3">Pod started successfully.</string>
@@ -1631,20 +1661,10 @@
     <string name="Searching_for_omnipy_on_local_network">Searching for omnipy on local network..</string>
     <string name="Trying_to_connect_to_omnipy_at_address">Trying to connect to omnipy at address:</string>
     <string name="omnipod_activate_err_no_profile_set">Error: Cannot activate a pod without an active user profile. Please set it up using AndroidAPS profile actions.</string>
-    <string name="omnicore_settings">Open the OmniCore app to configure your Omnipod</string>
     <string name="key_omnipod_lastresultid">omnipod_lastresultid</string>
     <string name="key_omnipod_currentpodid">omnipod_currentpodid</string>
+-->
 
-    <string name="omnicore_connected">Connected to OmniCore</string>
-    <string name="omnicore_not_connected">Not connected to OmniCore</string>
-
-    <string name="key_omnicore_last_result">No Result</string>
-    <string name="key_omnicore_last_command">No Command</string>
-    <string name="key_omnicore_last_commandstate">No Result</string>
-
-    <string name="key_omnicore_last_successful_result">No Result</string>
-    <string name="key_omnicore_last_successful_command">No Command</string>
-    <string name="key_omnicore_last_successful_commandstate">No Command</string>
 
     <!-- Pump Abstract -->
     <string name="pump_operation_not_supported_by_pump_driver">Operation not supported by pump and/or driver.</string>

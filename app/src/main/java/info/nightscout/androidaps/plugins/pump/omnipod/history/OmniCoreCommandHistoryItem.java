@@ -1,11 +1,20 @@
 package info.nightscout.androidaps.plugins.pump.omnipod.history;
 
+import info.nightscout.androidaps.MainApp;
+import info.nightscout.androidaps.R;
+import info.nightscout.androidaps.plugins.bus.RxBus;
+import info.nightscout.androidaps.plugins.configBuilder.ConfigBuilderPlugin;
+import info.nightscout.androidaps.plugins.general.nsclient.NSUpload;
+import info.nightscout.androidaps.plugins.general.overview.events.EventDismissNotification;
+import info.nightscout.androidaps.plugins.general.overview.events.EventNewNotification;
+import info.nightscout.androidaps.plugins.general.overview.notifications.Notification;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreRequest;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreResult;
 import info.nightscout.androidaps.utils.DateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import info.nightscout.androidaps.logging.L;
+import info.nightscout.androidaps.utils.SP;
 
 
 public class OmniCoreCommandHistoryItem {
@@ -61,9 +70,21 @@ public class OmniCoreCommandHistoryItem {
         else {
             if (this._result.Success) {
                 this._status = "Success";
+                RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_COMMAND_STATUS));
+
             }
             else {
                 this._status = "Failure";
+
+                Notification notification = new Notification(Notification.OMNIPY_COMMAND_STATUS,
+                        String.format(MainApp.gs(R.string.omnipod_command_state_lastcommand_failed), this._request.getRequestType()), Notification.URGENT);
+                notification.soundId = R.raw.alarm;
+                RxBus.INSTANCE.send(new EventNewNotification(notification));
+                //Log Failure to NS
+
+                if (SP.getBoolean(R.string.key_omnicore_log_failures, false)) {
+                    NSUpload.uploadError(notification.text);
+                }
             }
         }
 
