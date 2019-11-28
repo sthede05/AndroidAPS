@@ -17,8 +17,8 @@ public class OmniCoreTempBasalRequest extends OmniCoreRequest {
 
     @Override
     public String getRequestType()  {
-        BigDecimal basalRate = joRequest.get("TemporaryRate").getAsBigDecimal();
-        BigDecimal duration = joRequest.get("DurationHours").getAsBigDecimal();
+        Float basalRate = joRequest.get("TemporaryRate").getAsFloat();
+        Float duration = joRequest.get("DurationHours").getAsFloat();
         return String.format(MainApp.gs(R.string.omnipod_command_tbr),basalRate,duration);
     }
 

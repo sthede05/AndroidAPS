@@ -968,7 +968,7 @@
     <string name="combo_error_failure_reading_changed_basal_rate">Basal rate changed on pump, but reading it failed</string>
     <string name="combo_activity_checking_for_history_changes">Checking for history changes</string>
     <string name="combo_error_multiple_boluses_with_identical_timestamp">Multiple boluses with the same amount within the same minute were just imported. Only one record could be added to treatments. Please check the pump and manually add a bolus record using the Careportal tab. Make sure to create a bolus with a time no other bolus uses.</string>
-    <string name="about_link_urls">\n\nhttp://www.androidaps.org\nhttp://www.androidaps.de (de)\n\nfacebook:\nhttp://facebook.androidaps.org\nhttp://facebook.androidaps.de (de)\nhttps://www.facebook.com/groups/2141146659318874/</string>
+    <string name="about_link_urls">\n\nhttp://www.androidaps.org\nhttp://www.androidaps.de (de)\n\nfacebook:\nhttp://facebook.androidaps.org\nhttp://facebook.androidaps.de (de)\nhttps://www.facebook.com/groups/2141146659318874/ (Omnicore Support)</string>
     <string name="combo_check_date">The last bolus is older than 24 hours or is in the future. Please check the date on the pump is set correctly.</string>
     <string name="combo_suspious_bolus_time">Time/date of the delivered bolus on pump seems wrong, IOB is likely incorrect. Please check pump time/date.</string>
     <string name="profileswitch_ismissing">ProfileSwitch missing. Please do a profile switch or press \"Activate Profile\" in the LocalProfile.</string>
@@ -1483,7 +1483,7 @@
     <string name="omnipod_command_state_lastcommand_failed">Last command failed: %s</string>
     <string name="omnipod_command_bolus">Bolus  %1$.2fU</string>
     <string name="omnipod_command_cancelbolus">Cancel Bolus</string>
-    <string name="omnipod_command_tbr">Temp Basal %1$.2fU/h for %2$dh</string>
+    <string name="omnipod_command_tbr">Temp Basal %1$.2fU/h for %2$.2fh</string>
     <string name="omnipod_command_canceltbr">Cancel Temp Basal</string>
     <string name="omnipod_command_setprofile">Set Profile</string>
     <string name="omnipod_command_getstatus">Get Status</string>

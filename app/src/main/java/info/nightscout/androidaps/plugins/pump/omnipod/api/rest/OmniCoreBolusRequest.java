@@ -13,7 +13,7 @@ public class OmniCoreBolusRequest extends OmniCoreRequest {
 
     @Override
     public String getRequestType()  {
-        BigDecimal bolusAmount = joRequest.get("ImmediateUnits").getAsBigDecimal();
+        Float bolusAmount = joRequest.get("ImmediateUnits").getAsFloat();
         return String.format(MainApp.gs(R.string.omnipod_command_bolus),bolusAmount);
     }
 }
