@@ -22,4 +22,18 @@
         android:key="@string/key_omnicore_log_failures"
         android:summary="@string/omnicore_log_failures_summary"
         android:title="@string/omnicore_log_failures" />
+
+    <ListPreference
+        android:title="Command Failure Alert Level"
+        android:summary="Type of Alert to thow when a command to Omnicore Fails"
+        android:key="@string/key_omnicore_failure_alerttype"
+        android:entries="@array/omnicore_alertLevels"
+        android:entryValues="@array/omnicore_alertLevelValues"
+        android:defaultValue="NONE"/>
+
+    <SwitchPreference
+        android:title="Command Failure Audible"
+        android:summary="Play Audible Alarm on Command Failure"
+        android:key="@string/key_omnicore_failure_audible"
+        android:defaultValue="false"/>
 </PreferenceScreen>

@@ -21,6 +21,40 @@
                 android:text="@string/omnicore_label"
                 android:textAppearance="?android:attr/textAppearanceLarge" />
 -->
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="2dip"
+                android:layout_marginBottom="5dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="5dp"
+                android:background="@color/listdelimiter" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:paddingRight="5dp"
+                android:text="Status"
+                android:textAlignment="center"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+            <Button
+                android:id="@+id/omnicore_updatestatusbutton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Update Status"/>
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="2dip"
+                android:layout_marginBottom="5dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="5dp"
+                android:background="@color/listdelimiter" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -244,11 +278,33 @@
                 android:layout_marginTop="5dp"
                 android:background="@color/listdelimiter" />
 
-            <Button
-                android:id="@+id/omnicore_updatestatusbutton"
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Update Status"/>
+                android:layout_weight="1"
+                android:gravity="end"
+                android:paddingRight="5dp"
+                android:text="Pump Actions"
+                android:textAlignment="center"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+
+
+            <Button
+                android:id="@+id/omnicore_launchomnicorebutton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Launch Omnicore to Activate or Deactivate a Pod"/>
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="2dip"
+                android:layout_marginBottom="5dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="5dp"
+                android:background="@color/listdelimiter" />
 
             <TextView
                 android:layout_width="match_parent"

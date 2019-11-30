@@ -191,6 +191,22 @@
         <item>@string/key_medtronic_pump_battery_nizn</item>
     </string-array>
 
+    <string-array name="omnicore_alertLevels">
+        <item>None</item>
+        <item>Urgent</item>
+        <item>Normal</item>
+        <item>Low</item>
+        <item>Info</item>
+        <item>Announcement</item>
+    </string-array>
+    <string-array name="omnicore_alertLevelValues">
+    <item>-1</item>
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </string-array>
 
     key_medtronic_bolus_debug
 

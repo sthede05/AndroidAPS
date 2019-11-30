@@ -1,6 +1,9 @@
 package info.nightscout.androidaps.plugins.pump.omnipod;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.SystemClock;
 
 //import com.squareup.otto.Subscribe;
@@ -9,6 +12,8 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import info.nightscout.androidaps.BuildConfig;
 import info.nightscout.androidaps.Config;
 import info.nightscout.androidaps.MainApp;
@@ -608,5 +613,27 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
     public void executeCustomAction(CustomActionType customActionType) {
         log.debug("OMNIPOD_PLUGIN exec custom action");
 
+    }
+
+
+
+
+    public boolean openOmnicore(Context context, String packageName) {
+        PackageManager packageManager = context.getPackageManager();
+        try {
+            Intent intent = packageManager.getLaunchIntentForPackage(packageName);
+            if (intent == null) {
+                throw new ActivityNotFoundException();
+            }
+            intent.addCategory(Intent.CATEGORY_LAUNCHER);
+            context.startActivity(intent);
+            return true;
+        } catch (ActivityNotFoundException e) {
+            new AlertDialog.Builder(context)
+                    .setMessage(R.string.error_starting_omnicore)
+                    .setPositiveButton("OK", null)
+                    .show();
+            return false;
+        }
     }
 }

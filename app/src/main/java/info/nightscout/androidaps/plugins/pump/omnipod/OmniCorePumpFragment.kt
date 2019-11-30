@@ -52,6 +52,11 @@ class OmniCorePumpFragment : Fragment() {
             OmnipodPlugin.getPlugin().pdm.getPodStatus()
         }
 
+        omnicore_launchomnicorebutton.setOnClickListener {if (L.isEnabled(L.PUMP))
+            log.debug("Omnicore Launch Button clicked")
+            OmnipodPlugin.getPlugin().openOmnicore(context,MainApp.gs(R.string.omnicore_package_name));
+        }
+
     }
 
     @Synchronized

@@ -76,14 +76,25 @@ public class OmniCoreCommandHistoryItem {
             else {
                 this._status = "Failure";
 
-                Notification notification = new Notification(Notification.OMNIPY_COMMAND_STATUS,
-                        String.format(MainApp.gs(R.string.omnipod_command_state_lastcommand_failed), this._request.getRequestType()), Notification.URGENT);
-                notification.soundId = R.raw.alarm;
-                RxBus.INSTANCE.send(new EventNewNotification(notification));
+                /*    public static final int URGENT = 0;
+    public static final int NORMAL = 1;
+    public static final int LOW = 2;
+    public static final int INFO = 3;
+    public static final int ANNOUNCEMENT = 4;*/
+                int alertLevel = SP.getInt(R.string.key_omnicore_failure_alerttype,-1);
+                String alertText = String.format(MainApp.gs(R.string.omnipod_command_state_lastcommand_failed), this._request.getRequestType());
+                if (alertLevel >=0) {
+                    Notification notification = new Notification(Notification.OMNIPY_COMMAND_STATUS, alertText, alertLevel);
+                    if (SP.getBoolean(R.string.key_omnicore_failure_audible,false)) {
+                        notification.soundId = R.raw.alarm;
+                    }
+                    RxBus.INSTANCE.send(new EventNewNotification(notification));
+
+                }
                 //Log Failure to NS
 
                 if (SP.getBoolean(R.string.key_omnicore_log_failures, false)) {
-                    NSUpload.uploadError(notification.text);
+                    NSUpload.uploadError(alertText);
                 }
             }
         }
