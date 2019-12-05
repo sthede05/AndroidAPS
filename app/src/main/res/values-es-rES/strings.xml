@@ -1150,6 +1150,12 @@
     <string name="dst_in_24h_warning">Cambio al horario de verano/invierno en menos de 24 horas</string>
     <string name="dst_loop_disabled_warning">Cambio al horario de verano/invierno hace menos de 3 horas - Lazo cerrado deshabilitado</string>
     <string name="storage">restricción de almacenamiento interno</string>
+    <string name="Disconnected_from_omnipy">Disconnected from omnipy</string>
+    <string name="Pod_faulted_with_error">Pod faulted with error: %d</string>
+    <string name="pod_age_format">%dd%dh%dm</string>
+    <string name="Searching_for_omnipy_on_local_network">Searching for omnipy on local network..</string>
+    <string name="Trying_to_connect_to_omnipy_at_address">Trying to connect to omnipy at address:</string>
+
     <string name="diskfull">Libera al menos %1$d MB de almacenamiento interno. ¡Loop desactivado!</string>
     <string name="wrongformat">Formato incorrecto</string>
     <string name="sms_wrongcode">Código incorrecto. Comando cancelado.</string>

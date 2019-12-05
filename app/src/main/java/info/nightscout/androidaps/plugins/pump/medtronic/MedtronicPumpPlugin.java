@@ -344,6 +344,9 @@ public class MedtronicPumpPlugin extends PumpPluginAbstract implements PumpInter
 
     }
 
+    @Override
+    public boolean isBotheredByConstantConnectionRequests() { return false; }
+
 
     @Override
     public boolean isConnected() {

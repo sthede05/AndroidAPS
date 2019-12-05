@@ -274,6 +274,9 @@ public class LocalInsightPlugin extends PluginBase implements PumpInterface, Con
     }
 
     @Override
+    public boolean isBotheredByConstantConnectionRequests() { return false; }
+
+    @Override
     public boolean isConnected() {
         return connectionService != null
                 && alertService != null

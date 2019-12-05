@@ -1099,6 +1099,12 @@
     <string name="sms_wrongcode">错误的代码。命令取消</string>
     <string name="notconfigured">未配置</string>
     <string name="profileswitchcreated">配置文件切换已创建</string>
+    <string name="Disconnected_from_omnipy">Disconnected from omnipy</string>
+    <string name="Pod_faulted_with_error">Pod faulted with error: %d</string>
+    <string name="pod_age_format">%dd%dh%dm</string>
+    <string name="Searching_for_omnipy_on_local_network">Searching for omnipy on local network..</string>
+    <string name="Trying_to_connect_to_omnipy_at_address">Trying to connect to omnipy at address:</string>
+
     <string name="versionChecker">版本检查器</string>
     <string name="old_version">旧版本</string>
     <string name="very_old_version">非常旧版本</string>

@@ -111,6 +111,7 @@ android {
         versionCode 1500
         version "2.5.1"
         buildConfigField "String", "VERSION", '"' + version + '"'
+        buildConfigField "String", "VARIANT", '"OmniCore  1.0.0.702 Jul 06 2019"'
         buildConfigField "String", "BUILDVERSION", '"' + generateGitBuild() + '-' + generateDate() + '"'
         buildConfigField "String", "REMOTE", '"' + generateGitRemote() + '"'
         buildConfigField "String", "HEAD", '"' + generateGitBuild() + '"'
