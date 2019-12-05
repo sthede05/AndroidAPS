@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
@@ -49,9 +50,12 @@ import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreRequest;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreStatusRequest;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreTempBasalRequest;
 import info.nightscout.androidaps.logging.L;
+import info.nightscout.androidaps.plugins.bus.RxBus;
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipodUpdateGui;
+import info.nightscout.androidaps.plugins.pump.omnipod.history.OmniCoreCommandHistory;
 import info.nightscout.androidaps.plugins.treatments.Treatment;
 import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
+import info.nightscout.androidaps.utils.DateUtil;
 import info.nightscout.androidaps.utils.SP;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreResult;
 
@@ -63,13 +67,18 @@ public class OmnipodPdm {
     private Timer _omniCoreTimer;
     private boolean _connected;
     private boolean _connectionStatusKnown;
+    private long _lastStatusRequest = 0;
+    private long _lastStatusResponse = 0;
 
     private final Logger _log;
+
+    private OmniCoreCommandHistory _commandHistory;
 
     public OmnipodPdm(Context context)
     {
         _context = context;
         _log =  LoggerFactory.getLogger(L.PUMP);
+        _commandHistory = new OmniCoreCommandHistory();
     }
 
     public void OnStart() {
@@ -87,7 +96,8 @@ public class OmnipodPdm {
         }
         _lastResult.LastResultDateTime = 0;
         _connectionStatusKnown = false;
-        getResult(new OmniCoreStatusRequest());
+        getPodStatus();
+      //  getResult(new OmniCoreStatusRequest());
     }
 
     public void OnStop() {
@@ -137,17 +147,25 @@ public class OmnipodPdm {
             _omniCoreTimer.cancel();
             _omniCoreTimer = null;
         }
+        if (L.isEnabled(L.PUMP)) {
+            _log.debug("OMNICORE getResult() for request: " + request.getRequestType());
+        }
+        SP.putString(R.string.key_omnicore_last_command, request.getRequestType());
+        SP.putString(R.string.key_omnicore_last_commandstate, "Pending");
+
 
         OmniCoreResult result = request.getRemoteResult(_lastResult.LastResultDateTime);
 
         if (result != null) {
-
+            if (L.isEnabled(L.PUMP)) {
+                _log.debug("OMNICORE result Returned. Result: " + result.asJson());
+            }
             if (!_connected || !_connectionStatusKnown)
             {
-                MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_CONNECTION_STATUS));
+                RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_CONNECTION_STATUS));
                 Notification notification = new Notification(Notification.OMNIPY_CONNECTION_STATUS,
                         MainApp.gs(R.string.omnicore_connected), Notification.INFO, 1);
-                MainApp.bus().post(new EventNewNotification(notification));
+                RxBus.INSTANCE.send(new EventNewNotification(notification));
             }
             _connectionStatusKnown = true;
             _connected = true;
@@ -159,34 +177,49 @@ public class OmnipodPdm {
 
             if (_lastResult.PodRunning && !result.PodRunning)
             {
-                MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_CHANGE));
+                RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_POD_CHANGE));
                 Notification notification = new Notification(Notification.OMNIPY_POD_CHANGE,
                         String.format(MainApp.gs(R.string.omnipod_pod_state_POD_IDs_has_been_removed), _lastResult.PodId), Notification.NORMAL);       //"Pod with Lot %d and Serial %d has been removed."
-                MainApp.bus().post(new EventNewNotification(notification));
+                RxBus.INSTANCE.send(new EventNewNotification(notification));
             }
             else if (!_lastResult.PodRunning && result.PodRunning)
             {
-                MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
+                RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
                 Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, MainApp.gs(R.string.omnipod_pod_state_Pod_is_activated_and_running), Notification.INFO);      //"Pod is activated and running"
-                MainApp.bus().post(new EventNewNotification(notification));
+                RxBus.INSTANCE.send(new EventNewNotification(notification));
             }
             SP.putString(R.string.key_omnicore_last_result, _lastResult.asJson());
+            if (result.Success) {
+//                SP.putString(R.string.key_omnicore_last_successful_result, _lastResult.asJson());
+                SP.putString(R.string.key_omnicore_last_commandstate, "Success");
+
+            }
+            else {
+                SP.putString(R.string.key_omnicore_last_commandstate, "Failure");
+
+            }
             _lastResult = result;
         }
         else
         {
+            Notification cmdFailNotification = new Notification(Notification.OMNIPY_COMMAND_STATUS,
+                    String.format(MainApp.gs(R.string.omnipod_command_state_lastcommand_failed), request.getRequestType()), Notification.NORMAL);
+            RxBus.INSTANCE.send(new EventNewNotification(cmdFailNotification));
+
             if (_connected || !_connectionStatusKnown)
             {
-                MainApp.bus().post(new EventDismissNotification(Notification.OMNIPY_CONNECTION_STATUS));
+                RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_CONNECTION_STATUS));
                 Notification notification = new Notification(Notification.OMNIPY_CONNECTION_STATUS,
                         MainApp.gs(R.string.omnicore_not_connected), Notification.NORMAL, 60);
-                MainApp.bus().post(new EventNewNotification(notification));
+                RxBus.INSTANCE.send(new EventNewNotification(notification));
             }
             _connectionStatusKnown = true;
             _connected = false;
+            _commandHistory.setRequestFailed(request);
+            SP.putString(R.string.key_omnicore_last_commandstate, MainApp.gs(R.string.omnicore_not_connected));
         }
 
-        MainApp.bus().post(new EventOmnipodUpdateGui());
+        RxBus.INSTANCE.send(new EventOmnipodUpdateGui());
 
         long delay = 60000;
         if (_connected) {
@@ -201,7 +234,8 @@ public class OmnipodPdm {
             @Override
             public void run() {
                 _omniCoreTimer = null;
-                getResult(new OmniCoreStatusRequest());
+                getPodStatus();
+                //getResult(new OmniCoreStatusRequest());
             }
         }, delay);
 
@@ -217,19 +251,23 @@ public class OmnipodPdm {
         new HistoryProcessor(wasRunning).execute(result);
     }
 
-    private long _lastStatusRequest = 0;
     public void UpdateStatus() {
         if (IsConnected() && IsInitialized() && !IsBusy()) {
             long t0 = System.currentTimeMillis();
             if (t0 - _lastStatusRequest > 60000) {
                 _lastStatusRequest = t0;
-                getResult(new OmniCoreStatusRequest());
+
+                getPodStatus();
             }
         }
     }
 
     public long GetLastUpdated() {
         return _lastResult.ResultDate;
+    }
+
+    public long getLastStatusResponse() {
+        return _lastStatusResponse;
     }
 
     public String getPodStatusText()
@@ -268,45 +306,74 @@ public class OmnipodPdm {
         return _lastResult.BasalSchedule[index].doubleValue();
 }
 
+    public OmniCoreResult getPodStatus() {
+        OmniCoreStatusRequest request = new OmniCoreStatusRequest();
+        _commandHistory.addOrUpdateHistory(request,null);
+
+        OmniCoreResult result = getResult(request);
+
+        _commandHistory.addOrUpdateHistory(request,result);
+        if (result != null && result.Success) {
+            _lastStatusResponse = result.ResultDate;
+        }
+        return result;
+    }
+
     public OmniCoreResult SetNewBasalProfile(Profile profile) {
         OmniCoreResult result = null;
         if (IsConnected()) {
             TimeZone tz = profile.getTimeZone();
             int offset_minutes = (tz.getRawOffset() + tz.getDSTSavings()) / (60 * 1000);
             BigDecimal[] basalSchedule = getBasalScheduleFromProfile(profile);
-            result = getResult(new OmniCoreSetProfileRequest(basalSchedule, offset_minutes));
+
+            OmniCoreSetProfileRequest request = new OmniCoreSetProfileRequest(basalSchedule, offset_minutes);
+            _commandHistory.addOrUpdateHistory(request,null);
+            result = getResult(request);
+            _commandHistory.addOrUpdateHistory(request,result);
         }
         return result;
     }
 
     public OmniCoreResult Bolus(BigDecimal bolusUnits) {
-        OmniCoreResult r = null;
+        OmniCoreResult result = null;
         if (IsConnected() && IsInitialized()) {
-            r = getResult(new OmniCoreBolusRequest(bolusUnits));
+            OmniCoreBolusRequest request = new OmniCoreBolusRequest(bolusUnits);
+            _commandHistory.addOrUpdateHistory(request,null);
+            result = getResult(request);
+            _commandHistory.addOrUpdateHistory(request,result);
         }
-        return r;
+        return result;
     }
 
     public OmniCoreResult CancelBolus() {
-        OmniCoreResult r = null;
+        OmniCoreResult result = null;
         if (IsConnected() && IsInitialized()) {
-            r = getResult(new OmniCoreCancelBolusRequest());
+            OmniCoreCancelBolusRequest request = new OmniCoreCancelBolusRequest();
+            _commandHistory.addOrUpdateHistory(request,null);
+            result = getResult(request);
+            _commandHistory.addOrUpdateHistory(request,result);
         }
-        return r;
+        return result;
     }
 
     public OmniCoreResult SetTempBasal(BigDecimal iuRate, BigDecimal durationHours) {
-        OmniCoreResult r = null;
+        OmniCoreResult result = null;
         if (IsConnected() && IsInitialized()) {
-            r = getResult(new OmniCoreTempBasalRequest(iuRate, durationHours));
+            OmniCoreTempBasalRequest request = new OmniCoreTempBasalRequest(iuRate, durationHours);
+            _commandHistory.addOrUpdateHistory(request,null);
+            result = getResult(request);
+            _commandHistory.addOrUpdateHistory(request,result);
         }
-        return r;
+        return result;
     }
 
     public OmniCoreResult CancelTempBasal() {
         OmniCoreResult result = null;
         if (IsConnected() && IsInitialized()) {
-            result = getResult(new OmniCoreCancelTempBasalRequest());
+            OmniCoreCancelTempBasalRequest request = new OmniCoreCancelTempBasalRequest();
+            _commandHistory.addOrUpdateHistory(request,null);
+            result = getResult(request);
+            _commandHistory.addOrUpdateHistory(request,result);
         }
         return result;
     }
@@ -324,6 +391,7 @@ public class OmnipodPdm {
         }
         return "NO POD";
     }
+
 
     public BigDecimal GetExactInsulinUnits(double iu)
     {
@@ -357,7 +425,14 @@ public class OmnipodPdm {
     public int getBatteryLevel() {
         return _lastResult.BatteryLevel;
     }
+
+    public long getStartTime() { return 0;}
+
+    public OmniCoreCommandHistory getCommandHistory() {
+        return _commandHistory;
+    }
 }
+
 
 class HistoryProcessor extends AsyncTask<OmniCoreResult,Void,Void>
 {

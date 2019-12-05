@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="@string/omnicore_prefs">
+    </PreferenceCategory>
+    <EditTextPreference
+        android:defaultValue="Default value"
+        android:key="edit_text_preference_1"
+        android:selectAllOnFocus="true"
+        android:singleLine="false"
+        android:title="@string/omnicore_settings"
+        android:enabled="false"/>
+
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="@string/key_show_omnicore_button"
+        android:summary="@string/show_omnicore_button_summary"
+        android:title="@string/omnicore_button" />
+
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="@string/key_omnicore_log_failures"
+        android:summary="@string/omnicore_log_failures_summary"
+        android:title="@string/omnicore_log_failures" />
+
+    <ListPreference
+        android:title="Command Failure Alert Level"
+        android:summary="Type of Alert to thow when a command to Omnicore Fails"
+        android:key="@string/key_omnicore_failure_alerttype"
+        android:entries="@array/omnicore_alertLevels"
+        android:entryValues="@array/omnicore_alertLevelValues"
+        android:defaultValue="NONE"/>
+
+    <SwitchPreference
+        android:title="Command Failure Audible"
+        android:summary="Play Audible Alarm on Command Failure"
+        android:key="@string/key_omnicore_failure_audible"
+        android:defaultValue="false"/>
+</PreferenceScreen>
