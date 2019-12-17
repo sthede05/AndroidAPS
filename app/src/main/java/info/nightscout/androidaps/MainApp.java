@@ -37,7 +37,7 @@ import info.nightscout.androidaps.plugins.constraints.objectives.ObjectivesPlugi
 import info.nightscout.androidaps.plugins.constraints.safety.SafetyPlugin;
 import info.nightscout.androidaps.plugins.constraints.signatureVerifier.SignatureVerifierPlugin;
 import info.nightscout.androidaps.plugins.constraints.storage.StorageConstraintPlugin;
-import info.nightscout.androidaps.plugins.constraints.versionChecker.VersionCheckerPlugin;
+//import info.nightscout.androidaps.plugins.constraints.versionChecker.VersionCheckerPlugin;
 import info.nightscout.androidaps.plugins.general.actions.ActionsPlugin;
 import info.nightscout.androidaps.plugins.general.automation.AutomationPlugin;
 import info.nightscout.androidaps.plugins.general.careportal.CareportalPlugin;
@@ -92,7 +92,7 @@ import info.nightscout.androidaps.utils.FabricPrivacy;
 import info.nightscout.androidaps.utils.LocaleHelper;
 import io.fabric.sdk.android.Fabric;
 
-import static info.nightscout.androidaps.plugins.constraints.versionChecker.VersionCheckerUtilsKt.triggerCheckVersion;
+//import static info.nightscout.androidaps.plugins.constraints.versionChecker.VersionCheckerUtilsKt.triggerCheckVersion;
 
 
 public class MainApp extends Application {
@@ -158,7 +158,7 @@ public class MainApp extends Application {
         registerLocalBroadcastReceiver();
 
         //trigger here to see the new version on app start after an update
-        triggerCheckVersion();
+        //triggerCheckVersion();
         //setBTReceiver();
 
         if (pluginsList == null) {
@@ -194,7 +194,7 @@ public class MainApp extends Application {
             if (!Config.NSCLIENT) pluginsList.add(LocalProfilePlugin.getPlugin());
             pluginsList.add(TreatmentsPlugin.getPlugin());
             if (!Config.NSCLIENT) pluginsList.add(SafetyPlugin.getPlugin());
-            if (!Config.NSCLIENT) pluginsList.add(VersionCheckerPlugin.INSTANCE);
+            //if (!Config.NSCLIENT) pluginsList.add(VersionCheckerPlugin.INSTANCE);
             if (Config.APS) pluginsList.add(StorageConstraintPlugin.getPlugin());
             if (Config.APS) pluginsList.add(SignatureVerifierPlugin.getPlugin());
             if (Config.APS) pluginsList.add(ObjectivesPlugin.INSTANCE);
