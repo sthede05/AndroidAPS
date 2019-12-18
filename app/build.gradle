@@ -144,15 +144,12 @@ android {
         debug {
             testCoverageEnabled(project.hasProperty('coverage'))
         }
-        firebaseDisable {
-            System.setProperty("disableFirebase", "true")
-        }
     }
+
+    flavorDimensions "standard"
     productFlavors {
-        flavorDimensions "standard"
         full {
             applicationId "info.nightscout.androidaps"
-            dimension "standard"
             resValue "string", "app_name", "AndroidAPS"
             versionName version
             manifestPlaceholders = [
@@ -162,7 +159,6 @@ android {
         }
         pumpcontrol {
             applicationId "info.nightscout.aapspumpcontrol"
-            dimension "standard"
             resValue "string", "app_name", "Pumpcontrol"
             versionName version + "-pumpcontrol"
             manifestPlaceholders = [
@@ -172,7 +168,6 @@ android {
         }
         nsclient {
             applicationId "info.nightscout.nsclient"
-            dimension "standard"
             resValue "string", "app_name", "NSClient"
             versionName version + "-nsclient"
             manifestPlaceholders = [
@@ -182,7 +177,6 @@ android {
         }
         nsclient2 {
             applicationId "info.nightscout.nsclient2"
-            dimension "standard"
             resValue "string", "app_name", "NSClient2"
             versionName version + "-nsclient"
             manifestPlaceholders = [
