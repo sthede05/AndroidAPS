@@ -316,6 +316,21 @@ public class OmnipodPdm {
         if (result != null && result.Success) {
             _lastStatusResponse = result.ResultDate;
         }
+        //TODO: Parameterize this
+        if (_lastResult.ReservoirLevel < 20) {
+            RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
+            Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, MainApp.gs(R.string.omnipod_pod_alerts_Low_reservoir), Notification.NORMAL);      //"Pod is activated and running"
+            RxBus.INSTANCE.send(new EventNewNotification(notification));
+        }
+
+        //TODO: Parameterize this
+        if ((System.currentTimeMillis() - getPodAge()) > (60 * 60 * 60 * 1000)) {
+
+            RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
+            Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, MainApp.gs(R.string.omnipod_pod_alerts_Pod_expiring_soon), Notification.NORMAL);      //"Pod is activated and running"
+            RxBus.INSTANCE.send(new EventNewNotification(notification));
+        }
+
         return result;
     }
 
@@ -419,7 +434,12 @@ public class OmnipodPdm {
     }
 
     public double GetReservoirLevel() {
+
         return _lastResult.ReservoirLevel;
+    }
+
+    public long getPodAge() {
+        return MainApp.getDbHelper().getLastCareportalEvent(CareportalEvent.SITECHANGE).date;
     }
 
     public int getBatteryLevel() {

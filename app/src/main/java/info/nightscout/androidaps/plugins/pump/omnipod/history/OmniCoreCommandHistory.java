@@ -6,6 +6,8 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
+import info.nightscout.androidaps.MainApp;
+import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.logging.L;
 import info.nightscout.androidaps.plugins.bus.RxBus;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreRequest;
@@ -19,7 +21,7 @@ public class OmniCoreCommandHistory {
 
     private final Logger _log;
 
-    private final int _historyMaxSize = 10;
+    private final int _historyMaxSize = 30;
     private List<OmniCoreCommandHistoryItem> _commandHistory;
     //private int consecutiveFailCount = 0;
 
@@ -34,57 +36,23 @@ public class OmniCoreCommandHistory {
             _log.debug("OmniCoreCommandHistory Processing: " + request.getRequestType() + " at Time " + request.created);
         }
 
-       /* Boolean found = false;
-        for (OmniCoreCommandHistoryItem h : _commandHistory) {
-            if (L.isEnabled(L.PUMP)) {
-                _log.debug("OmniCoreCommandHistory Comparing to History Entry: " + h.getStartTime());
+        if (request.getRequestType() == MainApp.gs(R.string.omnipod_command_getstatus)) {
+            //
+        }
+        else {
+            OmniCoreCommandHistoryItem hi = getMatchingHistoryItem(request);
+            if (hi != null) {
+                hi.setResult(result);
             }
-
-            if (h.isSameRequest(request)) {
+            else {
                 if (L.isEnabled(L.PUMP)) {
-                    _log.debug("Found Matching History Entry");
-                    _log.debug("Updating result: " + result.asJson());
+                    _log.debug("OmniCoreCommandHistory Could not find matching request. Adding it");
                 }
-                found = true;
-                h.setResult(result);
-                break;
+                _commandHistory.add(new OmniCoreCommandHistoryItem(request,result));
+                trim();
             }
-
         }
 
-        if (!found) {
-            if (L.isEnabled(L.PUMP)) {
-                _log.debug("OmniCoreCommandHistory Could not find matching request. Adding it");
-            }
-            _commandHistory.add(new OmniCoreCommandHistoryItem(request,result));
-        }
-*/
-       /* int requestIndex = getIndexOfRequest(request);
-
-        if (requestIndex > -1) {
-            if (L.isEnabled(L.PUMP)) {
-                _log.debug("OmniCoreCommandHistory Updating Request Result");
-            }
-            _commandHistory.get(requestIndex).updateResult(result);
-        }
-        else {
-            if (L.isEnabled(L.PUMP)) {
-                _log.debug("OmniCoreCommandHistory Could not find matching request. Adding it");
-            }
-            _commandHistory.add(new OmniCoreCommandHistoryItem(request,result));
-        }
-*/
-        OmniCoreCommandHistoryItem hi = getMatchingHistoryItem(request);
-        if (hi != null) {
-            hi.setResult(result);
-        }
-        else {
-            if (L.isEnabled(L.PUMP)) {
-                _log.debug("OmniCoreCommandHistory Could not find matching request. Adding it");
-            }
-            _commandHistory.add(new OmniCoreCommandHistoryItem(request,result));
-            trim();
-        }
 
 
         RxBus.INSTANCE.send(new EventOmnipodUpdateGui());
@@ -173,6 +141,12 @@ public class OmniCoreCommandHistory {
     }
 
     public List<OmniCoreCommandHistoryItem> getAllHistory() {
+   /*     //Return in reverse order
+        List<OmniCoreCommandHistoryItem> tmpList =  new ArrayList<>();
+        for(int i = _commandHistory.size() - 1; i >=0; i--) {
+            OmniCoreCommandHistoryItem tmp = _commandHistory.get(i);
+            tmpList.add(tmp);
+        }*/
         return _commandHistory;
     }
 

@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+
 import info.nightscout.androidaps.BuildConfig;
 import info.nightscout.androidaps.Config;
 import info.nightscout.androidaps.MainApp;
@@ -322,6 +323,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
             }
             else {
                 detailedBolusInfo.deliverAt = result.ResultDate;
+             //Is this why carbs are not logged with the calculator?
                 if (detailedBolusInfo.carbTime != 0)
                 {
                     TreatmentsPlugin.getPlugin().addToHistoryCarbTreatment(detailedBolusInfo);

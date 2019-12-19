@@ -1,18 +1,25 @@
 package info.nightscout.androidaps.plugins.pump.omnipod
 
+import android.graphics.Color
+import android.graphics.PorterDuff
 import android.os.Bundle
 import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
 import info.nightscout.androidaps.MainApp
 import info.nightscout.androidaps.R
-import info.nightscout.androidaps.db.CareportalEvent
 import info.nightscout.androidaps.events.EventTempBasalChange
 import info.nightscout.androidaps.logging.L
 import info.nightscout.androidaps.plugins.bus.RxBus
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipodUpdateGui
+import info.nightscout.androidaps.plugins.pump.omnipod.history.OmniCoreCommandHistoryItem
 import info.nightscout.androidaps.utils.DateUtil
 import info.nightscout.androidaps.utils.FabricPrivacy
 import info.nightscout.androidaps.utils.T
@@ -57,6 +64,16 @@ class OmniCorePumpFragment : Fragment() {
             OmnipodPlugin.getPlugin().openOmnicore(context,MainApp.gs(R.string.omnicore_package_name));
         }
 
+        var historyItemAdapter = ListAdapter(OmnipodPlugin.getPlugin().pdm.commandHistory.allHistory)
+        var historyItemlayoutManager = LinearLayoutManager(activity);
+        historyItemlayoutManager.reverseLayout = true
+        historyItemlayoutManager.stackFromEnd = true
+        omnicorestatus_history_list.apply{
+            layoutManager = historyItemlayoutManager
+            // set the custom adapter to the RecyclerView
+            adapter = historyItemAdapter
+        }
+
     }
 
     @Synchronized
@@ -97,13 +114,16 @@ class OmniCorePumpFragment : Fragment() {
 
         omnicorestatus_podid?.text= omnicorePump.serialNumber()
         omnicorestatus_connectionstatus?.text = omnicorePump.pdm.podStatusText
-        omnicorestatus_reservoir?.text = omnicorePump.pdm.GetReservoirLevel().toString()
-        val podChangeEvent = MainApp.getDbHelper().getLastCareportalEvent(CareportalEvent.SITECHANGE)
+        val reservoir = omnicorePump.pdm.GetReservoirLevel()
+        omnicorestatus_reservoir?.text = if (reservoir > 50)  "> 50U" else reservoir.toString() + "U"
+        /*val podChangeEvent = MainApp.getDbHelper().getLastCareportalEvent(CareportalEvent.SITECHANGE)
         if (podChangeEvent != null) {
             omnicorestatus_podage?.text = podChangeEvent.age()
         } else {
             omnicorestatus_podage?.text = "Not Available"
         }
+*/
+        omnicorestatus_podage?.text = DateUtil.hourAgo(omnicorePump.pdm.podAge)
 
         if (omnicorePump.pdm.lastStatusResponse > 0) {
             omnicorestatus_laststatustime?.text = DateUtil.minAgo(omnicorePump.pdm.lastStatusResponse)
@@ -140,35 +160,89 @@ class OmniCorePumpFragment : Fragment() {
         }
 
         omnicorestatus_commandhistory?.text = historyList
-/*
-        omnicore_connectionstatus?.text = omnicorePump.pdm.podStatusText
-        omnicore_podid?.text = omnicorePump.serialNumber()
 
-        if (lastResult != null) {
-            omnicore_lastresulttime?.text = DateUtil.minAgo(lastResult.ResultDate)
-            var lastResultMessage = "Success: " + lastResult.Success.toString() + "\n"
-            lastResultMessage += "FullText: " + lastResult.asJson()
-            omnicorepump_status?.text = lastResultMessage
+        omnicorestatus_history_list?.adapter?.notifyDataSetChanged()
+    }
 
-        }
-        else {
-            omnicore_lastresulttime?.text = "No response yet"
-            omnicorepump_status?.text = ""
+
+
+
+    class ListAdapter(private val list: List<OmniCoreCommandHistoryItem>)
+        : RecyclerView.Adapter<HistoryItemHolder>() {
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HistoryItemHolder {
+            val inflater = LayoutInflater.from(parent.context)
+            return HistoryItemHolder(inflater, parent)
         }
 
-        if (lastSuccessfulResult != null) {
-            omnicore_lastsuccessfulresulttime?.text = DateUtil.minAgo(lastSuccessfulResult.ResultDate)
-            var lastSuccessfulResultMessage = "Success: " + lastSuccessfulResult.Success.toString() + "\n"
-            lastSuccessfulResultMessage += "FullText: " + lastSuccessfulResult.asJson()
-            omnicorepump_status?.text = lastSuccessfulResultMessage
+        override fun onBindViewHolder(holder: HistoryItemHolder, position: Int) {
+            val historyItem: OmniCoreCommandHistoryItem = list[position]
+            holder.bind(historyItem)
         }
-        else {
-            omnicore_lastresulttime?.text = "No response yet"
-            omnicorepump_status?.text = ""
-        }
-*/
 
-   //     omnicorepump_type?.text = pumpType.description
-   //     omnicorepump_type_def?.text = pumpType.getFullDescription(MainApp.gs(R.string.virtualpump_pump_def), pumpType.hasExtendedBasals())
+        override fun getItemCount(): Int = list.size
+
+        fun dataRefreshed() {
+            notifyDataSetChanged();
+        }
+
+    }
+
+    class HistoryItemHolder(inflater: LayoutInflater, parent: ViewGroup) :
+            RecyclerView.ViewHolder(inflater.inflate(R.layout.omnicore_history_item, parent, false)) {
+        private var commandName: TextView? = null
+        private var commandStatus: TextView? = null
+        private var commandTime: TextView? = null
+        private var commandRunTime: TextView? = null
+        private var commandRssiRlVal: TextView? = null
+        private var commandRssiPodVal: TextView? = null
+        private var commandRssiRlChart: ProgressBar? = null
+        private var commandRssiPodChart: ProgressBar? = null
+
+
+
+
+        init {
+            commandName = itemView.findViewById(R.id.omnicore_history_command)
+            commandStatus = itemView.findViewById(R.id.omnicore_history_status)
+            commandTime = itemView.findViewById(R.id.omnicore_history_time)
+            commandRunTime = itemView.findViewById(R.id.omnicore_history_runtime)
+            commandRssiRlVal = itemView.findViewById(R.id.omnicore_history_rssi_rl_value)
+            commandRssiPodVal = itemView.findViewById(R.id.omnicore_history_rssi_pod_value)
+            commandRssiRlChart = itemView.findViewById(R.id.omnicore_history_rssi_rl_chart)
+            commandRssiPodChart = itemView.findViewById(R.id.omnicore_history_rssi_pod_chart)
+        }
+
+        fun bind(historyItem: OmniCoreCommandHistoryItem) {
+            commandName?.text = historyItem.request.requestType
+            commandStatus?.text = historyItem.status
+            when (historyItem.status) {
+                "Pending" -> commandStatus?.setTextColor(Color.YELLOW)
+                "Success" -> commandStatus?.setTextColor(Color.GREEN)
+                "Failure" -> commandStatus?.setTextColor(Color.RED)
+            }
+            commandTime?.text = DateUtil.dateAndTimeString(historyItem.request.requested)
+            commandRunTime?.text = historyItem.runTime.toString() + "ms"
+            val rndRssiRl = historyItem.rssiRl
+            val rndRssiPod =historyItem.rssiPod
+            commandRssiRlVal?.text = "-" + rndRssiRl.toString()
+            commandRssiRlChart?.progress = rndRssiRl
+            when {
+                rndRssiRl < 70 ->  commandRssiRlChart?.progressDrawable?.setColorFilter(Color.GREEN,PorterDuff.Mode.SRC_IN)
+                rndRssiRl > 90 ->  commandRssiRlChart?.progressDrawable?.setColorFilter(Color.RED,PorterDuff.Mode.SRC_IN)
+                else -> {
+                    commandRssiRlChart?.progressDrawable?.setColorFilter(Color.YELLOW,PorterDuff.Mode.SRC_IN)
+                }
+            }
+            commandRssiPodVal?.text = "-" + rndRssiPod.toString()
+            commandRssiPodChart?.progress = rndRssiPod
+            when {
+                rndRssiPod < 70 ->  commandRssiPodChart?.progressDrawable?.setColorFilter(Color.GREEN,PorterDuff.Mode.SRC_IN)
+                rndRssiPod > 90 ->  commandRssiPodChart?.progressDrawable?.setColorFilter(Color.RED,PorterDuff.Mode.SRC_IN)
+                else -> {
+                    commandRssiPodChart?.progressDrawable?.setColorFilter(Color.YELLOW,PorterDuff.Mode.SRC_IN)
+                }
+            }
+        }
     }
 }

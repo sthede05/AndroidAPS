@@ -201,7 +201,7 @@
                     android:layout_weight="1"
                     android:gravity="end"
                     android:paddingRight="5dp"
-                    android:text="Pod Age"
+                    android:text="Pod Started"
                     android:textSize="14sp" />
 
                 <TextView
@@ -571,7 +571,14 @@
                     android:layout_weight="1"
                     android:gravity="start"
                     android:paddingLeft="5dp"
-                    android:textSize="14sp" />
+                    android:textSize="14sp"
+                    android:visibility="gone" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/omnicorestatus_history_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
 
             </LinearLayout>
 

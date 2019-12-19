@@ -25,6 +25,8 @@ public class OmniCoreCommandHistoryItem {
     private OmniCoreRequest _request;
     private String _status;
     private Long _lastUpdate;
+    private int _rssiRl;
+    private int _rssiPod;
 
 
 
@@ -32,6 +34,9 @@ public class OmniCoreCommandHistoryItem {
         _log =  LoggerFactory.getLogger(L.PUMP);
         this._request = request;
         this._result = result;
+        this._rssiRl = (int)Math.floor((Math.random() * 50) + 50);
+        this._rssiPod = (int)Math.floor((Math.random() * 50) + 50);
+
 
         processHistoryItem();
 
@@ -48,6 +53,10 @@ public class OmniCoreCommandHistoryItem {
     public OmniCoreResult getResult() {
         return this._result;
     }
+
+    public int getRssiRl() { return this._rssiRl; }
+
+    public int getRssiPod() { return this._rssiPod; }
 
     public void setResult(OmniCoreResult result) {
 
