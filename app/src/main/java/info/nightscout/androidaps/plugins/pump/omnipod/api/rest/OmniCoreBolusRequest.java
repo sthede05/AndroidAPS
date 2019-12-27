@@ -11,9 +11,12 @@ public class OmniCoreBolusRequest extends OmniCoreRequest {
         joRequest.addProperty("ImmediateUnits", bolusAmount);
     }
 
+    //TODO: Use DetailedBolusInfoStorage to record bolus details
+
     @Override
-    public String getRequestType()  {
+    public String getRequestDetails()  {
         Float bolusAmount = joRequest.get("ImmediateUnits").getAsFloat();
         return String.format(MainApp.gs(R.string.omnipod_command_bolus),bolusAmount);
     }
+
 }

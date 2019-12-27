@@ -311,8 +311,9 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
         r.enacted = false;
         r.success = false;
 
-        BigDecimal units = _pdm.GetExactInsulinUnits(detailedBolusInfo.insulin);
-        OmniCoreResult result = _pdm.Bolus(units);
+        //BigDecimal units = _pdm.GetExactInsulinUnits(detailedBolusInfo.insulin);
+        //OmniCoreResult result = _pdm.Bolus(units);
+        OmniCoreResult result = _pdm.Bolus(detailedBolusInfo);
         if (result != null)
         {
             r.enacted = result.Success;
@@ -323,7 +324,6 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
             }
             else {
                 detailedBolusInfo.deliverAt = result.ResultDate;
-             //Is this why carbs are not logged with the calculator?
                 if (detailedBolusInfo.carbTime != 0)
                 {
                     TreatmentsPlugin.getPlugin().addToHistoryCarbTreatment(detailedBolusInfo);

@@ -4,11 +4,14 @@ import android.graphics.Color
 import android.graphics.PorterDuff
 import android.os.Bundle
 import android.os.Handler
+import android.text.SpannableString
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
@@ -20,6 +23,7 @@ import info.nightscout.androidaps.logging.L
 import info.nightscout.androidaps.plugins.bus.RxBus
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipodUpdateGui
 import info.nightscout.androidaps.plugins.pump.omnipod.history.OmniCoreCommandHistoryItem
+import info.nightscout.androidaps.plugins.pump.omnipod.history.OmnicoreCommandHistoryStatus
 import info.nightscout.androidaps.utils.DateUtil
 import info.nightscout.androidaps.utils.FabricPrivacy
 import info.nightscout.androidaps.utils.T
@@ -114,16 +118,14 @@ class OmniCorePumpFragment : Fragment() {
 
         omnicorestatus_podid?.text= omnicorePump.serialNumber()
         omnicorestatus_connectionstatus?.text = omnicorePump.pdm.podStatusText
-        val reservoir = omnicorePump.pdm.GetReservoirLevel()
-        omnicorestatus_reservoir?.text = if (reservoir > 50)  "> 50U" else reservoir.toString() + "U"
-        /*val podChangeEvent = MainApp.getDbHelper().getLastCareportalEvent(CareportalEvent.SITECHANGE)
-        if (podChangeEvent != null) {
-            omnicorestatus_podage?.text = podChangeEvent.age()
-        } else {
-            omnicorestatus_podage?.text = "Not Available"
-        }
-*/
-        omnicorestatus_podage?.text = DateUtil.hourAgo(omnicorePump.pdm.podAge)
+        if (omnicorePump.serialNumber() != "NO POD") {
+            val reservoir = omnicorePump.pdm.GetReservoirLevel()
+            omnicorestatus_reservoir?.text = if (reservoir > 50)  "> 50U" else reservoir.toString() + "U"
+
+            omnicorestatus_podage?.text = DateUtil.dateAndTimeString(omnicorePump.pdm.expirationTime) + " - Pump Expiration"
+
+            omnicorestatus_reservoir_empty?.text = DateUtil.dateAndTimeString(omnicorePump.pdm.reservoirTime) + " - Basal Exhaustion"
+       }
 
         if (omnicorePump.pdm.lastStatusResponse > 0) {
             omnicorestatus_laststatustime?.text = DateUtil.minAgo(omnicorePump.pdm.lastStatusResponse)
@@ -133,14 +135,14 @@ class OmniCorePumpFragment : Fragment() {
         }
 
         if (lastResult != null) {
-            omnicorestatus_lastcommand?.text = lastResult.request.requestType
+            omnicorestatus_lastcommand?.text = lastResult.request.requestDetails
             omnicorestatus_lastresult?.text = lastResult.status
             omnicorestatus_lastresulttime?.text = DateUtil.minAgo(lastResult.request.requested)
 
         }
 
         if (lastSuccessfulResult != null) {
-            omnicorestatus_lastsuccess_command?.text = lastSuccessfulResult.request.requestType
+            omnicorestatus_lastsuccess_command?.text = lastSuccessfulResult.request.requestDetails
             if (lastSuccessfulResult.result != null) {
                 omnicorestatus_lastsuccess_time?.text = DateUtil.minAgo(lastSuccessfulResult.result.ResultDate)
             }
@@ -150,7 +152,7 @@ class OmniCorePumpFragment : Fragment() {
         val commandHistory = omnicorePump.pdm.commandHistory.allHistory
         var i = commandHistory.size
         while (i-- > 0) {
-            historyList += ("Command: " + commandHistory.get(i).request.getRequestType()
+            historyList += ("Command: " + commandHistory.get(i).request.getRequestDetails()
                     + "\nStatus: " + commandHistory.get(i).status
                     + "\nTime: " + DateUtil.dateAndTimeString(commandHistory.get(i).request.requested)
                     + "\nProcessing: " + commandHistory.get(i).runTime + "ms\n\n")
@@ -189,7 +191,7 @@ class OmniCorePumpFragment : Fragment() {
     }
 
     class HistoryItemHolder(inflater: LayoutInflater, parent: ViewGroup) :
-            RecyclerView.ViewHolder(inflater.inflate(R.layout.omnicore_history_item, parent, false)) {
+            RecyclerView.ViewHolder(inflater.inflate(R.layout.omnicore_history_item, parent, false)) , View.OnLongClickListener {
         private var commandName: TextView? = null
         private var commandStatus: TextView? = null
         private var commandTime: TextView? = null
@@ -211,15 +213,49 @@ class OmniCorePumpFragment : Fragment() {
             commandRssiPodVal = itemView.findViewById(R.id.omnicore_history_rssi_pod_value)
             commandRssiRlChart = itemView.findViewById(R.id.omnicore_history_rssi_rl_chart)
             commandRssiPodChart = itemView.findViewById(R.id.omnicore_history_rssi_pod_chart)
+            itemView.setOnLongClickListener(this)
+
         }
 
+        override fun onLongClick(view: View): Boolean {
+            val position = adapterPosition
+            var title = ""
+            var message = ""
+            if (position >= 0) {
+                var historyItem = OmnipodPlugin.getPlugin().pdm.commandHistory.getCommand(position)
+
+                message = OmnipodPlugin.getPlugin().pdm.commandHistory.getCommand(position).toString()
+                title = "Command Details: " + historyItem.request.requestDetails
+            }
+            else {
+                message = "Cannot find Command"
+                title = "Unknown Command"
+            }
+
+            var builder =  AlertDialog.Builder(view.context)
+            builder.setTitle(title)
+            builder.setIcon(MainApp.getIcon())
+            val messageSpanned = SpannableString(message)
+            builder.setMessage(messageSpanned)
+            builder.setPositiveButton(MainApp.gs(R.string.ok), null)
+            val alertDialog = builder.create()
+            alertDialog.show()
+                //((TextView) alertDialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
+                //return true;
+
+//            Toast.makeText(view.context, message, Toast.LENGTH_SHORT).show()
+            // Return true to indicate the click was handled
+            return true
+        }
+
+
         fun bind(historyItem: OmniCoreCommandHistoryItem) {
-            commandName?.text = historyItem.request.requestType
+            commandName?.text = historyItem.request.requestDetails
             commandStatus?.text = historyItem.status
             when (historyItem.status) {
-                "Pending" -> commandStatus?.setTextColor(Color.YELLOW)
-                "Success" -> commandStatus?.setTextColor(Color.GREEN)
-                "Failure" -> commandStatus?.setTextColor(Color.RED)
+                OmnicoreCommandHistoryStatus.PENDING.description -> commandStatus?.setTextColor(Color.YELLOW)
+                OmnicoreCommandHistoryStatus.SUCCESS.description -> commandStatus?.setTextColor(Color.GREEN)
+                OmnicoreCommandHistoryStatus.FAILED.description -> commandStatus?.setTextColor(Color.RED)
             }
             commandTime?.text = DateUtil.dateAndTimeString(historyItem.request.requested)
             commandRunTime?.text = historyItem.runTime.toString() + "ms"

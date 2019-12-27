@@ -12,7 +12,7 @@ public class OmniCoreCancelBolusRequest extends OmniCoreRequest {
     }
 
     @Override
-    public String getRequestType()  {
+    public String getRequestDetails()  {
         return MainApp.gs(R.string.omnipod_command_cancelbolus);
     }
 }

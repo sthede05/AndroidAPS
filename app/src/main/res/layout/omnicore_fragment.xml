@@ -1,3 +1,4 @@
+<!--TODO: Use Strings, not hardcoded-->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -67,7 +68,7 @@
                     android:layout_weight="1"
                     android:gravity="end"
                     android:paddingRight="5dp"
-                    android:text="Omnicore Connection State"
+                    android:text="Omnicore State"
                     android:textSize="14sp" />
 
                 <TextView
@@ -201,7 +202,7 @@
                     android:layout_weight="1"
                     android:gravity="end"
                     android:paddingRight="5dp"
-                    android:text="Pod Started"
+                    android:text="Pod Expiration"
                     android:textSize="14sp" />
 
                 <TextView
@@ -214,14 +215,28 @@
                     android:text=":"
                     android:textSize="14sp" />
 
-                <TextView
-                    android:id="@+id/omnicorestatus_podage"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:gravity="start"
-                    android:paddingLeft="5dp"
-                    android:textSize="14sp" />
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/omnicorestatus_podage"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="start"
+                        android:paddingLeft="5dp"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/omnicorestatus_reservoir_empty"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="start"
+                        android:paddingLeft="5dp"
+                        android:textSize="14sp" />
+                </LinearLayout>
 
             </LinearLayout>
 
@@ -312,7 +327,7 @@
                 android:layout_weight="1"
                 android:gravity="end"
                 android:paddingRight="5dp"
-                android:text="Command History"
+                android:text="Recent Commands"
                 android:textAlignment="center"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -562,7 +577,8 @@
                     android:paddingRight="5dp"
                     android:text="Command History"
                     android:textAlignment="center"
-                    android:textSize="14sp" />
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/omnicorestatus_commandhistory"

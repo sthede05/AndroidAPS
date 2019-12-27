@@ -36,4 +36,16 @@
         android:summary="Play Audible Alarm on Command Failure"
         android:key="@string/key_omnicore_failure_audible"
         android:defaultValue="false"/>
+
+    <SwitchPreference
+        android:title="Pod Age Alert"
+        android:summary="Alert on Pod age "
+        android:key="@string/key_omnicore_failure_audible"
+        android:defaultValue="false"/>
+
+    <SwitchPreference
+        android:title="Log Status Requests"
+        android:summary="Show Status Requests in Command History"
+        android:key="@string/key_omnicore_status_history"
+        android:defaultValue="false"/>
 </PreferenceScreen>

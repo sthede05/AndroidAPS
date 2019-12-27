@@ -53,6 +53,14 @@ public abstract class OmniCoreRequest {
         return requestType;
     }
 
+    public String getRequestDetails() {
+        return getRequestType();
+    }
+
+    public String toString() {
+        return joRequest.toString();
+    }
+
     public synchronized OmniCoreResult getRemoteResult(long lastResultDateTime) {
         this.requested = System.currentTimeMillis();
 

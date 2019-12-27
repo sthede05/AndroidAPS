@@ -4,6 +4,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:paddingLeft="10dp"
+    android:paddingTop="10dp"
     android:paddingRight="10dp">
 
     <LinearLayout
@@ -20,9 +21,6 @@
             android:textAlignment="viewStart"
             android:textSize="13dp"
             android:textStyle="bold" />
-
-
-
 
 
     </LinearLayout>
@@ -67,7 +65,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:visibility="gone">
 
         <TextView
 
@@ -101,7 +100,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:visibility="gone">
 
         <TextView
 

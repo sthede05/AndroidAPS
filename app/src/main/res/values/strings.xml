@@ -1424,6 +1424,7 @@
     <string name="key_omnicore_log_failures" translatable="false">log_omnicore_command_failures</string>
     <string name="key_omnicore_failure_alerttype" translatable="false">-1</string>
     <string name="key_omnicore_failure_audible" translatable="false">audible_omnicore_alarm</string>
+    <string name="key_omnicore_status_history" translatable="false">omnicore_status_in_history</string>
 
 
     <string name="omnicore_log_failures">Log Failures</string>
