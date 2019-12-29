@@ -462,7 +462,12 @@ public class OmnipodPdm {
     }
 
     public long getPodAge() {
-        return MainApp.getDbHelper().getLastCareportalEvent(CareportalEvent.SITECHANGE).date;
+        long podAge = 0;
+        CareportalEvent podChangeEvent = MainApp.getDbHelper().getLastCareportalEvent(CareportalEvent.SITECHANGE);
+        if (podChangeEvent != null) {
+            podAge = podChangeEvent.date;
+        }
+        return podAge;
     }
 
     public long getExpirationTime() {
