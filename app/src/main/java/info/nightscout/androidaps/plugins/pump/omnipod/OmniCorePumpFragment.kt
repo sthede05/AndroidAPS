@@ -26,6 +26,7 @@ import info.nightscout.androidaps.plugins.pump.omnipod.history.OmniCoreCommandHi
 import info.nightscout.androidaps.plugins.pump.omnipod.history.OmnicoreCommandHistoryStatus
 import info.nightscout.androidaps.utils.DateUtil
 import info.nightscout.androidaps.utils.FabricPrivacy
+import info.nightscout.androidaps.utils.SP
 import info.nightscout.androidaps.utils.T
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -121,11 +122,24 @@ class OmniCorePumpFragment : Fragment() {
         if (omnicorePump.serialNumber() != "NO POD") {
             val reservoir = omnicorePump.pdm.GetReservoirLevel()
             omnicorestatus_reservoir?.text = if (reservoir > 50)  "> 50U" else reservoir.toString() + "U"
+            if (reservoir < SP.getInt(R.string.key_omnicore_alert_res_units, 20)) {
+                omnicorestatus_reservoir?.setTextColor(Color.RED);
+            }
 
-            omnicorestatus_podage?.text = DateUtil.dateAndTimeString(omnicorePump.pdm.expirationTime) + " - Pump Expiration"
+            omnicorestatus_podage?.text = DateUtil.dateAndTimeString(omnicorePump.pdm.expirationTime) + " - Expiration"
+            if (omnicorePump.pdm.expirationTime - System.currentTimeMillis() < SP.getInt(R.string.key_omnicore_alert_prior_expire, 8) * 60 * 60 * 1000) {
+                omnicorestatus_podage?.setTextColor(Color.RED)
+            }
 
-            omnicorestatus_reservoir_empty?.text = DateUtil.dateAndTimeString(omnicorePump.pdm.reservoirTime) + " - Basal Exhaustion"
-       }
+            omnicorestatus_reservoir_empty?.text = DateUtil.dateAndTimeString(omnicorePump.pdm.reservoirTime) + " - Reservoir Empty"
+            if (omnicorePump.pdm.reservoirTime - System.currentTimeMillis() < SP.getInt(R.string.key_omnicore_alert_prior_expire, 8) * 60 * 60 * 1000) {
+                omnicorestatus_reservoir_empty?.setTextColor(Color.RED)
+            }
+            omnicorestatus_podchange?.text = DateUtil.dateAndTimeString(omnicorePump.pdm.blackoutExpirationTime) + " - Blackout Window"
+            if (omnicorePump.pdm.blackoutExpirationTime - System.currentTimeMillis() < SP.getInt(R.string.key_omnicore_alert_prior_expire, 8) * 60 * 60 * 1000) {
+                omnicorestatus_podchange?.setTextColor(Color.RED)
+            }
+        }
 
         if (omnicorePump.pdm.lastStatusResponse > 0) {
             omnicorestatus_laststatustime?.text = DateUtil.minAgo(omnicorePump.pdm.lastStatusResponse)

@@ -116,6 +116,10 @@ public class OmniCoreCommandHistoryItem {
         processHistoryItem();
     }
 
+    public void setSucceeded() {
+        this._status = OmnicoreCommandHistoryStatus.SUCCESS;
+    }
+
     private void processHistoryItem() {
         if (this._result == null) {
             if (this._status != OmnicoreCommandHistoryStatus.FAILED) {
@@ -168,6 +172,14 @@ public class OmniCoreCommandHistoryItem {
 
     public Boolean isSameRequest(OmniCoreRequest request) {
         return this.getStartTime() == request.created;
+    }
+
+    public Boolean isSameRequest(OmniCoreResult result) {
+        Boolean isSame = false;
+        if (this._result !=  null) {
+            isSame = this._result.ResultDate == result.ResultDate;
+        }
+        return isSame;
     }
 
     public long getRunTime() {

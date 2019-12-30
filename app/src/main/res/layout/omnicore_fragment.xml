@@ -85,7 +85,7 @@
                     android:id="@+id/omnicorestatus_connectionstatus"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_weight=".5"
                     android:gravity="start"
                     android:paddingLeft="5dp"
                     android:textSize="14sp" />
@@ -129,7 +129,7 @@
                     android:id="@+id/omnicorestatus_podid"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_weight=".5"
                     android:gravity="start"
                     android:paddingLeft="5dp"
                     android:textSize="14sp" />
@@ -174,7 +174,7 @@
                     android:id="@+id/omnicorestatus_reservoir"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_weight=".5"
                     android:gravity="start"
                     android:paddingLeft="5dp"
                     android:textSize="14sp" />
@@ -218,7 +218,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_weight="0.5"
                     android:orientation="vertical">
 
                     <TextView
@@ -231,6 +231,14 @@
 
                     <TextView
                         android:id="@+id/omnicorestatus_reservoir_empty"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="start"
+                        android:paddingLeft="5dp"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/omnicorestatus_podchange"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="start"
@@ -277,7 +285,7 @@
                     android:id="@+id/omnicorestatus_laststatustime"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_weight="0.5"
                     android:gravity="start"
                     android:paddingLeft="5dp"
                     android:textSize="14sp" />
@@ -369,7 +377,7 @@
                     android:id="@+id/omnicorestatus_lastcommand"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_weight="0.5"
                     android:gravity="start"
                     android:paddingLeft="5dp"
                     android:textSize="14sp" />
@@ -415,7 +423,7 @@
                     android:id="@+id/omnicorestatus_lastresult"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_weight="0.5"
                     android:gravity="start"
                     android:paddingLeft="5dp"
                     android:textSize="14sp" />
@@ -460,7 +468,7 @@
                     android:id="@+id/omnicorestatus_lastresulttime"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_weight="0.5"
                     android:gravity="start"
                     android:paddingLeft="5dp"
                     android:textSize="14sp" />
@@ -504,7 +512,7 @@
                     android:id="@+id/omnicorestatus_lastsuccess_command"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_weight="0.5"
                     android:gravity="start"
                     android:paddingLeft="5dp"
                     android:textSize="14sp" />
@@ -548,7 +556,7 @@
                     android:id="@+id/omnicorestatus_lastsuccess_time"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_weight="0.5"
                     android:gravity="start"
                     android:paddingLeft="5dp"
                     android:textSize="14sp" />

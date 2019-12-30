@@ -43,6 +43,7 @@ import info.nightscout.androidaps.plugins.general.overview.events.EventDismissNo
 import info.nightscout.androidaps.plugins.general.overview.events.EventNewNotification;
 import info.nightscout.androidaps.plugins.general.overview.notifications.Notification;
 import info.nightscout.androidaps.plugins.pump.common.utils.DateTimeUtil;
+import info.nightscout.androidaps.plugins.pump.omnipod.alerts.OmniCoreAlerts;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreHistoricalResult;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreSetProfileRequest;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreBolusRequest;
@@ -75,12 +76,14 @@ public class OmnipodPdm {
     private final Logger _log;
 
     private OmniCoreCommandHistory _commandHistory;
+    private OmniCoreAlerts _alertProcessor;
 
     public OmnipodPdm(Context context)
     {
         _context = context;
         _log =  LoggerFactory.getLogger(L.PUMP);
         _commandHistory = new OmniCoreCommandHistory();
+        _alertProcessor = new OmniCoreAlerts();
     }
 
     public void OnStart() {
@@ -183,12 +186,20 @@ public class OmnipodPdm {
                 Notification notification = new Notification(Notification.OMNIPY_POD_CHANGE,
                         String.format(MainApp.gs(R.string.omnipod_pod_state_POD_IDs_has_been_removed), _lastResult.PodId), Notification.NORMAL);       //"Pod with Lot %d and Serial %d has been removed."
                 RxBus.INSTANCE.send(new EventNewNotification(notification));
+                SP.putString(R.string.key_omnipod_currentpodid,"");
             }
             else if (!_lastResult.PodRunning && result.PodRunning)
             {
                 RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
                 Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, MainApp.gs(R.string.omnipod_pod_state_Pod_is_activated_and_running), Notification.INFO);      //"Pod is activated and running"
                 RxBus.INSTANCE.send(new EventNewNotification(notification));
+                String currentPodID = SP.getString(R.string.key_omnipod_currentpodid,"");
+                if ((currentPodID == "") || (currentPodID != result.PodId)) {
+                    //New Pod
+                    _log.debug("OMNICORE This looks like a new Pod");
+                    SP.putString(R.string.key_omnipod_currentpodid,result.PodId);
+                    SP.putLong(R.string.key_omnipod_pod_start_time,result.ResultDate);
+                }
             }
             SP.putString(R.string.key_omnicore_last_result, _lastResult.asJson());
             if (result.Success) {
@@ -324,20 +335,27 @@ public class OmnipodPdm {
         if (result != null && result.Success) {
             _lastStatusResponse = result.ResultDate;
         }
-        //TODO: Parameterize this
-        if (_lastResult.ReservoirLevel < 20) {
-            RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
-            Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, MainApp.gs(R.string.omnipod_pod_alerts_Low_reservoir), Notification.NORMAL);      //"Pod is activated and running"
-            RxBus.INSTANCE.send(new EventNewNotification(notification));
+
+        //Set and Check Alerts
+        //TODO: This should be a separate method
+
+        if (_lastResult.PodRunning) {
+            if (_lastResult.ReservoirLevel < SP.getInt(R.string.key_omnicore_alert_res_units,20)) {
+                RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
+                Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, MainApp.gs(R.string.omnipod_pod_alerts_Low_reservoir), Notification.NORMAL);      //"Pod is activated and running"
+                RxBus.INSTANCE.send(new EventNewNotification(notification));
+            }
+
+            _alertProcessor.processExpirationAlerts(getExpirationTime(), getReservoirTime());
+
+/*            if ((System.currentTimeMillis() - getPodAge()) > (SP.getInt(R.string.key_omnicore_alert_age_hours,72) * 60 * 60 * 1000)) {
+
+                RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
+                Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, MainApp.gs(R.string.omnipod_pod_alerts_Pod_expiring_soon), Notification.NORMAL);      //"Pod is activated and running"
+                RxBus.INSTANCE.send(new EventNewNotification(notification));
+            }*/
         }
 
-        //TODO: Parameterize this
-        if ((System.currentTimeMillis() - getPodAge()) > (60 * 60 * 60 * 1000)) {
-
-            RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
-            Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, MainApp.gs(R.string.omnipod_pod_alerts_Pod_expiring_soon), Notification.NORMAL);      //"Pod is activated and running"
-            RxBus.INSTANCE.send(new EventNewNotification(notification));
-        }
 
         return result;
     }
@@ -461,17 +479,25 @@ public class OmnipodPdm {
         return _lastResult.ReservoirLevel;
     }
 
-    public long getPodAge() {
-        long podAge = 0;
+    public long getPodStartTime() {
+        long cpAge = 0;
         CareportalEvent podChangeEvent = MainApp.getDbHelper().getLastCareportalEvent(CareportalEvent.SITECHANGE);
         if (podChangeEvent != null) {
-            podAge = podChangeEvent.date;
+            cpAge = podChangeEvent.date;
         }
+        long podAge =  SP.getLong(R.string.key_omnipod_pod_start_time, cpAge);
         return podAge;
     }
 
     public long getExpirationTime() {
-        return getStartTime() + (80 * 60 * 60 *1000);
+        return getPodStartTime() + (80 * 60 * 60 *1000);
+    }
+
+    public long getBlackoutExpirationTime() {
+        long soonestExpire = getExpirationTime() < getReservoirTime() ? getExpirationTime() : getReservoirTime();
+
+        return _alertProcessor.getAdjustedExpirationTime(soonestExpire);
+
     }
 
     public long getReservoirTime() {
@@ -487,38 +513,44 @@ public class OmnipodPdm {
             return getExpirationTime();
         }
         else {
-            _log.debug("OMNICORE getReservoirTime: Less than 50U. Adding up basal");
+            try {
+                _log.debug("OMNICORE getReservoirTime: Less than 50U. Adding up basal");
 
-            //loop through profile adding up base basal. Stop when we hit insulinRemaining
-            double totalInsulin = 0;
-            double currentRate = GetBaseBasalRate();
-            _log.debug("OMNICORE getReservoirTime: Current Basal Rate: " + currentRate);
+                //loop through profile adding up base basal. Stop when we hit insulinRemaining
+                double totalInsulin = 0;
+                double currentRate = GetBaseBasalRate();
+                _log.debug("OMNICORE getReservoirTime: Current Basal Rate: " + currentRate);
 
-            long currentTime = System.currentTimeMillis();
-            _log.debug("OMNICORE getReservoirTime: Current Time: " + DateUtil.dateAndTimeString(currentTime));
+                long currentTime = System.currentTimeMillis();
+                _log.debug("OMNICORE getReservoirTime: Current Time: " + DateUtil.dateAndTimeString(currentTime));
 
-            long timeRemainingInHour = (1000 * 60 * 60) - currentTime % (1000 * 60 * 60);
-            _log.debug("OMNICORE getReservoirTime: Time Remaining in Hour: " + timeRemainingInHour + "ms - " +timeRemainingInHour/(1000  * 60) + "Min");
+                long timeRemainingInHour = (1000 * 60 * 60) - currentTime % (1000 * 60 * 60);
+                _log.debug("OMNICORE getReservoirTime: Time Remaining in Hour: " + timeRemainingInHour + "ms - " +timeRemainingInHour/(1000  * 60) + "Min");
 
-            long startOfHour = currentTime - timeRemainingInHour;
-            _log.debug("OMNICORE getReservoirTime: Time Rounded to hour:" + DateUtil.dateAndTimeString(startOfHour));
+                long startOfHour = currentTime - timeRemainingInHour;
+                _log.debug("OMNICORE getReservoirTime: Time Rounded to hour:" + DateUtil.dateAndTimeString(startOfHour));
 
-            totalInsulin += currentRate * timeRemainingInHour/(1000 * 60 * 60);
-            _log.debug("OMNICORE getReservoirTime: Basal for this hour: " +totalInsulin);
+                totalInsulin += currentRate * timeRemainingInHour/(1000 * 60 * 60);
+                _log.debug("OMNICORE getReservoirTime: Basal for this hour: " +totalInsulin);
 
-            long timeToCheck = startOfHour + (1000 * 60 * 60) + 1;
-            while(totalInsulin < insulinRemaining) {
-                _log.debug("OMNICORE getReservoirTime: Checking Time: " + DateUtil.dateAndTimeString(timeToCheck));
-                currentRate = GetBaseBasalRate(timeToCheck);
-                _log.debug("OMNICORE getReservoirTime: Basal Rate: " + currentRate);
-                totalInsulin += currentRate;
-                _log.debug("OMNICORE getReservoirTime: Total Basal now: " + totalInsulin);
-                timeToCheck += (1000 * 60 * 60);
+                long timeToCheck = startOfHour + (1000 * 60 * 60) + 1;
+                while(totalInsulin < insulinRemaining) {
+                    _log.debug("OMNICORE getReservoirTime: Checking Time: " + DateUtil.dateAndTimeString(timeToCheck));
+                    currentRate = GetBaseBasalRate(timeToCheck);
+                    _log.debug("OMNICORE getReservoirTime: Basal Rate: " + currentRate);
+                    totalInsulin += currentRate;
+                    _log.debug("OMNICORE getReservoirTime: Total Basal now: " + totalInsulin);
+                    timeToCheck += (1000 * 60 * 60);
+                }
+                _log.debug("OMNICORE getReservoirTime: Basal will exceed reservoir by: " + DateUtil.dateAndTimeString(timeToCheck));
+
+                return timeToCheck - (1000 * 60 * 60);
+
+
             }
-            _log.debug("OMNICORE getReservoirTime: Basal will exceed reservoir by: " + DateUtil.dateAndTimeString(timeToCheck));
-
-            return timeToCheck - (1000 * 60 * 60);
-
+            catch(Exception e) {
+                return getExpirationTime();
+            }
         }
     }
 
@@ -526,10 +558,7 @@ public class OmnipodPdm {
         return _lastResult.BatteryLevel;
     }
 
-    public long getStartTime() {
-        return MainApp.getDbHelper().getLastCareportalEvent(CareportalEvent.SITECHANGE).date;
 
-    }
 
     public OmniCoreCommandHistory getCommandHistory() {
         return _commandHistory;

@@ -34,6 +34,7 @@ public class OmniCoreCommandHistory {
         _commandHistory = new ArrayList<>();
     }
 
+
     public void addOrUpdateHistory(OmniCoreRequest request, OmniCoreResult result) {
         addOrUpdateHistory(request,result, null);
     }
@@ -141,6 +142,27 @@ public class OmniCoreCommandHistory {
             }
 
             if (h.isSameRequest(request)) {
+                if (L.isEnabled(L.PUMP)) {
+                    _log.debug("Found Matching History Entry");
+                }
+                match = h;
+                break;
+            }
+
+        }
+
+        return match;
+    }
+
+    public OmniCoreCommandHistoryItem getMatchingHistoryItem(OmniCoreResult result) {
+        OmniCoreCommandHistoryItem match = null;
+
+        for (OmniCoreCommandHistoryItem h : _commandHistory) {
+            if (L.isEnabled(L.PUMP)) {
+                _log.debug("OmniCoreCommandHistory Comparing to History Entry: " + h.getStartTime());
+            }
+
+            if (h.isSameRequest(result)) {
                 if (L.isEnabled(L.PUMP)) {
                     _log.debug("Found Matching History Entry");
                 }

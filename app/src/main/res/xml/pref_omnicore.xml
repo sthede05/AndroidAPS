@@ -24,12 +24,12 @@
         android:title="@string/omnicore_log_failures" />
 
     <ListPreference
-        android:title="Command Failure Alert Level"
-        android:summary="Type of Alert to thow when a command to Omnicore Fails"
-        android:key="@string/key_omnicore_failure_alerttype"
+        android:defaultValue="NONE"
         android:entries="@array/omnicore_alertLevels"
         android:entryValues="@array/omnicore_alertLevelValues"
-        android:defaultValue="NONE"/>
+        android:key="@string/key_omnicore_failure_alerttype"
+        android:summary="Type of Alert to thow when a command to Omnicore Fails"
+        android:title="Command Failure Alert Type" />
 
     <SwitchPreference
         android:title="Command Failure Audible"
@@ -38,14 +38,172 @@
         android:defaultValue="false"/>
 
     <SwitchPreference
-        android:title="Pod Age Alert"
-        android:summary="Alert on Pod age "
-        android:key="@string/key_omnicore_failure_audible"
-        android:defaultValue="false"/>
-
-    <SwitchPreference
         android:title="Log Status Requests"
         android:summary="Show Status Requests in Command History"
         android:key="@string/key_omnicore_status_history"
         android:defaultValue="false"/>
+
+
+    <EditTextPreference
+        android:defaultValue="20"
+        android:inputType="number"
+        android:key="@string/key_omnicore_alert_res_units"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="Low Reservoir Alert (U)" />
+
+    <EditTextPreference
+        android:defaultValue="30"
+        android:key="@string/key_omnicore_alert_urgent_expire"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="How many minutes before pod expiration to issue urgent alert"
+        android:inputType="number"/>
+
+    <EditTextPreference
+        android:defaultValue="8"
+        android:key="@string/key_omnicore_alert_prior_expire"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="How many hours before pod expiration to alert"
+        android:inputType="number"/>
+
+
+
+    <PreferenceCategory android:title="Pod Change Blackout Windows">
+
+        <EditTextPreference
+            android:defaultValue=""
+            android:key="edit_text_preference_1"
+            android:selectAllOnFocus="true"
+            android:singleLine="false"
+            android:title="True for Hours where Pod Change is undesirable"
+
+            android:enabled="false"/>
+
+        <SwitchPreference
+            android:title="00:00 - 01:00"
+            android:key="@string/key_omnicore_podchange_0"
+            android:defaultValue="false"/>
+
+        <SwitchPreference
+            android:title="01:00 - 02:00"
+            android:key="@string/key_omnicore_podchange_1"
+            android:defaultValue="false"/>
+
+        <SwitchPreference
+            android:title="02:00 - 03:00"
+            android:key="@string/key_omnicore_podchange_2"
+            android:defaultValue="false"/>
+
+        <SwitchPreference
+            android:title="03:00 - 04:00"
+            android:key="@string/key_omnicore_podchange_3"
+            android:defaultValue="false"/>
+
+        <SwitchPreference
+            android:title="04:00 - 05:00"
+            android:key="@string/key_omnicore_podchange_4"
+            android:defaultValue="false"/>
+
+        <SwitchPreference
+            android:title="05:00 - 06:00"
+            android:key="@string/key_omnicore_podchange_5"
+            android:defaultValue="false"/>
+
+        <SwitchPreference
+            android:title="06:00 - 07:00"
+            android:key="@string/key_omnicore_podchange_6"
+            android:defaultValue="false"/>
+
+        <SwitchPreference
+            android:title="07:00 - 08:00"
+            android:key="@string/key_omnicore_podchange_7"
+            android:defaultValue="false"/>
+
+        <SwitchPreference
+            android:title="08:00 - 09:00"
+            android:key="@string/key_omnicore_podchange_8"
+            android:defaultValue="false"/>
+
+        <SwitchPreference
+            android:title="09:00 - 10:00"
+            android:key="@string/key_omnicore_podchange_9"
+            android:defaultValue="false"/>
+
+        <SwitchPreference
+            android:title="10:00 - 11:00"
+            android:key="@string/key_omnicore_podchange_10"
+            android:defaultValue="false"/>
+
+        <SwitchPreference
+            android:title="11:00 - 12:00"
+            android:key="@string/key_omnicore_podchange_11"
+            android:defaultValue="false"/>
+
+        <SwitchPreference
+            android:title="12:00 - 13:00"
+            android:key="@string/key_omnicore_podchange_12"
+            android:defaultValue="false"/>
+
+        <SwitchPreference
+            android:title="13:00 - 14:00"
+            android:key="@string/key_omnicore_podchange_13"
+            android:defaultValue="false"/>
+
+        <SwitchPreference
+            android:title="14:00 - 15:00"
+            android:key="@string/key_omnicore_podchange_14"
+            android:defaultValue="false"/>
+
+        <SwitchPreference
+            android:title="15:00 - 16:00"
+            android:key="@string/key_omnicore_podchange_15"
+            android:defaultValue="false"/>
+
+        <SwitchPreference
+            android:title="16:00 - 17:00"
+            android:key="@string/key_omnicore_podchange_16"
+            android:defaultValue="false"/>
+
+        <SwitchPreference
+            android:title="17:00 - 18:00"
+            android:key="@string/key_omnicore_podchange_17"
+            android:defaultValue="false"/>
+
+        <SwitchPreference
+            android:title="18:00 - 19:00"
+            android:key="@string/key_omnicore_podchange_18"
+            android:defaultValue="false"/>
+
+        <SwitchPreference
+            android:title="19:00 - 20:00"
+            android:key="@string/key_omnicore_podchange_19"
+            android:defaultValue="false"/>
+
+        <SwitchPreference
+            android:title="20:00 - 21:00"
+            android:key="@string/key_omnicore_podchange_20"
+            android:defaultValue="false"/>
+
+        <SwitchPreference
+            android:title="21:00 - 22:00"
+            android:key="@string/key_omnicore_podchange_21"
+            android:defaultValue="false"/>
+
+        <SwitchPreference
+            android:title="22:00 - 23:00"
+            android:key="@string/key_omnicore_podchange_22"
+            android:defaultValue="false"/>
+
+        <SwitchPreference
+            android:title="23:00 - 00:00"
+            android:key="@string/key_omnicore_podchange_23"
+            android:defaultValue="false"/>
+
+
+    </PreferenceCategory>
+
+
+
 </PreferenceScreen>

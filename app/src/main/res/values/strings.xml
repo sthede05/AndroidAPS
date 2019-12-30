@@ -1425,9 +1425,37 @@
     <string name="key_omnicore_failure_alerttype" translatable="false">-1</string>
     <string name="key_omnicore_failure_audible" translatable="false">audible_omnicore_alarm</string>
     <string name="key_omnicore_status_history" translatable="false">omnicore_status_in_history</string>
+    <string name="key_omnicore_alert_age_hours" translatable="false">omnipod_expire_alert_hours</string>
+    <string name="key_omnicore_alert_res_units" translatable="false">omnipod_expire_alert_units</string>
+    <string name="key_omnicore_alert_prior_expire" translatable="false">omnipod_expire_alert_prior</string>
+    <string name="key_omnicore_alert_urgent_expire" translatable="false">omnipod_expire_alert_urgent</string>
 
+    <string name="key_omnicore_podchange_0" translatable="false">omnipod_blackout_0</string>
+    <string name="key_omnicore_podchange_1" translatable="false">omnipod_blackout_1</string>
+    <string name="key_omnicore_podchange_2" translatable="false">omnipod_blackout_2</string>
+    <string name="key_omnicore_podchange_3" translatable="false">omnipod_blackout_3</string>
+    <string name="key_omnicore_podchange_4" translatable="false">omnipod_blackout_4</string>
+    <string name="key_omnicore_podchange_5" translatable="false">omnipod_blackout_5</string>
+    <string name="key_omnicore_podchange_6" translatable="false">omnipod_blackout_6</string>
+    <string name="key_omnicore_podchange_7" translatable="false">omnipod_blackout_7</string>
+    <string name="key_omnicore_podchange_8" translatable="false">omnipod_blackout_8</string>
+    <string name="key_omnicore_podchange_9" translatable="false">omnipod_blackout_9</string>
+    <string name="key_omnicore_podchange_10" translatable="false">omnipod_blackout_10</string>
+    <string name="key_omnicore_podchange_11" translatable="false">omnipod_blackout_11</string>
+    <string name="key_omnicore_podchange_12" translatable="false">omnipod_blackout_12</string>
+    <string name="key_omnicore_podchange_13" translatable="false">omnipod_blackout_13</string>
+    <string name="key_omnicore_podchange_14" translatable="false">omnipod_blackout_14</string>
+    <string name="key_omnicore_podchange_15" translatable="false">omnipod_blackout_15</string>
+    <string name="key_omnicore_podchange_16" translatable="false">omnipod_blackout_16</string>
+    <string name="key_omnicore_podchange_17" translatable="false">omnipod_blackout_17</string>
+    <string name="key_omnicore_podchange_18" translatable="false">omnipod_blackout_18</string>
+    <string name="key_omnicore_podchange_19" translatable="false">omnipod_blackout_19</string>
+    <string name="key_omnicore_podchange_20" translatable="false">omnipod_blackout_20</string>
+    <string name="key_omnicore_podchange_21" translatable="false">omnipod_blackout_21</string>
+    <string name="key_omnicore_podchange_22" translatable="false">omnipod_blackout_22</string>
+    <string name="key_omnicore_podchange_23" translatable="false">omnipod_blackout_23</string>
 
-    <string name="omnicore_log_failures">Log Failures</string>
+    <string name="omnicore_log_failures">Log Failures in NS</string>
     <string name="overview_omnicore">OmniCore</string>
     <string name="omnicore_label">OmniCore</string>
     <string name="error_starting_omnicore">Error starting OmniCore. Make sure it is installed.</string>
@@ -1442,6 +1470,8 @@
     <string name="key_omnicore_last_successful_result">No Result</string>
     <string name="key_omnicore_last_successful_command">No Command</string>
     <string name="key_omnicore_last_successful_commandstate">No Command</string>
+    <string name="key_omnipod_currentpodid">omnipod_currentpodid</string>
+    <string name="key_omnipod_pod_start_time">omnipod_currentpodstart</string>
 
     <string name="omnipod_pod_status">Pod Status</string>
     <string name="omnipy_pod_status_clear_alerts">Clear Alerts</string>
@@ -1469,7 +1499,9 @@
 
     <string name="omnipod_pod_alerts_Auto_off">Auto-off</string>
     <string name="omnipod_pod_alerts_Unknown">Unknown</string>
-    <string name="omnipod_pod_alerts_Pod_expiring_soon">Pod expiring soon</string>
+    <string name="omnipod_pod_alerts_Pod_expiring_soon">Pod will expire</string>
+    <string name="omnipod_pod_alerts_Pod_expiring_soon_window">Pod expiring soon</string>
+
     <string name="omnipod_pod_alerts_Replace_pod_soon">Replace pod soon</string>
     <string name="omnipod_pod_alerts_Low_reservoir">Low reservoir</string>
     <string name="omnipod_pod_alerts_Insulin_Suspended">Insulin Suspended</string>
@@ -1492,6 +1524,7 @@
     <string name="omnipod_command_canceltbr">Cancel Temp Basal</string>
     <string name="omnipod_command_setprofile">Set Profile</string>
     <string name="omnipod_command_getstatus">Get Status</string>
+
     <!-- <string name="omnipod_connection_settings">Connection Settings</string>
      <string name="omnipy_set_http_password">Set password</string>
      <string name="omnipy_connection_settings">Omnipy Connection</string>
