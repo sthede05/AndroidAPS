@@ -56,6 +56,7 @@ import info.nightscout.androidaps.logging.L;
 import info.nightscout.androidaps.plugins.bus.RxBus;
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipodUpdateGui;
 import info.nightscout.androidaps.plugins.pump.omnipod.history.OmniCoreCommandHistory;
+import info.nightscout.androidaps.plugins.pump.omnipod.history.OmniCoreCommandHistoryItem;
 import info.nightscout.androidaps.plugins.treatments.Treatment;
 import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
 import info.nightscout.androidaps.utils.DateUtil;
@@ -621,6 +622,7 @@ class HistoryProcessor extends AsyncTask<OmniCoreResult,Void,Void>
         List<Treatment> treatments = treatmentsPlugin.getTreatmentsFromHistory();
         Intervals<TemporaryBasal> temporaryBasals = treatmentsPlugin.getTemporaryBasalsFromHistory();
         //ProfileIntervals<ProfileSwitch> profileSwitches = treatmentsPlugin.getProfileSwitchesFromHistory();
+        OmniCoreCommandHistory commandHistory = OmnipodPlugin.getPlugin().getPdm().getCommandHistory();
 
         DetailedBolusInfo cancelBolusCandidate = null;
         OmniCoreHistoricalResult cancelBolusHistoricalCandidate = null;
@@ -629,6 +631,11 @@ class HistoryProcessor extends AsyncTask<OmniCoreResult,Void,Void>
 
             OmniCoreHistoricalResult historicalResult = new Gson()
                     .fromJson(historicalResultJson.toString(), OmniCoreHistoricalResult.class);
+
+            OmniCoreCommandHistoryItem hi = commandHistory.getMatchingHistoryItem(historicalResult.ResultDate);
+            if (hi != null) {
+                hi.setSucceeded();
+            }
 
             switch (historicalResult.Type) {
                 case SetBasalSchedule:
@@ -643,7 +650,9 @@ class HistoryProcessor extends AsyncTask<OmniCoreResult,Void,Void>
                         DetailedBolusInfo detailedBolusInfo = new DetailedBolusInfo();
                         detailedBolusInfo.pumpId = historicalResult.ResultDate;
                         detailedBolusInfo.insulin = p1.ImmediateUnits.doubleValue();
-                        detailedBolusInfo.isSMB = false;
+                        //detailedBolusInfo.isSMB = false;
+                        detailedBolusInfo.isSMB = hi != null ? hi.getBolusInfo().isSMB : false;
+                        detailedBolusInfo.carbs = hi !=  null ? hi.getBolusInfo().carbs : 0;
                         detailedBolusInfo.date = historicalResult.ResultDate;
                         detailedBolusInfo.source = Source.PUMP;
                         treatmentsPlugin.addToHistoryTreatment(detailedBolusInfo, true);
@@ -651,6 +660,7 @@ class HistoryProcessor extends AsyncTask<OmniCoreResult,Void,Void>
                     } else {
                         cancelBolusCandidate = existingBolusInfo;
                     }
+
 
                     break;
                 case CancelBolus:

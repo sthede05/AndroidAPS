@@ -154,6 +154,27 @@ public class OmniCoreCommandHistory {
         return match;
     }
 
+    public OmniCoreCommandHistoryItem getMatchingHistoryItem(long resultDate) {
+        OmniCoreCommandHistoryItem match = null;
+
+        for (OmniCoreCommandHistoryItem h : _commandHistory) {
+            if (L.isEnabled(L.PUMP)) {
+                _log.debug("OmniCoreCommandHistory Comparing to History Entry: " + h.getStartTime());
+            }
+
+            if (h.getResult() != null && h.getResult().ResultDate == resultDate) {
+                if (L.isEnabled(L.PUMP)) {
+                    _log.debug("Found Matching History Entry");
+                }
+                match = h;
+                break;
+            }
+
+        }
+
+        return match;
+    }
+
     public OmniCoreCommandHistoryItem getMatchingHistoryItem(OmniCoreResult result) {
         OmniCoreCommandHistoryItem match = null;
 
