@@ -6,6 +6,7 @@ public enum OmnicoreCommandHistoryStatus {
     SUCCESS("Success"),
     FAILED("Failed"),
     CANCELLED("Cancelled"),
+    EXECUTED("Executed"),
     UNKNOWN("Unknown");
 
 

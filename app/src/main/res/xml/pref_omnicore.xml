@@ -11,6 +11,20 @@
         android:title="@string/omnicore_settings"
         android:enabled="false"/>
 
+    <EditTextPreference
+        android:defaultValue=""
+        android:key="@string/key_omnipod_currentpodid"
+        android:selectAllOnFocus="true"
+        android:singleLine="false"
+        android:title="Pod ID"
+        android:enabled="false"/>
+
+   <!-- <SwitchPreference
+        android:defaultValue="true"
+        android:key="@string/key_omnicore_log_pod_change"
+        android:summary="@string/omnicore_log_pod_change_summary"
+        android:title="@string/omnicore_log_pod_change_title" />-->
+
     <SwitchPreference
         android:defaultValue="true"
         android:key="@string/key_show_omnicore_button"

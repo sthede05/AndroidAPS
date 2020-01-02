@@ -135,7 +135,7 @@ class OmniCorePumpFragment : Fragment() {
             if (omnicorePump.pdm.reservoirTime - System.currentTimeMillis() < SP.getInt(R.string.key_omnicore_alert_prior_expire, 8) * 60 * 60 * 1000) {
                 omnicorestatus_reservoir_empty?.setTextColor(Color.RED)
             }
-            omnicorestatus_podchange?.text = DateUtil.dateAndTimeString(omnicorePump.pdm.blackoutExpirationTime) + " - Blackout Window"
+            omnicorestatus_podchange?.text = DateUtil.dateAndTimeString(omnicorePump.pdm.blackoutExpirationTime)
             if (omnicorePump.pdm.blackoutExpirationTime - System.currentTimeMillis() < SP.getInt(R.string.key_omnicore_alert_prior_expire, 8) * 60 * 60 * 1000) {
                 omnicorestatus_podchange?.setTextColor(Color.RED)
             }
@@ -269,6 +269,7 @@ class OmniCorePumpFragment : Fragment() {
             when (historyItem.status) {
                 OmnicoreCommandHistoryStatus.PENDING.description -> commandStatus?.setTextColor(Color.YELLOW)
                 OmnicoreCommandHistoryStatus.SUCCESS.description -> commandStatus?.setTextColor(Color.GREEN)
+                OmnicoreCommandHistoryStatus.EXECUTED.description -> commandStatus?.setTextColor(Color.GREEN)
                 OmnicoreCommandHistoryStatus.FAILED.description -> commandStatus?.setTextColor(Color.RED)
             }
             commandTime?.text = DateUtil.dateAndTimeString(historyItem.request.requested)

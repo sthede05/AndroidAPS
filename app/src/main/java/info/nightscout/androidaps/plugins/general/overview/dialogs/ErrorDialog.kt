@@ -46,7 +46,7 @@ class ErrorDialog : DialogFragment() {
             log.debug("Error dialog mute button pressed")
             stopAlarm()
         }
-        startAlarm()
+   //     startAlarm()
     }
 
     override fun onSaveInstanceState(bundle: Bundle) {

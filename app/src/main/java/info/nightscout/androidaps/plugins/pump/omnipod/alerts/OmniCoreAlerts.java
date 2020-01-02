@@ -5,12 +5,17 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 
+import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.logging.L;
 import info.nightscout.androidaps.plugins.bus.RxBus;
+import info.nightscout.androidaps.plugins.general.nsclient.NSUpload;
 import info.nightscout.androidaps.plugins.general.overview.events.EventDismissNotification;
 import info.nightscout.androidaps.plugins.general.overview.events.EventNewNotification;
 import info.nightscout.androidaps.plugins.general.overview.notifications.Notification;
+import info.nightscout.androidaps.plugins.pump.omnipod.history.OmniCoreCommandHistory;
+import info.nightscout.androidaps.plugins.pump.omnipod.history.OmniCoreCommandHistoryItem;
+import info.nightscout.androidaps.plugins.pump.omnipod.history.OmnicoreCommandHistoryStatus;
 import info.nightscout.androidaps.utils.DateUtil;
 import info.nightscout.androidaps.utils.SP;
 
@@ -19,6 +24,8 @@ public class OmniCoreAlerts {
 
     private final Logger _log;
 
+    private int _failedCommands;
+    protected int _failedCommandThreshold = 2;
 
     private Boolean[] _changeBlackout = new Boolean[24];
 
@@ -29,11 +36,105 @@ public class OmniCoreAlerts {
     public OmniCoreAlerts() {
         _log =  LoggerFactory.getLogger(L.PUMP);
 
+        _failedCommands = 0;
+
+
         if (L.isEnabled(L.PUMP)) {
             _log.debug("OmniCoreAlerts: Creating Change Window");
         }
 
     }
+
+    public void processExpirationAlerts(long reservoirExpiration, long podExpiration) {
+        long soonestExpire = Math.min(reservoirExpiration, podExpiration);
+        long currentTime = System.currentTimeMillis();
+
+        try {
+            //Check Urgent Alarm
+            //TODO: Add to Strings
+            if ((soonestExpire - currentTime) < (SP.getInt(R.string.key_omnicore_alert_urgent_expire,30) * 60 * 1000)) {
+                RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
+                Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod will expire very soon: " + DateUtil.timeString(soonestExpire), Notification.URGENT);
+                notification.soundId = R.raw.alarm;
+                RxBus.INSTANCE.send(new EventNewNotification(notification));
+            }
+            else {
+
+                //Don't bother if we're snoozing
+                if (currentTime > _lastExpirationAlert + _expirationAlertSnooze) {
+                    long soonestExpireWithBlackout = getAdjustedExpirationTime(soonestExpire);
+                    Boolean blackoutInEffect = ((soonestExpireWithBlackout < soonestExpire) && (soonestExpireWithBlackout > currentTime));
+                    long expirationPriorMS = SP.getInt(R.string.key_omnicore_alert_prior_expire, 8) * 60 * 60 * 1000;
+                    String message = reservoirExpiration < podExpiration ? "Reservoir will be empty by " : "Pod will expire by ";
+                    message += DateUtil.timeString(soonestExpire);
+
+                    if (blackoutInEffect && (soonestExpireWithBlackout - currentTime < expirationPriorMS)) {
+                        message += "\nPod change window ends " + DateUtil.timeString(soonestExpireWithBlackout);
+                        RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
+                        Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, message, Notification.URGENT);
+                        RxBus.INSTANCE.send(new EventNewNotification(notification));
+                        _lastExpirationAlert = currentTime;
+                    } else if (soonestExpire - currentTime < expirationPriorMS) {
+                        RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
+                        Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, message, Notification.URGENT);
+                        RxBus.INSTANCE.send(new EventNewNotification(notification));
+                        _lastExpirationAlert = currentTime;
+                    }
+                }
+            }
+
+        }
+        catch (Exception e) {
+            //Couldn't process expiration Alert
+            if (L.isEnabled(L.PUMP)) {
+                _log.debug("OmniCoreAlerts: exception " + e.getMessage()) ;
+            }
+        }
+    }
+
+    public void processCommandAlerts(OmniCoreCommandHistoryItem hi) {
+        try {
+            if (hi.getStatus() == OmnicoreCommandHistoryStatus.FAILED.getDescription()) {
+                _failedCommands ++;
+                if (L.isEnabled(L.PUMP)) {
+                    _log.debug("OmniCoreAlerts: " + hi.getRequest().getRequestDetails() + " failed. This is " + _failedCommands + " consecutive failures");
+                }
+            }
+            else if (hi.getStatus() == OmnicoreCommandHistoryStatus.SUCCESS.getDescription()) {
+                if (_failedCommands > 0) {
+                    RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_COMMAND_STATUS));
+                }
+                _failedCommands = 0;
+            }
+
+            if (_failedCommands > _failedCommandThreshold) {
+                int alertLevel = SP.getInt(R.string.key_omnicore_failure_alerttype,-1);
+                String alertText = String.format(MainApp.gs(R.string.omnipod_command_state_command_failed),  _failedCommands);
+                alertText += String.format(MainApp.gs(R.string.omnipod_command_state_lastcommand_failed), hi.getRequest().getRequestDetails());
+                if (alertLevel >=0) {
+                    Notification notification = new Notification(Notification.OMNIPY_COMMAND_STATUS, alertText, alertLevel);
+                    if (SP.getBoolean(R.string.key_omnicore_failure_audible,false)) {
+                        notification.soundId = R.raw.alarm;
+                    }
+                    RxBus.INSTANCE.send(new EventNewNotification(notification));
+
+                }
+                //Log Failure to NS
+
+                if (SP.getBoolean(R.string.key_omnicore_log_failures, false)) {
+                    NSUpload.uploadError(alertText);
+                }
+            }
+
+        }
+        catch (Exception e) {
+            //Couldn't process command history
+            if (L.isEnabled(L.PUMP)) {
+                _log.debug("OmniCoreAlerts: exception " + e.getMessage()) ;
+            }
+        }
+    }
+
 
     public void setupWindows() {
         //This is really ugly.
@@ -65,66 +166,76 @@ public class OmniCoreAlerts {
     }
 
     public long getAdjustedExpirationTime(long expirationTime) {
-        if (L.isEnabled(L.PUMP)) {
-            _log.debug("OmniCoreAlerts: Checking Expiration Time: " + DateUtil.dateAndTimeString(expirationTime));
-        }
-
-        setupWindows();
-
-        if (!isBlackoutWindowValid()) {
+        try {
             if (L.isEnabled(L.PUMP)) {
-                _log.debug("OmniCoreAlerts: Blackout Window is invalid. Returing entered value");
+                _log.debug("OmniCoreAlerts: Checking Expiration Time: " + DateUtil.dateAndTimeString(expirationTime));
             }
-            return expirationTime;
-        }
 
+            setupWindows();
 
-        Date dt = new Date(expirationTime);
-        int h = dt.getHours();
-
-        if (L.isEnabled(L.PUMP)) {
-            _log.debug("OmniCoreAlerts: Blackout Window. Window at hour " + h + " is blackout");
-        }
-
-        if (L.isEnabled(L.PUMP)) {
-            _log.debug("OmniCoreAlerts: Expiration Hour is: " + h);
-        }
-
-        if (!_changeBlackout[h]) {
-            if (L.isEnabled(L.PUMP)) {
-                _log.debug("OmniCoreAlerts: Change is not in blackout window");
+            if (!isBlackoutWindowValid()) {
+                if (L.isEnabled(L.PUMP)) {
+                    _log.debug("OmniCoreAlerts: Blackout Window is invalid. Returing entered value");
+                }
+                return expirationTime;
             }
-            return expirationTime;
-        }
 
-        int hoursBack = 0;
-        while (_changeBlackout[h]) {
+
+            Date dt = new Date(expirationTime);
+            int h = dt.getHours();
+
             if (L.isEnabled(L.PUMP)) {
                 _log.debug("OmniCoreAlerts: Blackout Window. Window at hour " + h + " is blackout");
             }
-            h = (h -1 + 24) % 24;
-            hoursBack++;
-        }
 
-        if (L.isEnabled(L.PUMP)) {
-            _log.debug("OmniCoreAlerts: Blackout Window. Change window open at hour: " + h);
-        }
-
-        if (hoursBack >= 24) {
-            //that shouldn't happen.
             if (L.isEnabled(L.PUMP)) {
-                _log.debug("OmniCoreAlerts: Blackout Window. Something borked. We had to look back more than a day to get a pod change time");
+                _log.debug("OmniCoreAlerts: Expiration Hour is: " + h);
+            }
+
+            if (!_changeBlackout[h]) {
+                if (L.isEnabled(L.PUMP)) {
+                    _log.debug("OmniCoreAlerts: Change is not in blackout window");
+                }
+                return expirationTime;
+            }
+
+            int hoursBack = 0;
+            while (_changeBlackout[h]) {
+                if (L.isEnabled(L.PUMP)) {
+                    _log.debug("OmniCoreAlerts: Blackout Window. Window at hour " + h + " is blackout");
+                }
+                h = (h -1 + 24) % 24;
+                hoursBack++;
+            }
+
+            if (L.isEnabled(L.PUMP)) {
+                _log.debug("OmniCoreAlerts: Blackout Window. Change window open at hour: " + h);
+            }
+
+            if (hoursBack >= 24) {
+                //that shouldn't happen.
+                if (L.isEnabled(L.PUMP)) {
+                    _log.debug("OmniCoreAlerts: Blackout Window. Something borked. We had to look back more than a day to get a pod change time");
+                }
+                return expirationTime;
+            }
+
+            //round expiration time down to the hour, then subtract hoursBack hours to get the new expiration time
+            expirationTime = expirationTime - expirationTime % (1000 * 60 * 60);
+            if (L.isEnabled(L.PUMP)) {
+                _log.debug("OmniCoreAlerts: Blackout Window. Expiration Time Rounded to Hour:" + DateUtil.dateAndTimeString(expirationTime));
+            }
+            expirationTime = expirationTime - (hoursBack -1) * (1000 * 60 * 60);
+            return  expirationTime;
+
+        }
+        catch (Exception e) {
+            //Couldn't get Expiration Time
+            if (L.isEnabled(L.PUMP)) {
+                _log.debug("OmniCoreAlerts: exception " + e.getMessage()) ;
             }
             return expirationTime;
         }
-
-        //round expiration time down to the hour, then subtract hoursBack hours to get the new expiration time
-        expirationTime = expirationTime - expirationTime % (1000 * 60 * 60);
-        if (L.isEnabled(L.PUMP)) {
-            _log.debug("OmniCoreAlerts: Blackout Window. Expiration Time Rounded to Hour:" + DateUtil.dateAndTimeString(expirationTime));
-        }
-        expirationTime = expirationTime - (hoursBack -1) * (1000 * 60 * 60);
-        return  expirationTime;
     }
 
     public Boolean isBlackoutWindowValid() {
@@ -137,41 +248,5 @@ public class OmniCoreAlerts {
         return isValid;
     }
 
-    public void processExpirationAlerts(long reservoirExpiration, long podExpiration) {
-        long soonestExpire = Math.min(reservoirExpiration, podExpiration);
-        long currentTime = System.currentTimeMillis();
 
-        //Check Urgent Alarm
-        //TODO: Add to Strings
-        if ((soonestExpire - currentTime) < (SP.getInt(R.string.key_omnicore_alert_urgent_expire,30) * 60 * 1000)) {
-            RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
-            Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod will expire very soon: " + DateUtil.timeString(soonestExpire), Notification.URGENT);
-            notification.soundId = R.raw.alarm;
-            RxBus.INSTANCE.send(new EventNewNotification(notification));
-        }
-        else {
-
-            //Don't bother if we're snoozing
-            if (currentTime > _lastExpirationAlert + _expirationAlertSnooze) {
-                long soonestExpireWithBlackout = getAdjustedExpirationTime(soonestExpire);
-                Boolean blackoutInEffect = ((soonestExpireWithBlackout < soonestExpire) && (soonestExpireWithBlackout > currentTime));
-                long expirationPriorMS = SP.getInt(R.string.key_omnicore_alert_prior_expire, 8) * 60 * 60 * 1000;
-                String message = reservoirExpiration < podExpiration ? "Reservoir will be empty by " : "Pod will expire by ";
-                message += DateUtil.timeString(soonestExpire);
-
-                if (blackoutInEffect && (soonestExpireWithBlackout - currentTime < expirationPriorMS)) {
-                    message += "\nPod change window ends " + DateUtil.timeString(soonestExpireWithBlackout);
-                    RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
-                    Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, message, Notification.URGENT);
-                    RxBus.INSTANCE.send(new EventNewNotification(notification));
-                    _lastExpirationAlert = currentTime;
-                } else if (soonestExpire - currentTime < expirationPriorMS) {
-                    RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
-                    Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, message, Notification.URGENT);
-                    RxBus.INSTANCE.send(new EventNewNotification(notification));
-                    _lastExpirationAlert = currentTime;
-                }
-            }
-        }
-    }
 }

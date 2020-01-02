@@ -195,11 +195,20 @@ public class OmnipodPdm {
                 Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, MainApp.gs(R.string.omnipod_pod_state_Pod_is_activated_and_running), Notification.INFO);      //"Pod is activated and running"
                 RxBus.INSTANCE.send(new EventNewNotification(notification));
                 String currentPodID = SP.getString(R.string.key_omnipod_currentpodid,"");
-                if ((currentPodID == "") || (currentPodID != result.PodId)) {
+
+                if (L.isEnabled(L.PUMP)) {
+                    _log.debug("OMNICORE: Current Pod ID: " + currentPodID) ;
+                    _log.debug("OMNICORE: Result Pod ID: " + result.PodId) ;
+                }
+
+                if (currentPodID.equals("") || (! currentPodID.equals(result.PodId))) {
                     //New Pod
-                    _log.debug("OMNICORE This looks like a new Pod");
+                    if (L.isEnabled(L.PUMP)) {
+                        _log.debug("OMNICORE: This looks like a new Pod");
+                    }
                     SP.putString(R.string.key_omnipod_currentpodid,result.PodId);
                     SP.putLong(R.string.key_omnipod_pod_start_time,result.ResultDate);
+
                 }
             }
             SP.putString(R.string.key_omnicore_last_result, _lastResult.asJson());
@@ -481,13 +490,15 @@ public class OmnipodPdm {
     }
 
     public long getPodStartTime() {
-        long cpAge = 0;
-        CareportalEvent podChangeEvent = MainApp.getDbHelper().getLastCareportalEvent(CareportalEvent.SITECHANGE);
-        if (podChangeEvent != null) {
-            cpAge = podChangeEvent.date;
+        long podStart = 0;
+        podStart =  SP.getLong(R.string.key_omnipod_pod_start_time, podStart);
+
+        if (L.isEnabled(L.PUMP)) {
+            _log.debug("OMNICORE: Start Time from Prefs: " + DateUtil.dateAndTimeString(podStart));
         }
-        long podAge =  SP.getLong(R.string.key_omnipod_pod_start_time, cpAge);
-        return podAge;
+
+
+        return podStart;
     }
 
     public long getExpirationTime() {
@@ -564,6 +575,10 @@ public class OmnipodPdm {
     public OmniCoreCommandHistory getCommandHistory() {
         return _commandHistory;
     }
+
+    public OmniCoreAlerts getAlertProcessor() {
+        return _alertProcessor;
+    }
 }
 
 
@@ -634,7 +649,7 @@ class HistoryProcessor extends AsyncTask<OmniCoreResult,Void,Void>
 
             OmniCoreCommandHistoryItem hi = commandHistory.getMatchingHistoryItem(historicalResult.ResultDate);
             if (hi != null) {
-                hi.setSucceeded();
+                hi.setExecuted();
             }
 
             switch (historicalResult.Type) {
@@ -651,8 +666,14 @@ class HistoryProcessor extends AsyncTask<OmniCoreResult,Void,Void>
                         detailedBolusInfo.pumpId = historicalResult.ResultDate;
                         detailedBolusInfo.insulin = p1.ImmediateUnits.doubleValue();
                         //detailedBolusInfo.isSMB = false;
-                        detailedBolusInfo.isSMB = hi != null ? hi.getBolusInfo().isSMB : false;
-                        detailedBolusInfo.carbs = hi !=  null ? hi.getBolusInfo().carbs : 0;
+                        detailedBolusInfo.isSMB = (hi != null && hi.getBolusInfo() != null) ? hi.getBolusInfo().isSMB : false;
+                        if (hi != null && hi.getBolusInfo() != null && hi.getBolusInfo().carbTime == 0) {
+                            detailedBolusInfo.carbs = hi.getBolusInfo().carbs;
+                            detailedBolusInfo.carbTime = 0;
+                        }
+                        else {
+                            detailedBolusInfo.carbs = 0;
+                        }
                         detailedBolusInfo.date = historicalResult.ResultDate;
                         detailedBolusInfo.source = Source.PUMP;
                         treatmentsPlugin.addToHistoryTreatment(detailedBolusInfo, true);

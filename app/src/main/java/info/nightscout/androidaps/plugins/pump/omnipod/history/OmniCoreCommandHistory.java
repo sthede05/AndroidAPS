@@ -20,7 +20,8 @@ import info.nightscout.androidaps.utils.SP;
 
 
 public class OmniCoreCommandHistory {
-
+//TODO: Persist this
+//TODO: implement "executing" status and "Cancelled" status
 
     private final Logger _log;
 

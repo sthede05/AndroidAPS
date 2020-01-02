@@ -10,6 +10,7 @@ import info.nightscout.androidaps.plugins.general.overview.events.EventDismissNo
 import info.nightscout.androidaps.plugins.general.overview.events.EventNewNotification;
 import info.nightscout.androidaps.plugins.general.overview.notifications.Notification;
 import info.nightscout.androidaps.plugins.pump.common.bolusInfo.DetailedBolusInfoStorage;
+import info.nightscout.androidaps.plugins.pump.omnipod.OmnipodPlugin;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreRequest;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreResult;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreTempBasalRequest;
@@ -120,45 +121,38 @@ public class OmniCoreCommandHistoryItem {
         this._status = OmnicoreCommandHistoryStatus.SUCCESS;
     }
 
-    private void processHistoryItem() {
-        if (this._result == null) {
-            if (this._status != OmnicoreCommandHistoryStatus.FAILED) {
-                this._status = OmnicoreCommandHistoryStatus.PENDING;
-            }
-        }
-        else {
-            if (this._result.Success) {
-                this._status = OmnicoreCommandHistoryStatus.SUCCESS;
-                RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_COMMAND_STATUS));
 
+    public void setExecuted() {
+        this._status = OmnicoreCommandHistoryStatus.EXECUTED;
+    }
+
+    private void processHistoryItem() {
+        try {
+            if (this._result == null) {
+                if (this._status != OmnicoreCommandHistoryStatus.FAILED) {
+                    this._status = OmnicoreCommandHistoryStatus.PENDING;
+                }
             }
             else {
-                this._status = OmnicoreCommandHistoryStatus.FAILED;
-
-                /*    public static final int URGENT = 0;
-    public static final int NORMAL = 1;
-    public static final int LOW = 2;
-    public static final int INFO = 3;
-    public static final int ANNOUNCEMENT = 4;*/
-                int alertLevel = SP.getInt(R.string.key_omnicore_failure_alerttype,-1);
-                String alertText = String.format(MainApp.gs(R.string.omnipod_command_state_lastcommand_failed), this._request.getRequestDetails());
-                if (alertLevel >=0) {
-                    Notification notification = new Notification(Notification.OMNIPY_COMMAND_STATUS, alertText, alertLevel);
-                    if (SP.getBoolean(R.string.key_omnicore_failure_audible,false)) {
-                        notification.soundId = R.raw.alarm;
-                    }
-                    RxBus.INSTANCE.send(new EventNewNotification(notification));
-
+                if (this._result.Success) {
+                    this._status = OmnicoreCommandHistoryStatus.SUCCESS;
                 }
-                //Log Failure to NS
-
-                if (SP.getBoolean(R.string.key_omnicore_log_failures, false)) {
-                    NSUpload.uploadError(alertText);
+                else {
+                    this._status = OmnicoreCommandHistoryStatus.FAILED;
                 }
+                OmnipodPlugin.getPlugin().getPdm().getAlertProcessor().processCommandAlerts(this);
+
+            }
+
+            this._lastUpdate = DateUtil.now();
+
+        }
+        catch (Exception e) {
+            //Couldn't process command history
+            if (L.isEnabled(L.PUMP)) {
+                _log.debug("OmnicoreCommandHistoryItem: exception " + e.getMessage()) ;
             }
         }
-
-        this._lastUpdate = DateUtil.now();
     }
 
     public long getStartTime() {
