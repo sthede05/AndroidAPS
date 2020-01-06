@@ -14,6 +14,7 @@ import info.nightscout.androidaps.plugins.pump.omnipod.OmnipodPlugin;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreRequest;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreResult;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreTempBasalRequest;
+import info.nightscout.androidaps.plugins.pump.omnipod.utils.OmniCoreStats;
 import info.nightscout.androidaps.queue.commands.Command;
 import info.nightscout.androidaps.utils.DateUtil;
 import org.slf4j.Logger;
@@ -36,6 +37,7 @@ public class OmniCoreCommandHistoryItem {
     private OmniCoreRequest _request;
     private OmnicoreCommandHistoryStatus _status;
     private Long _lastUpdate;
+    private Boolean _counted;
     private int _rssiRl;
     private int _rssiPod;
 
@@ -46,6 +48,7 @@ public class OmniCoreCommandHistoryItem {
         this._status = OmnicoreCommandHistoryStatus.NEW;
         this._request = request;
         this._result = result;
+        this._counted = false;
         //TODO: This probably shouldn't be a random number
         this._rssiRl = (int)Math.floor((Math.random() * 50) + 50);
         this._rssiPod = (int)Math.floor((Math.random() * 50) + 50);
@@ -74,8 +77,8 @@ public class OmniCoreCommandHistoryItem {
 
     public UUID getId() {return this._id; };
 
-    public String getStatus() {
-        return this._status.getDescription();
+    public OmnicoreCommandHistoryStatus getStatus() {
+        return this._status;
     }
 
     public OmniCoreRequest getRequest() {
@@ -143,14 +146,57 @@ public class OmniCoreCommandHistoryItem {
                 OmnipodPlugin.getPlugin().getPdm().getAlertProcessor().processCommandAlerts(this);
 
             }
-
             this._lastUpdate = DateUtil.now();
+
+            countStats();
+
 
         }
         catch (Exception e) {
             //Couldn't process command history
             if (L.isEnabled(L.PUMP)) {
                 _log.debug("OmnicoreCommandHistoryItem: exception " + e.getMessage()) ;
+            }
+        }
+    }
+
+    public void countStats() {
+        if (!this._counted && isFinished()) {
+            OmniCoreStats stats = OmnipodPlugin.getPlugin().getPdm().getPdmStats();
+            if (stats != null) {
+                stats.addToStat(OmniCoreStats.OmnicoreStatType.TOTALTIME,getRunTime());
+                stats.incrementStat(OmniCoreStats.OmnicoreStatType.TOTALCOMMANDS);
+                if (_status == OmnicoreCommandHistoryStatus.FAILED) {
+                    stats.incrementStat(OmniCoreStats.OmnicoreStatType.COMMANDFAIL);
+                }
+                switch (this._request.getRequestType()) {
+                    case "Bolus" :
+                        stats.incrementStat(OmniCoreStats.OmnicoreStatType.BOLUS);
+                        if (_bolusInfo != null) {
+                            if (_bolusInfo.isSMB) {
+                                stats.incrementStat(OmniCoreStats.OmnicoreStatType.BOLUSSMB);
+                            }
+                        }
+                        stats.addToStat(OmniCoreStats.OmnicoreStatType.BOLUSTIME,getRunTime());
+                        break;
+                    case "CancelBolus" :
+                        stats.incrementStat(OmniCoreStats.OmnicoreStatType.BOLUSCANCEL);
+                        break;
+                    case "SetTempBasal" :
+                        stats.incrementStat(OmniCoreStats.OmnicoreStatType.TBRTOTAL);
+                        stats.addToStat(OmniCoreStats.OmnicoreStatType.TBRTIME,getRunTime());
+                        break;
+                    case "CancelTempBasal" :
+                        stats.incrementStat(OmniCoreStats.OmnicoreStatType.TBRTOTAL);
+                        stats.incrementStat(OmniCoreStats.OmnicoreStatType.TBRCANCEL);
+                        stats.addToStat(OmniCoreStats.OmnicoreStatType.TBRTIME,getRunTime());
+                        break;
+                    case "SetProfile" :
+                        stats.incrementStat(OmniCoreStats.OmnicoreStatType.PROFILESET);
+                        stats.addToStat(OmniCoreStats.OmnicoreStatType.PROFILESETTIME,getRunTime());
+                        break;
+                }
+                this._counted = true;
             }
         }
     }
@@ -175,6 +221,13 @@ public class OmniCoreCommandHistoryItem {
         }
         return isSame;
     }
+
+    public Boolean isFinished() {
+        return (this._status == OmnicoreCommandHistoryStatus.SUCCESS
+                || this._status == OmnicoreCommandHistoryStatus.FAILED
+                || this._status == OmnicoreCommandHistoryStatus.CANCELLED);
+    }
+
 
     public long getRunTime() {
         return getEndTime() - getStartTime();

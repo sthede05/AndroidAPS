@@ -4,7 +4,7 @@
     <PreferenceCategory android:title="@string/omnicore_prefs">
     </PreferenceCategory>
     <EditTextPreference
-        android:defaultValue="Default value"
+        android:defaultValue=" "
         android:key="edit_text_preference_1"
         android:selectAllOnFocus="true"
         android:singleLine="false"
@@ -19,11 +19,11 @@
         android:title="Pod ID"
         android:enabled="false"/>
 
-   <!-- <SwitchPreference
+    <SwitchPreference
         android:defaultValue="true"
         android:key="@string/key_omnicore_log_pod_change"
         android:summary="@string/omnicore_log_pod_change_summary"
-        android:title="@string/omnicore_log_pod_change_title" />-->
+        android:title="@string/omnicore_log_pod_change_title" />
 
     <SwitchPreference
         android:defaultValue="true"
@@ -63,35 +63,60 @@
         android:inputType="number"
         android:key="@string/key_omnicore_alert_res_units"
         android:selectAllOnFocus="true"
-        android:singleLine="true"
+        android:singleLine="false"
         android:title="Low Reservoir Alert (U)" />
+
+    <SwitchPreference
+        android:title="Refire Low Reservoir Alert"
+        android:summary="Refire Low Reservoir alert every hour until pod change"
+        android:key="@string/key_omnicore_alert_res_refire"
+        android:defaultValue="true"/>
 
     <EditTextPreference
         android:defaultValue="30"
         android:key="@string/key_omnicore_alert_urgent_expire"
         android:selectAllOnFocus="true"
-        android:singleLine="true"
+        android:singleLine="false"
         android:title="How many minutes before pod expiration to issue urgent alert"
+        android:summary="How many minutes before pod expiration to issue urgent alert"
         android:inputType="number"/>
+
+    <SwitchPreference
+        android:title="Urgent Expiration Alert Audible"
+        android:summary="Play Audible Alarm on Urgent Expiration Alert"
+        android:key="@string/key_omnicore_urgent_audible"
+        android:defaultValue="false"/>
+
+    <SwitchPreference
+        android:title="Refire Urgent Expiration Alert"
+        android:summary="Refire urgent expiration alert every 20 min until pod change"
+        android:key="@string/key_omnicore_urgent_refire"
+        android:defaultValue="true"/>
 
     <EditTextPreference
         android:defaultValue="8"
         android:key="@string/key_omnicore_alert_prior_expire"
         android:selectAllOnFocus="true"
-        android:singleLine="true"
+        android:singleLine="false"
         android:title="How many hours before pod expiration to alert"
+        android:summary="How many hours before pod expiration to alert"
         android:inputType="number"/>
 
+    <SwitchPreference
+        android:title="Refire Expiration Alert"
+        android:summary="Refire expiration alert every hour until pod change"
+        android:key="@string/key_omnicore_alert_expire_refire"
+        android:defaultValue="false"/>
 
 
     <PreferenceCategory android:title="Pod Change Blackout Windows">
 
         <EditTextPreference
-            android:defaultValue=""
+            android:defaultValue=" "
             android:key="edit_text_preference_1"
             android:selectAllOnFocus="true"
             android:singleLine="false"
-            android:title="True for Hours where Pod Change is undesirable"
+            android:summary="Set to True for Hours where Pod Change is undesirable"
 
             android:enabled="false"/>
 

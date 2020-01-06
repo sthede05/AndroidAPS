@@ -1,25 +1,18 @@
 package info.nightscout.androidaps.plugins.pump.omnipod;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.AsyncTask;
-import android.util.Log;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
-import org.joda.time.DateTime;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
@@ -31,19 +24,15 @@ import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.data.DetailedBolusInfo;
 import info.nightscout.androidaps.data.Intervals;
 import info.nightscout.androidaps.data.Profile;
-import info.nightscout.androidaps.data.ProfileIntervals;
 import info.nightscout.androidaps.db.CareportalEvent;
-import info.nightscout.androidaps.db.ProfileSwitch;
 import info.nightscout.androidaps.db.Source;
 import info.nightscout.androidaps.db.TemporaryBasal;
-import info.nightscout.androidaps.interfaces.Interval;
 import info.nightscout.androidaps.plugins.configBuilder.ConfigBuilderPlugin;
-import info.nightscout.androidaps.plugins.configBuilder.ProfileFunctions;
+import info.nightscout.androidaps.plugins.general.nsclient.NSUpload;
 import info.nightscout.androidaps.plugins.general.overview.events.EventDismissNotification;
 import info.nightscout.androidaps.plugins.general.overview.events.EventNewNotification;
 import info.nightscout.androidaps.plugins.general.overview.notifications.Notification;
-import info.nightscout.androidaps.plugins.pump.common.utils.DateTimeUtil;
-import info.nightscout.androidaps.plugins.pump.omnipod.alerts.OmniCoreAlerts;
+import info.nightscout.androidaps.plugins.pump.omnipod.utils.OmniCoreAlerts;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreHistoricalResult;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreSetProfileRequest;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreBolusRequest;
@@ -57,6 +46,7 @@ import info.nightscout.androidaps.plugins.bus.RxBus;
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipodUpdateGui;
 import info.nightscout.androidaps.plugins.pump.omnipod.history.OmniCoreCommandHistory;
 import info.nightscout.androidaps.plugins.pump.omnipod.history.OmniCoreCommandHistoryItem;
+import info.nightscout.androidaps.plugins.pump.omnipod.utils.OmniCoreStats;
 import info.nightscout.androidaps.plugins.treatments.Treatment;
 import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
 import info.nightscout.androidaps.utils.DateUtil;
@@ -78,6 +68,7 @@ public class OmnipodPdm {
 
     private OmniCoreCommandHistory _commandHistory;
     private OmniCoreAlerts _alertProcessor;
+    private OmniCoreStats _pdmStats;
 
     public OmnipodPdm(Context context)
     {
@@ -85,6 +76,7 @@ public class OmnipodPdm {
         _log =  LoggerFactory.getLogger(L.PUMP);
         _commandHistory = new OmniCoreCommandHistory();
         _alertProcessor = new OmniCoreAlerts();
+        _pdmStats = new OmniCoreStats();
     }
 
     public void OnStart() {
@@ -202,13 +194,16 @@ public class OmnipodPdm {
                 }
 
                 if (currentPodID.equals("") || (! currentPodID.equals(result.PodId))) {
-                    //New Pod
                     if (L.isEnabled(L.PUMP)) {
                         _log.debug("OMNICORE: This looks like a new Pod");
                     }
                     SP.putString(R.string.key_omnipod_currentpodid,result.PodId);
                     SP.putLong(R.string.key_omnipod_pod_start_time,result.ResultDate);
-
+                    if (SP.getBoolean(R.string.key_omnicore_log_pod_change,false)) {
+                        uploadCareportalEvent(result.ResultDate,CareportalEvent.INSULINCHANGE);
+                        uploadCareportalEvent(result.ResultDate,CareportalEvent.SITECHANGE);
+                    }
+                    _pdmStats.incrementStat(OmniCoreStats.OmnicoreStatType.POD);
                 }
             }
             SP.putString(R.string.key_omnicore_last_result, _lastResult.asJson());
@@ -225,10 +220,10 @@ public class OmnipodPdm {
         }
         else
         {
-            Notification cmdFailNotification = new Notification(Notification.OMNIPY_COMMAND_STATUS,
+    /*        Notification cmdFailNotification = new Notification(Notification.OMNIPY_COMMAND_STATUS,
                     String.format(MainApp.gs(R.string.omnipod_command_state_lastcommand_failed), request.getRequestDetails()), Notification.NORMAL);
             RxBus.INSTANCE.send(new EventNewNotification(cmdFailNotification));
-
+*/
             if (_connected || !_connectionStatusKnown)
             {
                 RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_CONNECTION_STATUS));
@@ -346,27 +341,13 @@ public class OmnipodPdm {
             _lastStatusResponse = result.ResultDate;
         }
 
-        //Set and Check Alerts
-        //TODO: This should be a separate method
-
         if (_lastResult.PodRunning) {
-            if (_lastResult.ReservoirLevel < SP.getInt(R.string.key_omnicore_alert_res_units,20)) {
-                RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
-                Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, MainApp.gs(R.string.omnipod_pod_alerts_Low_reservoir), Notification.NORMAL);      //"Pod is activated and running"
-                RxBus.INSTANCE.send(new EventNewNotification(notification));
-            }
+
+            _alertProcessor.processLowInsulinAlert(_lastResult.ReservoirLevel);
 
             _alertProcessor.processExpirationAlerts(getExpirationTime(), getReservoirTime());
 
-/*            if ((System.currentTimeMillis() - getPodAge()) > (SP.getInt(R.string.key_omnicore_alert_age_hours,72) * 60 * 60 * 1000)) {
-
-                RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
-                Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, MainApp.gs(R.string.omnipod_pod_alerts_Pod_expiring_soon), Notification.NORMAL);      //"Pod is activated and running"
-                RxBus.INSTANCE.send(new EventNewNotification(notification));
-            }*/
         }
-
-
         return result;
     }
 
@@ -571,6 +552,22 @@ public class OmnipodPdm {
     }
 
 
+    private void uploadCareportalEvent(long date, String event) {
+        if (MainApp.getDbHelper().getCareportalEventFromTimestamp(date) != null)
+            return;
+        try {
+            JSONObject data = new JSONObject();
+            String enteredBy = SP.getString("careportal_enteredby", "");
+            if (!enteredBy.equals("")) data.put("enteredBy", enteredBy);
+            data.put("created_at", DateUtil.toISOString(date));
+            data.put("eventType", event);
+            NSUpload.uploadCareportalEntryToNS(data);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
     public OmniCoreCommandHistory getCommandHistory() {
         return _commandHistory;
@@ -578,6 +575,10 @@ public class OmnipodPdm {
 
     public OmniCoreAlerts getAlertProcessor() {
         return _alertProcessor;
+    }
+
+    public OmniCoreStats getPdmStats() {
+        return _pdmStats;
     }
 }
 
@@ -770,6 +771,7 @@ class HistoryProcessor extends AsyncTask<OmniCoreResult,Void,Void>
             }
             _podWasRunning = historicalResult.PodRunning;
         }
+        RxBus.INSTANCE.send(new EventOmnipodUpdateGui());
         return null;
     }
 }

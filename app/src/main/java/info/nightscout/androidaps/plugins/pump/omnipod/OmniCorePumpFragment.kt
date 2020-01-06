@@ -24,6 +24,7 @@ import info.nightscout.androidaps.plugins.bus.RxBus
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipodUpdateGui
 import info.nightscout.androidaps.plugins.pump.omnipod.history.OmniCoreCommandHistoryItem
 import info.nightscout.androidaps.plugins.pump.omnipod.history.OmnicoreCommandHistoryStatus
+import info.nightscout.androidaps.plugins.pump.omnipod.utils.OmniCoreStats
 import info.nightscout.androidaps.utils.DateUtil
 import info.nightscout.androidaps.utils.FabricPrivacy
 import info.nightscout.androidaps.utils.SP
@@ -150,7 +151,7 @@ class OmniCorePumpFragment : Fragment() {
 
         if (lastResult != null) {
             omnicorestatus_lastcommand?.text = lastResult.request.requestDetails
-            omnicorestatus_lastresult?.text = lastResult.status
+            omnicorestatus_lastresult?.text = lastResult.status.description
             omnicorestatus_lastresulttime?.text = DateUtil.minAgo(lastResult.request.requested)
 
         }
@@ -162,20 +163,42 @@ class OmniCorePumpFragment : Fragment() {
             }
         }
 
-        var historyList = ""
-        val commandHistory = omnicorePump.pdm.commandHistory.allHistory
-        var i = commandHistory.size
-        while (i-- > 0) {
-            historyList += ("Command: " + commandHistory.get(i).request.getRequestDetails()
-                    + "\nStatus: " + commandHistory.get(i).status
-                    + "\nTime: " + DateUtil.dateAndTimeString(commandHistory.get(i).request.requested)
-                    + "\nProcessing: " + commandHistory.get(i).runTime + "ms\n\n")
-            //     if ( _commandHistory.get(i).result != null) {
-            //         historyList += "\nFullResponse: " + _commandHistory.get(i).result.asJson();
-            //     }
-        }
+        var statsOut = ""
+        val stats =   omnicorePump.pdm.pdmStats
+        for (key in stats.keys) {
+            if (statsOut.length > 0) {
+                statsOut += "\n"
+            }
+            if (key == OmniCoreStats.OmnicoreStatType.STARTDATE) {
+                statsOut += "Stats Since: \t" + DateUtil.dateAndTimeString(stats.getStat(key))
+            }
+            else if (key == OmniCoreStats.OmnicoreStatType.ENDDATE) {
+                statsOut += "Stats To: \t" + DateUtil.dateAndTimeString(stats.getStat(key))
+            }
+            else if (key == OmniCoreStats.OmnicoreStatType.TOTALTIME) {
+                statsOut += "Processing Time: \t" + stats.getDurationAsString(key)
+            }
+            else {
+                statsOut += key.name + ": \t" + stats.getStat(key)
+            }
 
-        omnicorestatus_commandhistory?.text = historyList
+        }
+        omnicorestatus_stats?.text = statsOut;
+
+      //  var historyList = ""
+        val commandHistory = omnicorePump.pdm.commandHistory.allHistory
+      //  var i = commandHistory.size
+      //  while (i-- > 0) {
+      //      historyList += ("Command: " + commandHistory.get(i).request.getRequestDetails()
+      //              + "\nStatus: " + commandHistory.get(i).status
+      //              + "\nTime: " + DateUtil.dateAndTimeString(commandHistory.get(i).request.requested)
+      //              + "\nProcessing: " + commandHistory.get(i).runTime + "ms\n\n")
+      //      //     if ( _commandHistory.get(i).result != null) {
+      //      //         historyList += "\nFullResponse: " + _commandHistory.get(i).result.asJson();
+      //      //     }
+      //  }
+
+      //  omnicorestatus_commandhistory?.text = historyList
 
         omnicorestatus_history_list?.adapter?.notifyDataSetChanged()
     }
@@ -265,12 +288,12 @@ class OmniCorePumpFragment : Fragment() {
 
         fun bind(historyItem: OmniCoreCommandHistoryItem) {
             commandName?.text = historyItem.request.requestDetails
-            commandStatus?.text = historyItem.status
+            commandStatus?.text = historyItem.status.description
             when (historyItem.status) {
-                OmnicoreCommandHistoryStatus.PENDING.description -> commandStatus?.setTextColor(Color.YELLOW)
-                OmnicoreCommandHistoryStatus.SUCCESS.description -> commandStatus?.setTextColor(Color.GREEN)
-                OmnicoreCommandHistoryStatus.EXECUTED.description -> commandStatus?.setTextColor(Color.GREEN)
-                OmnicoreCommandHistoryStatus.FAILED.description -> commandStatus?.setTextColor(Color.RED)
+                OmnicoreCommandHistoryStatus.PENDING -> commandStatus?.setTextColor(Color.YELLOW)
+                OmnicoreCommandHistoryStatus.SUCCESS -> commandStatus?.setTextColor(Color.GREEN)
+                OmnicoreCommandHistoryStatus.EXECUTED -> commandStatus?.setTextColor(Color.GREEN)
+                OmnicoreCommandHistoryStatus.FAILED -> commandStatus?.setTextColor(Color.RED)
             }
             commandTime?.text = DateUtil.dateAndTimeString(historyItem.request.requested)
             commandRunTime?.text = historyItem.runTime.toString() + "ms"

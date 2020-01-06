@@ -83,28 +83,6 @@ public class OmniCoreCommandHistory {
         if (L.isEnabled(L.PUMP)) {
             _log.debug("OmniCoreCommandHistory Setting as Failed: " + request.getRequestDetails() + " at Time " + request.requested);
         }
-
-
-   /*     for (OmniCoreCommandHistoryItem h : _commandHistory) {
-            if (L.isEnabled(L.PUMP)) {
-                _log.debug("OmniCoreCommandHistory Comparing to History Entry: " + h.getStartTime());
-            }
-
-            if (h.isSameRequest(request)) {
-                if (L.isEnabled(L.PUMP)) {
-                    _log.debug("Found Matching History Entry");
-                }
-                h.setFailed();
-                break;
-            }
-
-        }*/
-
-       /* int requestIndex = getIndexOfRequest(request);
-
-        if (requestIndex > -1) {
-            _commandHistory.get(_commandHistory.indexOf(request)).setFailed();
-        }*/
        OmniCoreCommandHistoryItem hi = getMatchingHistoryItem(request);
         if (hi != null) {
             hi.setFailed();
@@ -212,7 +190,7 @@ public class OmniCoreCommandHistory {
         OmniCoreCommandHistoryItem _lastSuccess = null;
 
         for (OmniCoreCommandHistoryItem h : _commandHistory) {
-            if (h.getStatus() == "Success") {
+            if (h.getStatus() == OmnicoreCommandHistoryStatus.SUCCESS || h.getStatus() == OmnicoreCommandHistoryStatus.EXECUTED) {
                 if (_lastSuccess == null || h.getEndTime() > _lastSuccess.getEndTime()) {
                     _lastSuccess = h;
                 }
@@ -233,7 +211,7 @@ public class OmniCoreCommandHistory {
         OmniCoreCommandHistoryItem _lastFailure = null;
 
         for (OmniCoreCommandHistoryItem h : _commandHistory) {
-            if (h.getStatus() == "Failure") {
+            if (h.getStatus() == OmnicoreCommandHistoryStatus.FAILED) {
                 if (_lastFailure == null || h.getEndTime() > _lastFailure.getEndTime()) {
                     _lastFailure = h;
                 }

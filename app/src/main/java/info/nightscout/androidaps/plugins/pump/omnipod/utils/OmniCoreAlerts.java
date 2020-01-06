@@ -1,4 +1,4 @@
-package info.nightscout.androidaps.plugins.pump.omnipod.alerts;
+package info.nightscout.androidaps.plugins.pump.omnipod.utils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +13,6 @@ import info.nightscout.androidaps.plugins.general.nsclient.NSUpload;
 import info.nightscout.androidaps.plugins.general.overview.events.EventDismissNotification;
 import info.nightscout.androidaps.plugins.general.overview.events.EventNewNotification;
 import info.nightscout.androidaps.plugins.general.overview.notifications.Notification;
-import info.nightscout.androidaps.plugins.pump.omnipod.history.OmniCoreCommandHistory;
 import info.nightscout.androidaps.plugins.pump.omnipod.history.OmniCoreCommandHistoryItem;
 import info.nightscout.androidaps.plugins.pump.omnipod.history.OmnicoreCommandHistoryStatus;
 import info.nightscout.androidaps.utils.DateUtil;
@@ -24,25 +23,48 @@ public class OmniCoreAlerts {
 
     private final Logger _log;
 
-    private int _failedCommands;
+    private int _failedCommands = 0;
     protected int _failedCommandThreshold = 2;
+    private Boolean _failedCommandSentToNS;
 
     private Boolean[] _changeBlackout = new Boolean[24];
 
     private long _lastExpirationAlert = 0;
-    protected long _expirationAlertSnooze = 10 * 60 * 1000;
+    private long _expirationAlertSnooze = 20 * 60 * 1000;
+
+    private long _lastUrgentAlert = 0;
+    private long _urgentAlertSnooze = 10 * 60 * 1000;
+
+    private long _lastInsulinLowAlert = 0;
+    private long _insunlinLowAlertSnooze = 60 * 60 * 1000;
 
 
     public OmniCoreAlerts() {
         _log =  LoggerFactory.getLogger(L.PUMP);
 
-        _failedCommands = 0;
-
-
         if (L.isEnabled(L.PUMP)) {
             _log.debug("OmniCoreAlerts: Creating Change Window");
         }
 
+    }
+
+    private boolean isSnoozing(long lastAlert, long snoozeTime) {
+
+        return (System.currentTimeMillis() < lastAlert + snoozeTime);
+
+    }
+
+
+    public void processLowInsulinAlert(double reservoir) {
+        if (!isSnoozing(_lastInsulinLowAlert,_insunlinLowAlertSnooze)) {
+            if (reservoir < SP.getInt(R.string.key_omnicore_alert_res_units,20)) {
+                RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
+                Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, MainApp.gs(R.string.omnipod_pod_alerts_Low_reservoir), Notification.NORMAL);      //"Pod is activated and running"
+                RxBus.INSTANCE.send(new EventNewNotification(notification));
+                _lastInsulinLowAlert = System.currentTimeMillis();
+                _insunlinLowAlertSnooze = SP.getBoolean(R.string.key_omnicore_alert_res_refire,true)?  60 * 60 * 1000 : 10 * 60 * 60  * 1000;
+            }
+        }
     }
 
     public void processExpirationAlerts(long reservoirExpiration, long podExpiration) {
@@ -53,15 +75,21 @@ public class OmniCoreAlerts {
             //Check Urgent Alarm
             //TODO: Add to Strings
             if ((soonestExpire - currentTime) < (SP.getInt(R.string.key_omnicore_alert_urgent_expire,30) * 60 * 1000)) {
-                RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
-                Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod will expire very soon: " + DateUtil.timeString(soonestExpire), Notification.URGENT);
-                notification.soundId = R.raw.alarm;
-                RxBus.INSTANCE.send(new EventNewNotification(notification));
+                if (!isSnoozing(_lastUrgentAlert,_urgentAlertSnooze)) {
+                    RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
+                    Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, "Pod will expire very soon: " + DateUtil.timeString(soonestExpire), Notification.URGENT);
+                    if (SP.getBoolean(R.string.key_omnicore_urgent_audible,false)) {
+                        notification.soundId = R.raw.alarm;
+                    }
+                    RxBus.INSTANCE.send(new EventNewNotification(notification));
+                    _lastUrgentAlert = currentTime;
+                    _urgentAlertSnooze = SP.getBoolean(R.string.key_omnicore_urgent_refire,true) ? 20 * 60 * 1000 : 10 * 60 * 60  * 1000;
+                }
             }
+            //Check Standard Alarm
             else {
-
                 //Don't bother if we're snoozing
-                if (currentTime > _lastExpirationAlert + _expirationAlertSnooze) {
+                if (!isSnoozing(_lastExpirationAlert, _expirationAlertSnooze)) {
                     long soonestExpireWithBlackout = getAdjustedExpirationTime(soonestExpire);
                     Boolean blackoutInEffect = ((soonestExpireWithBlackout < soonestExpire) && (soonestExpireWithBlackout > currentTime));
                     long expirationPriorMS = SP.getInt(R.string.key_omnicore_alert_prior_expire, 8) * 60 * 60 * 1000;
@@ -74,11 +102,14 @@ public class OmniCoreAlerts {
                         Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, message, Notification.URGENT);
                         RxBus.INSTANCE.send(new EventNewNotification(notification));
                         _lastExpirationAlert = currentTime;
+                        _expirationAlertSnooze = SP.getBoolean(R.string.key_omnicore_alert_expire_refire,true) ? 60 * 60 * 1000 : 10 * 60 * 60  * 1000;
                     } else if (soonestExpire - currentTime < expirationPriorMS) {
                         RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_POD_STATUS));
                         Notification notification = new Notification(Notification.OMNIPY_POD_STATUS, message, Notification.URGENT);
                         RxBus.INSTANCE.send(new EventNewNotification(notification));
                         _lastExpirationAlert = currentTime;
+                        _expirationAlertSnooze = SP.getBoolean(R.string.key_omnicore_alert_expire_refire,true) ? 60 * 60 * 1000 : 10 * 60 * 60  * 1000;
+
                     }
                 }
             }
@@ -94,17 +125,18 @@ public class OmniCoreAlerts {
 
     public void processCommandAlerts(OmniCoreCommandHistoryItem hi) {
         try {
-            if (hi.getStatus() == OmnicoreCommandHistoryStatus.FAILED.getDescription()) {
+            if (hi.getStatus() == OmnicoreCommandHistoryStatus.FAILED) {
                 _failedCommands ++;
                 if (L.isEnabled(L.PUMP)) {
                     _log.debug("OmniCoreAlerts: " + hi.getRequest().getRequestDetails() + " failed. This is " + _failedCommands + " consecutive failures");
                 }
             }
-            else if (hi.getStatus() == OmnicoreCommandHistoryStatus.SUCCESS.getDescription()) {
+            else if (hi.getStatus() == OmnicoreCommandHistoryStatus.SUCCESS || hi.getStatus() == OmnicoreCommandHistoryStatus.EXECUTED) {
                 if (_failedCommands > 0) {
                     RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_COMMAND_STATUS));
                 }
                 _failedCommands = 0;
+                _failedCommandSentToNS = false;
             }
 
             if (_failedCommands > _failedCommandThreshold) {
@@ -121,8 +153,9 @@ public class OmniCoreAlerts {
                 }
                 //Log Failure to NS
 
-                if (SP.getBoolean(R.string.key_omnicore_log_failures, false)) {
+                if (SP.getBoolean(R.string.key_omnicore_log_failures, false) && !_failedCommandSentToNS) {
                     NSUpload.uploadError(alertText);
+                    _failedCommandSentToNS = true;
                 }
             }
 
