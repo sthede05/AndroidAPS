@@ -24,6 +24,7 @@ import info.nightscout.androidaps.plugins.bus.RxBus
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipodUpdateGui
 import info.nightscout.androidaps.plugins.pump.omnipod.history.OmniCoreCommandHistoryItem
 import info.nightscout.androidaps.plugins.pump.omnipod.history.OmnicoreCommandHistoryStatus
+import info.nightscout.androidaps.plugins.pump.omnipod.utils.OmniCoreStats
 import info.nightscout.androidaps.utils.DateUtil
 import info.nightscout.androidaps.utils.FabricPrivacy
 import info.nightscout.androidaps.utils.SP
@@ -125,19 +126,32 @@ class OmniCorePumpFragment : Fragment() {
             if (reservoir < SP.getInt(R.string.key_omnicore_alert_res_units, 20)) {
                 omnicorestatus_reservoir?.setTextColor(Color.RED);
             }
-
-            omnicorestatus_podage?.text = DateUtil.dateAndTimeString(omnicorePump.pdm.expirationTime) + " - Expiration"
+            val defaultColor = omnicorestatus_connectionstatus?.textColors
+           // omnicorestatus_podage?.text = DateUtil.dateAndTimeString(omnicorePump.pdm.expirationTime) + " - Expiration"
+            omnicorestatus_podage?.text = String.format(MainApp.gs(R.string.omnicore_tab_expire_time),DateUtil.dateAndTimeString(omnicorePump.pdm.expirationTime))
             if (omnicorePump.pdm.expirationTime - System.currentTimeMillis() < SP.getInt(R.string.key_omnicore_alert_prior_expire, 8) * 60 * 60 * 1000) {
                 omnicorestatus_podage?.setTextColor(Color.RED)
             }
+            else {
+                omnicorestatus_podage?.setTextColor(defaultColor)
+            }
 
-            omnicorestatus_reservoir_empty?.text = DateUtil.dateAndTimeString(omnicorePump.pdm.reservoirTime) + " - Reservoir Empty"
+
+            //omnicorestatus_reservoir_empty?.text =  DateUtil.dateAndTimeString(omnicorePump.pdm.reservoirTime) + " - Reservoir Empty"
+            omnicorestatus_reservoir_empty?.text =  String.format(MainApp.gs(R.string.omnicore_tab_expire_reservoir),DateUtil.dateAndTimeString(omnicorePump.pdm.expirationTime))
+
             if (omnicorePump.pdm.reservoirTime - System.currentTimeMillis() < SP.getInt(R.string.key_omnicore_alert_prior_expire, 8) * 60 * 60 * 1000) {
                 omnicorestatus_reservoir_empty?.setTextColor(Color.RED)
+            }
+            else {
+                omnicorestatus_reservoir_empty?.setTextColor(defaultColor)
             }
             omnicorestatus_podchange?.text = DateUtil.dateAndTimeString(omnicorePump.pdm.blackoutExpirationTime)
             if (omnicorePump.pdm.blackoutExpirationTime - System.currentTimeMillis() < SP.getInt(R.string.key_omnicore_alert_prior_expire, 8) * 60 * 60 * 1000) {
                 omnicorestatus_podchange?.setTextColor(Color.RED)
+            }
+            else {
+                omnicorestatus_podchange?.setTextColor(defaultColor)
             }
         }
 
@@ -145,37 +159,47 @@ class OmniCorePumpFragment : Fragment() {
             omnicorestatus_laststatustime?.text = DateUtil.minAgo(omnicorePump.pdm.lastStatusResponse)
         }
         else {
-            omnicorestatus_laststatustime?.text = "Never"
+            omnicorestatus_laststatustime?.text = MainApp.gs(R.string.omnicore_tab_last_status_never)
         }
 
         if (lastResult != null) {
             omnicorestatus_lastcommand?.text = lastResult.request.requestDetails
-            omnicorestatus_lastresult?.text = lastResult.status
-            omnicorestatus_lastresulttime?.text = DateUtil.minAgo(lastResult.request.requested)
-
+            omnicorestatus_lastresult?.text = lastResult.status.description + "\n(" + DateUtil.minAgo(lastResult.request.requested) + ")"
+         //   omnicorestatus_lastresulttime?.text = DateUtil.minAgo(lastResult.request.requested)
         }
 
         if (lastSuccessfulResult != null) {
-            omnicorestatus_lastsuccess_command?.text = lastSuccessfulResult.request.requestDetails
-            if (lastSuccessfulResult.result != null) {
-                omnicorestatus_lastsuccess_time?.text = DateUtil.minAgo(lastSuccessfulResult.result.ResultDate)
+            omnicorestatus_lastsuccess_command?.text = lastSuccessfulResult.request.requestDetails + "\n(" + DateUtil.minAgo(lastSuccessfulResult.result.ResultDate) +")"
+      //      if (lastSuccessfulResult.result != null) {
+      //          omnicorestatus_lastsuccess_time?.text = DateUtil.minAgo(lastSuccessfulResult.result.ResultDate)
+      //      }
+        }
+
+        var statsOut = ""
+        val stats =   omnicorePump.pdm.pdmStats
+        for (key in stats.keys) {
+            val label = key.description
+            var value = ""
+            if (statsOut.length > 0) {
+                statsOut += "\n"
             }
-        }
+            if (key == OmniCoreStats.OmnicoreStatType.STARTDATE
+                    || key == OmniCoreStats.OmnicoreStatType.ENDDATE) {
+               value = DateUtil.dateAndTimeString(stats.getStat(key))
+            }
+            else if (key == OmniCoreStats.OmnicoreStatType.TOTALTIME
+                    || key == OmniCoreStats.OmnicoreStatType.BOLUSTIME
+                    || key == OmniCoreStats.OmnicoreStatType.PROFILESETTIME
+                    || key == OmniCoreStats.OmnicoreStatType.TBRTIME) {
+                value = stats.getDurationAsString(key)
+            }
+            else {
+                value = stats.getStat(key).toString()
+            }
+            statsOut += key.description + ": \t" + value
 
-        var historyList = ""
-        val commandHistory = omnicorePump.pdm.commandHistory.allHistory
-        var i = commandHistory.size
-        while (i-- > 0) {
-            historyList += ("Command: " + commandHistory.get(i).request.getRequestDetails()
-                    + "\nStatus: " + commandHistory.get(i).status
-                    + "\nTime: " + DateUtil.dateAndTimeString(commandHistory.get(i).request.requested)
-                    + "\nProcessing: " + commandHistory.get(i).runTime + "ms\n\n")
-            //     if ( _commandHistory.get(i).result != null) {
-            //         historyList += "\nFullResponse: " + _commandHistory.get(i).result.asJson();
-            //     }
         }
-
-        omnicorestatus_commandhistory?.text = historyList
+        omnicorestatus_stats?.text = statsOut;
 
         omnicorestatus_history_list?.adapter?.notifyDataSetChanged()
     }
@@ -265,12 +289,12 @@ class OmniCorePumpFragment : Fragment() {
 
         fun bind(historyItem: OmniCoreCommandHistoryItem) {
             commandName?.text = historyItem.request.requestDetails
-            commandStatus?.text = historyItem.status
+            commandStatus?.text = historyItem.status.description
             when (historyItem.status) {
-                OmnicoreCommandHistoryStatus.PENDING.description -> commandStatus?.setTextColor(Color.YELLOW)
-                OmnicoreCommandHistoryStatus.SUCCESS.description -> commandStatus?.setTextColor(Color.GREEN)
-                OmnicoreCommandHistoryStatus.EXECUTED.description -> commandStatus?.setTextColor(Color.GREEN)
-                OmnicoreCommandHistoryStatus.FAILED.description -> commandStatus?.setTextColor(Color.RED)
+                OmnicoreCommandHistoryStatus.PENDING -> commandStatus?.setTextColor(Color.YELLOW)
+                OmnicoreCommandHistoryStatus.SUCCESS -> commandStatus?.setTextColor(Color.GREEN)
+                OmnicoreCommandHistoryStatus.EXECUTED -> commandStatus?.setTextColor(Color.GREEN)
+                OmnicoreCommandHistoryStatus.FAILED -> commandStatus?.setTextColor(Color.RED)
             }
             commandTime?.text = DateUtil.dateAndTimeString(historyItem.request.requested)
             commandRunTime?.text = historyItem.runTime.toString() + "ms"
