@@ -126,19 +126,29 @@ class OmniCorePumpFragment : Fragment() {
             if (reservoir < SP.getInt(R.string.key_omnicore_alert_res_units, 20)) {
                 omnicorestatus_reservoir?.setTextColor(Color.RED);
             }
-
+            val defaultColor = omnicorestatus_connectionstatus?.textColors
             omnicorestatus_podage?.text = DateUtil.dateAndTimeString(omnicorePump.pdm.expirationTime) + " - Expiration"
             if (omnicorePump.pdm.expirationTime - System.currentTimeMillis() < SP.getInt(R.string.key_omnicore_alert_prior_expire, 8) * 60 * 60 * 1000) {
                 omnicorestatus_podage?.setTextColor(Color.RED)
             }
+            else {
+                omnicorestatus_podage?.setTextColor(defaultColor)
+            }
+
 
             omnicorestatus_reservoir_empty?.text = DateUtil.dateAndTimeString(omnicorePump.pdm.reservoirTime) + " - Reservoir Empty"
             if (omnicorePump.pdm.reservoirTime - System.currentTimeMillis() < SP.getInt(R.string.key_omnicore_alert_prior_expire, 8) * 60 * 60 * 1000) {
                 omnicorestatus_reservoir_empty?.setTextColor(Color.RED)
             }
+            else {
+                omnicorestatus_reservoir_empty?.setTextColor(defaultColor)
+            }
             omnicorestatus_podchange?.text = DateUtil.dateAndTimeString(omnicorePump.pdm.blackoutExpirationTime)
             if (omnicorePump.pdm.blackoutExpirationTime - System.currentTimeMillis() < SP.getInt(R.string.key_omnicore_alert_prior_expire, 8) * 60 * 60 * 1000) {
                 omnicorestatus_podchange?.setTextColor(Color.RED)
+            }
+            else {
+                omnicorestatus_podchange?.setTextColor(defaultColor)
             }
         }
 

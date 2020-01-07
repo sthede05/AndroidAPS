@@ -201,7 +201,7 @@ public class OmnipodPdm {
                     SP.putLong(R.string.key_omnipod_pod_start_time,result.ResultDate);
                     if (SP.getBoolean(R.string.key_omnicore_log_pod_change,false)) {
                         uploadCareportalEvent(result.ResultDate,CareportalEvent.INSULINCHANGE);
-                        uploadCareportalEvent(result.ResultDate,CareportalEvent.SITECHANGE);
+                        uploadCareportalEvent(result.ResultDate + 10000,CareportalEvent.SITECHANGE);
                     }
                     _pdmStats.incrementStat(OmniCoreStats.OmnicoreStatType.POD);
                 }
