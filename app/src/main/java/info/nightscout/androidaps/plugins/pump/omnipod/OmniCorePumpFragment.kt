@@ -118,7 +118,13 @@ class OmniCorePumpFragment : Fragment() {
         val lastResult = omnicorePump.pdm.commandHistory.lastCommand
         val lastSuccessfulResult = omnicorePump.pdm.commandHistory.lastSuccess
 
-        omnicorestatus_podid?.text= omnicorePump.serialNumber()
+
+        if (omnicorePump.serialNumber() != "NO POD") {
+            omnicorestatus_podid?.text = omnicorePump.serialNumber()
+            }
+            else {
+            omnicorestatus_podid?.text=MainApp.gs(R.string.key_no_pod)
+        }
         omnicorestatus_connectionstatus?.text = omnicorePump.pdm.podStatusText
         if (omnicorePump.serialNumber() != "NO POD") {
             val reservoir = omnicorePump.pdm.GetReservoirLevel()
