@@ -1235,7 +1235,7 @@ L\'ENSEMBLE DES RISQUES LIÉS À LA QUALITÉ ET À LA PERFORMANCE DU PROGRAMME S
     <string name="omnipod_pod_status_status">"État: "</string>
     <string name="omnipod_pod_status_Inactive">Inactif</string>
     <string name="omnipod_pod_status_Running">Actif</string>
-    <string name="omnipod_pod_status_omnipod_pod_status_Running_with_low_insulin_below50U">Actif avec réservoir faible (&lt;50u)</string>
+    <string name="omnipod_pod_status_omnipod_pod_status_Running_with_low_insulin_below50U">Actif avec réservoir faible (inf. à 50u)</string>
     <string name="omnipod_pod_status_Not_yet_running">Pas encore actif</string>
     <string name="omnipod_pod_status_POD_FAULTED">POD EN DEFAUT</string>
     <string name="omnipod_pod_status_Total_insulin_delivered">"Total insuline délivrée: "</string>
@@ -1438,7 +1438,7 @@ L\'ENSEMBLE DES RISQUES LIÉS À LA QUALITÉ ET À LA PERFORMANCE DU PROGRAMME S
     <string name="rileylink_state_pc_error">Problème communication avec la pompe</string>
     <string name="rileylink_state_connected">Connecté</string>
     <!-- RL Errors -->
-    <string name="rileylink_error_not_rl">L\'appareil n\'est pas RileyLink</string>
+    <string name="rileylink_error_not_rl">L\'appareil n\'est pas un RileyLink</string>
     <string name="rileylink_error_unreachable">RileyLink non accessible</string>
     <string name="rileylink_error_bt_disabled">Bluetooth est désactivé</string>
     <string name="rileylink_error_no_bt_adapter">Aucun adaptateur Bluetooth</string>
@@ -1535,4 +1535,23 @@ L\'ENSEMBLE DES RISQUES LIÉS À LA QUALITÉ ET À LA PERFORMANCE DU PROGRAMME S
     <string name="format_carbs">%1$dg</string>
     <string name="common_on">On</string>
     <string name="common_off">Off</string>
+    <string name="omnicore_button">Bouton OmniCore</string>
+    <string name="omnicore_connected">Connecté à OmniCore</string>
+    <string name="omnicore_label">OmniCore</string>
+    <string name="omnicore_log_failures">Erreurs de log dans NS</string>
+    <string name="omnicore_log_failures_summary">Erreurs de commande de log dans NS</string>
+    <string name="omnicore_log_pod_change_summary">Changement de pod automatique dans le CarePortal</string>
+    <string name="omnicore_log_pod_change_title">Log de changement de pod</string>
+    <string name="omnicore_not_connected">Pas connecté à OmniCore</string>
+    <string name="omnicore_prefs">Paramètres OmniCore</string>
+    <string name="omnicore_settings">Ouvrez OmniCore pour configurer votre Omnipod</string>
+    <string name="omnipod_command_cancelbolus">Annulation Bolus</string>
+    <string name="omnipod_command_canceltbr">Annulation basale temporaire</string>
+    <string name="omnipod_command_getstatus">Obtenir l\'état</string>
+    <string name="omnipod_command_setprofile">Définir Profil</string>
+    <string name="omnipod_command_state_command_failed">La commande Omnicore %s a échoué</string>
+    <string name="omnipod_command_state_lastcommand_failed">Dernière erreur: %s</string>
+    <string name="omnipod_command_tbr">Basale temporaire %1$.2fU/h pendant %2$.2fh</string>
+    <string name="omnipod_pod_alerts_Pod_expiring_soon_window">Le pod expire bientôt</string>
+    <string name="omnipod_pod_status_Running_with_low_insulin_below50U">En cours avec réservoir faible (inf. à 50u)</string>
 </resources>
