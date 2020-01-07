@@ -177,19 +177,31 @@ public class OmniCoreCommandHistoryItem {
                                 stats.incrementStat(OmniCoreStats.OmnicoreStatType.BOLUSSMB);
                             }
                         }
+                        if (_status == OmnicoreCommandHistoryStatus.FAILED) {
+                            stats.incrementStat(OmniCoreStats.OmnicoreStatType.BOLUSFAIL);
+                        }
                         stats.addToStat(OmniCoreStats.OmnicoreStatType.BOLUSTIME,getRunTime());
                         break;
                     case "CancelBolus" :
                         stats.incrementStat(OmniCoreStats.OmnicoreStatType.BOLUSCANCEL);
+                        if (_status == OmnicoreCommandHistoryStatus.FAILED) {
+                            stats.incrementStat(OmniCoreStats.OmnicoreStatType.BOLUSFAIL);
+                        }
                         break;
                     case "SetTempBasal" :
                         stats.incrementStat(OmniCoreStats.OmnicoreStatType.TBRTOTAL);
                         stats.addToStat(OmniCoreStats.OmnicoreStatType.TBRTIME,getRunTime());
+                        if (_status == OmnicoreCommandHistoryStatus.FAILED) {
+                            stats.incrementStat(OmniCoreStats.OmnicoreStatType.TBRFAIL);
+                        }
                         break;
                     case "CancelTempBasal" :
                         stats.incrementStat(OmniCoreStats.OmnicoreStatType.TBRTOTAL);
                         stats.incrementStat(OmniCoreStats.OmnicoreStatType.TBRCANCEL);
                         stats.addToStat(OmniCoreStats.OmnicoreStatType.TBRTIME,getRunTime());
+                        if (_status == OmnicoreCommandHistoryStatus.FAILED) {
+                            stats.incrementStat(OmniCoreStats.OmnicoreStatType.TBRFAIL);
+                        }
                         break;
                     case "SetProfile" :
                         stats.incrementStat(OmniCoreStats.OmnicoreStatType.PROFILESET);

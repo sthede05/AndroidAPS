@@ -233,17 +233,17 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
                 RxBus.INSTANCE.send(new EventNewNotification(notification));
                 if (warnUser) {
                     RxBus.INSTANCE.send(new EventNewNotification(new Notification(Notification.OMNIPY_TEMP_BASAL_CANCELED,
-                            "Temporary basal canceled before setting a new basal profile. Please set temporary basal again." , Notification.NORMAL, 60)));
+                            MainApp.gs(R.string.omnipod_basal_cancelled_profile) , Notification.NORMAL, 60)));
                 }
             } else {
                 r.comment = getCommentString(result);
                 RxBus.INSTANCE.send(new EventDismissNotification(Notification.PROFILE_SET_OK));
                 RxBus.INSTANCE.send(new EventDismissNotification(Notification.PROFILE_SET_FAILED));
-                Notification notification = new Notification(Notification.PROFILE_SET_FAILED, "Basal profile not updated", Notification.NORMAL, 60);
+                Notification notification = new Notification(Notification.PROFILE_SET_FAILED, MainApp.gs(R.string.omnipod_basal_not_updated), Notification.NORMAL, 60);
                 RxBus.INSTANCE.send(new EventNewNotification(notification));
                 if (warnUser) {
                     RxBus.INSTANCE.send(new EventNewNotification(new Notification(Notification.OMNIPY_TEMP_BASAL_CANCELED,
-                            "Temporary basal canceled trying to set a new basal profile. Please set temporary basal again." , Notification.NORMAL, 60)));
+                            MainApp.gs(R.string.omnipod_basal_cancelled_profile) , Notification.NORMAL, 60)));
                 }
             }
         }
@@ -251,7 +251,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
         {
             if (warnUser) {
                 RxBus.INSTANCE.send(new EventNewNotification(new Notification(Notification.OMNIPY_TEMP_BASAL_CANCELED,
-                        "Temporary basal canceled trying to set a new basal profile. Please set temporary basal again." , Notification.NORMAL, 60)));
+                        MainApp.gs(R.string.omnipod_basal_cancelled_profile) , Notification.NORMAL, 60)));
             }
         }
 
@@ -371,7 +371,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
             Double supposedToDeliver = _runningBolusInfo.insulin;
             if (canceled <= 0d) {
                 if (bolusingEvent != null)
-                    bolusingEvent.setStatus(String.format("Couldn't stop bolus in time, delivered: %f.2u", supposedToDeliver));
+                    bolusingEvent.setStatus(String.format(MainApp.gs(R.string.omnipod_bolus_not_cancelled), supposedToDeliver));
             } else {
                 if (bolusingEvent != null)
                     bolusingEvent.setStatus(MainApp.gs(R.string.bolusstopped));
@@ -383,7 +383,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
             }
             SystemClock.sleep(100);
             if (canceled > 0d)
-                _runningBolusInfo.notes = String.format("Delivery stopped at %f.2u. Original bolus request was: %f.2u", supposedToDeliver - canceled, supposedToDeliver);
+                _runningBolusInfo.notes = String.format(MainApp.gs(R.string.omnipod_bolus_cancelled), supposedToDeliver - canceled, supposedToDeliver);
 
             //if (result.Success) {
                 //_runningBolusInfo.pumpId = getHistoryId(result);
@@ -633,7 +633,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
         } catch (ActivityNotFoundException e) {
             new AlertDialog.Builder(context)
                     .setMessage(R.string.error_starting_omnicore)
-                    .setPositiveButton("OK", null)
+                    .setPositiveButton(MainApp.gs(R.string.ok), null)
                     .show();
             return false;
         }

@@ -148,8 +148,8 @@ public class OmnipodPdm {
         if (L.isEnabled(L.PUMP)) {
             _log.debug("OMNICORE getResult() for request: " + request.getRequestDetails());
         }
-        SP.putString(R.string.key_omnicore_last_command, request.getRequestDetails());
-        SP.putString(R.string.key_omnicore_last_commandstate, "Pending");
+      //  SP.putString(R.string.key_omnicore_last_command, request.getRequestDetails());
+      //  SP.putString(R.string.key_omnicore_last_commandstate, "Pending");
 
 
         OmniCoreResult result = request.getRemoteResult(_lastResult.LastResultDateTime);
@@ -207,23 +207,20 @@ public class OmnipodPdm {
                 }
             }
             SP.putString(R.string.key_omnicore_last_result, _lastResult.asJson());
-            if (result.Success) {
-//                SP.putString(R.string.key_omnicore_last_successful_result, _lastResult.asJson());
+       /*     if (result.Success) {
+                SP.putString(R.string.key_omnicore_last_successful_result, _lastResult.asJson());
                 SP.putString(R.string.key_omnicore_last_commandstate, "Success");
 
             }
             else {
                 SP.putString(R.string.key_omnicore_last_commandstate, "Failure");
 
-            }
+            }*/
             _lastResult = result;
         }
         else
         {
-    /*        Notification cmdFailNotification = new Notification(Notification.OMNIPY_COMMAND_STATUS,
-                    String.format(MainApp.gs(R.string.omnipod_command_state_lastcommand_failed), request.getRequestDetails()), Notification.NORMAL);
-            RxBus.INSTANCE.send(new EventNewNotification(cmdFailNotification));
-*/
+
             if (_connected || !_connectionStatusKnown)
             {
                 RxBus.INSTANCE.send(new EventDismissNotification(Notification.OMNIPY_CONNECTION_STATUS));
@@ -234,7 +231,7 @@ public class OmnipodPdm {
             _connectionStatusKnown = true;
             _connected = false;
             _commandHistory.setRequestFailed(request);
-            SP.putString(R.string.key_omnicore_last_commandstate, MainApp.gs(R.string.omnicore_not_connected));
+      //      SP.putString(R.string.key_omnicore_last_commandstate, MainApp.gs(R.string.omnicore_not_connected));
         }
 
         RxBus.INSTANCE.send(new EventOmnipodUpdateGui());
@@ -432,7 +429,7 @@ public class OmnipodPdm {
 
     public String GetStatusShort() {
         if (_lastResult.PodRunning) {
-                return "OK";
+                return MainApp.gs(R.string.ok);
         }
         return "NO POD";
     }
@@ -494,13 +491,7 @@ public class OmnipodPdm {
     }
 
     public long getReservoirTime() {
-        _log.debug("OMNICORE Finding BaseBasal");
-
         double insulinRemaining = GetReservoirLevel();
-
-        _log.debug("OMNICORE getReservoirTime: " + insulinRemaining + "U Remaining");
-
-
         if (insulinRemaining > 50) {
             _log.debug("OMNICORE getReservoirTime: More than 50U");
             return getExpirationTime();
@@ -512,35 +503,26 @@ public class OmnipodPdm {
                 //loop through profile adding up base basal. Stop when we hit insulinRemaining
                 double totalInsulin = 0;
                 double currentRate = GetBaseBasalRate();
-                _log.debug("OMNICORE getReservoirTime: Current Basal Rate: " + currentRate);
 
                 long currentTime = System.currentTimeMillis();
-                _log.debug("OMNICORE getReservoirTime: Current Time: " + DateUtil.dateAndTimeString(currentTime));
 
                 long timeRemainingInHour = (1000 * 60 * 60) - currentTime % (1000 * 60 * 60);
-                _log.debug("OMNICORE getReservoirTime: Time Remaining in Hour: " + timeRemainingInHour + "ms - " +timeRemainingInHour/(1000  * 60) + "Min");
 
                 long startOfHour = currentTime - timeRemainingInHour;
-                _log.debug("OMNICORE getReservoirTime: Time Rounded to hour:" + DateUtil.dateAndTimeString(startOfHour));
 
                 totalInsulin += currentRate * timeRemainingInHour/(1000 * 60 * 60);
                 _log.debug("OMNICORE getReservoirTime: Basal for this hour: " +totalInsulin);
 
                 long timeToCheck = startOfHour + (1000 * 60 * 60) + 1;
                 while(totalInsulin < insulinRemaining) {
-                    _log.debug("OMNICORE getReservoirTime: Checking Time: " + DateUtil.dateAndTimeString(timeToCheck));
                     currentRate = GetBaseBasalRate(timeToCheck);
-                    _log.debug("OMNICORE getReservoirTime: Basal Rate: " + currentRate);
                     totalInsulin += currentRate;
-                    _log.debug("OMNICORE getReservoirTime: Total Basal now: " + totalInsulin);
                     timeToCheck += (1000 * 60 * 60);
                 }
                 _log.debug("OMNICORE getReservoirTime: Basal will exceed reservoir by: " + DateUtil.dateAndTimeString(timeToCheck));
 
                 return timeToCheck - (1000 * 60 * 60);
-
-
-            }
+        }
             catch(Exception e) {
                 return getExpirationTime();
             }
@@ -667,7 +649,8 @@ class HistoryProcessor extends AsyncTask<OmniCoreResult,Void,Void>
                         detailedBolusInfo.pumpId = historicalResult.ResultDate;
                         detailedBolusInfo.insulin = p1.ImmediateUnits.doubleValue();
                         //detailedBolusInfo.isSMB = false;
-                        detailedBolusInfo.isSMB = (hi != null && hi.getBolusInfo() != null) ? hi.getBolusInfo().isSMB : false;
+                        detailedBolusInfo.isSMB = (hi != null && hi.getBolusInfo() != null) && hi.getBolusInfo().isSMB;
+
                         if (hi != null && hi.getBolusInfo() != null && hi.getBolusInfo().carbTime == 0) {
                             detailedBolusInfo.carbs = hi.getBolusInfo().carbs;
                             detailedBolusInfo.carbTime = 0;

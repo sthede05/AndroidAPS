@@ -1407,41 +1407,130 @@
     <string name="preconditions">Preconditions:</string>
 
     <!-- OmniCore -->
-
+    <!-- Strings -->
     <string name="omnipod">OmniCore</string>
     <string name="omnipod_shortname">Omni</string>
     <string name="omnipod_description">Plugin to connect to OmniCore</string>
     <string name="omnicore_package_name">net.balya.OmniCore.Mobile.Android</string>
-
-    <!-- Preferences -->
+    <string name="overview_omnicore">OmniCore</string>
+    <string name="error_starting_omnicore">Error starting OmniCore. Make sure it is installed.</string>
     <string name="omnicore_prefs">Omnipod Settings</string>
-
-    <string name="omnicore_settings">Open the OmniCore app to configure your Omnipod</string>
     <string name="show_omnicore_button_summary">Enable Omnicore button in Overview tab</string>
-    <string name="key_show_omnicore_button" translatable="false">show_omnicore_button</string>
     <string name="omnicore_button">OmniCore Button</string>
+    <string name="omnicore_log_failures">Log Failures in NS</string>
     <string name="omnicore_log_failures_summary">Log Command Failures to Nightscout</string>
+    <string name="omnicore_log_failures_audible">Play Audible Alarm on Command Failure</string>
+    <string name="omnicore_log_status_requests">Record Status Requests</string>
+    <string name="omnicore_log_status_request_summary">Record Status Requests in Command History</string>
+    <string name="omnicore_log_pod_change_summary">Automatically Log Pod Changes to Care Portal</string>
+    <string name="omnicore_log_pod_change_title">Log Pod Changes</string>
+    <string name="omnicore_alerts_screen">Alerts and Notifications</string>
+    <string name="omnicore_low_reservoir_alert_prefs">Low Reservoir Alert</string>
+    <string name="omnicore_low_reservoir_alert_label">Low Reservoir Alert (U)</string>
+    <string name="omnicore_low_reservoir_alert_refire_label">Refire Low Reservoir Alert</string>
+    <string name="omnicore_low_reservoir_alert_refire_summary">Refire Low Reservoir alert every hour until pod change</string>
+    <string name="omnicore_expiration_alert_prefs">Expiration Alert</string>
+    <string name="omnicore_expiration_alert_label">Alert before pod expiration (hours)</string>
+    <string name="omnicore_expiration_alert_refire_label">Refire Expiration Alert</string>
+    <string name="omnicore_expiration_alert_refire_summary">Refire Expiration alert every hour until pod change</string>
+    <string name="omnicore_urgent_expiration_alert_prefs">Urgent Expiration Alert</string>
+    <string name="omnicore_urgent_expiration_alert_label">Alert before pod screamer (minutes)</string>
+    <string name="omnicore_urgent_expiration_alert_refire_label">Refire Urgent Expiration Alert</string>
+    <string name="omnicore_urgent_expiration_alert_refire_summary">Refire Urgent Expiration alert every 20 minutes until pod expires</string>
+    <string name="omnicore_urgent_expiration_alert_audible_label">Play Audible Alarm on Urgent Alert</string>
+    <string name="omncore_blackout_window_prefs">Define Pod Change Windows</string>
+    <string name="omnicore_connected">Connected to OmniCore</string>
+    <string name="omnicore_not_connected">Not connected to OmniCore</string>
+    <string name="omnipod_pod_status_Not_yet_running">Not yet running</string>
+    <string name="omnipod_pod_status_Running">Running</string>
+    <string name="omnipod_pod_alerts_Low_reservoir">Low reservoir</string>
+
+    <string name="omnipod_pod_state_POD_IDs_has_been_removed">Pod %s has been removed.</string>
+    <string name="omnipod_pod_state_Pod_is_activated_and_running">Pod is activated and running</string>
+    <string name="omnipod_basal_cancelled_profile">Temporary basal canceled before setting a new basal profile. Please set temporary basal again.</string>
+    <string name="omnipod_basal_not_updated">Basal profile not updated</string>
+    <string name="omnipod_bolus_not_cancelled">Couldn\'t stop bolus in time, delivered: %f.2u</string>
+    <string name="omnipod_bolus_cancelled">Delivery stopped at %f.2u. Original bolus request was: %f.2u</string>
+    <string name="omnipod_command_state_command_failed">%s Omnicore commands failed.</string>
+    <string name="omnipod_command_state_lastcommand_failed">Last failure: %s</string>
+    <string name="omnicore_expire_soon">Pod will expire very soon: %s</string>
+    <string name="omnicore_reservoir_will_expire">Reservoir will be empty by %s</string>
+    <string name="omnicore_pod_will_expire">Pod will expire by %s</string>
+    <string name="omnicore_pod_change_window_ends">Pod change window ends %s</string>
+    <string name="omnipod_command_bolus">Bolus %1$.2fU</string>
+    <string name="omnipod_command_cancelbolus">Cancel Bolus</string>
+    <string name="omnipod_command_tbr">Temp Basal %1$.2fU/h for %2$.2fh</string>
+    <string name="omnipod_command_canceltbr">Cancel Temp Basal</string>
+    <string name="omnipod_command_setprofile">Set Basal Profile</string>
+    <string name="omnipod_command_getstatus">Get Status</string>
+    <string name="omnicore_tab_status">Omnicore Status</string>
+    <string name="omnicore_tab_test_connection_button">Test Omnicore Connection</string>
+    <string name="omnicore_tab_oc_state">Omnicore State</string>
+    <string name="omnicore_tab_podid">Pod ID</string>
+    <string name="omnicore_tab_reservoir">Reservoir</string>
+    <string name="omnicore_tab_expire_reservoir">%s - Reservoir Empty</string>
+    <string name="omnicore_tab_expire_time">%s - Pod Timeout</string>
+    <string name="omnicore_tab_expiration">Pod Expiration</string>
+    <string name="omnicore_tab_change_by">Change Pod By</string>
+    <string name="omnicore_tab_last_status">Last Status Update</string>
+    <string name="omnicore_tab_last_status_never">Never</string>
+    <string name="omnicore_tab_commands_header">Omnicore Commands</string>
+    <string name="omnicore_tab_launch_oc_button">Launch Omnicore</string>
+    <string name="omnicore_tab_recent_commands">Recent Commands</string>
+    <string name="omnicore_tab_last_command">Last Command</string>
+    <string name="omnicore_tab_last_result">Last Result</string>
+    <string name="omnicore_tab_last_successful_command">Last Successful Command</string>
+    <string name="omnicore_tab_command_history">Command History</string>
+
+    <string name="omnicore_stat_tbrtotal">Total Temp Basals</string>
+    <string name="omnicore_stat_tbrhigh">High Temp Basals</string>
+    <string name="omnicore_stat_tbrlow">Low Temp Basals</string>
+    <string name="omnicore_stat_tbrzero">Zero Temp Basals</string>
+    <string name="omnicore_stat_tbrcancel">Cancel Temp Basals</string>
+    <string name="omnicore_stat_tbrtime">Time Processing TBRs</string>
+    <string name="omnicore_stat_bolus">Total Boluses</string>
+    <string name="omnicore_stat_bolussmb">SMB Boluses</string>
+    <string name="omnicore_stat_bolustime">Time Processing Boluses</string>
+    <string name="omnicore_stat_boluscancel">Cancelled Boluses</string>
+    <string name="omnicore_stat_pod">Pods Used</string>
+    <string name="omnicore_stat_profileset">Profile Changes</string>
+    <string name="omnicore_stat_profilesettime">Time Processing Profiles Changes</string>
+    <string name="omnicore_stat_startdate">Stats Collected Since</string>
+    <string name="omnicore_stat_enddate">Stats Collected To</string>
+    <string name="omnicore_stat_commandfail">Failed Commands</string>
+    <string name="omnicore_stat_tbrfail">Failed Temp Basals</string>
+    <string name="omnicore_stat_bolusfail">Failed Boluses</string>
+    <string name="omnicore_stat_totaltime">Total Time Processing</string>
+    <string name="omnicore_stat_totalcommands">Total Commands</string>
+    <string name="omnicore_command_status_new">New</string>
+    <string name="omnicore_command_status_pending">Pending</string>
+    <string name="omnicore_command_status_success">Success</string>
+    <string name="omnicore_command_status_failed">Failed</string>
+    <string name="omnicore_command_status_cancelled">Cancelled</string>
+    <string name="omnicore_command_status_executed">Executed</string>
+    <string name="omnicore_command_status_unknown">Unknown</string>
+
+
+    <string name="omnicore_duration_format">%dd %dh %dm %ds</string>
+    <!-- Preferences -->
+    <string name="key_omnicore_stats" translatable="false">omnicore_stats</string>
+    <string name="key_omnicore_last_result">No Result</string>
+    <string name="key_omnipod_currentpodid" translatable="false">omnipod_currentpodid</string>
+    <string name="key_omnipod_pod_start_time" translatable="false">omnipod_currentpodstart</string>
+
+    <string name="key_show_omnicore_button" translatable="false">show_omnicore_button</string>
     <string name="key_omnicore_log_failures" translatable="false">log_omnicore_command_failures</string>
-    <string name="key_omnicore_failure_alerttype" translatable="false">omnicore_command_failure_alert_type</string>
     <string name="key_omnicore_failure_audible" translatable="false">audible_omnicore_alarm</string>
     <string name="key_omnicore_status_history" translatable="false">omnicore_status_in_history</string>
     <string name="key_omnicore_alert_age_hours" translatable="false">omnipod_expire_alert_hours</string>
     <string name="key_omnicore_alert_res_units" translatable="false">omnipod_expire_alert_units</string>
     <string name="key_omnicore_alert_res_refire" translatable="false">omnipod_res_alert_refire</string>
-
     <string name="key_omnicore_alert_prior_expire" translatable="false">omnipod_expire_alert_prior</string>
     <string name="key_omnicore_alert_expire_refire" translatable="false">omnipod_expire_alert_refire</string>
     <string name="key_omnicore_alert_urgent_expire" translatable="false">omnipod_expire_alert_urgent</string>
     <string name="key_omnicore_urgent_audible" translatable="false">omnipod_alert_urgent_audible</string>
     <string name="key_omnicore_urgent_refire" translatable="false">omnipod_alert_urgent_refire</string>
-
-    <string name="key_omnicore_stats" translatable="false">omnicore_stats</string>
-
-
     <string name="key_omnicore_log_pod_change" translatable="false">omnipod_log_pod_change</string>
-    <string name="omnicore_log_pod_change_summary">Automatically Log Pod Changes to Care Portal</string>
-    <string name="omnicore_log_pod_change_title">Log Pod Changes</string>
-
 
     <string name="key_omnicore_podchange_0" translatable="false">omnipod_blackout_0</string>
     <string name="key_omnicore_podchange_1" translatable="false">omnipod_blackout_1</string>
@@ -1468,34 +1557,24 @@
     <string name="key_omnicore_podchange_22" translatable="false">omnipod_blackout_22</string>
     <string name="key_omnicore_podchange_23" translatable="false">omnipod_blackout_23</string>
 
-    <string name="omnicore_log_failures">Log Failures in NS</string>
-    <string name="overview_omnicore">OmniCore</string>
+    <!--
+    <string name="omnicore_settings">Open the OmniCore app to configure your Omnipod</string>
     <string name="omnicore_label">OmniCore</string>
-    <string name="error_starting_omnicore">Error starting OmniCore. Make sure it is installed.</string>
-
-    <string name="omnicore_connected">Connected to OmniCore</string>
-    <string name="omnicore_not_connected">Not connected to OmniCore</string>
-
-    <string name="key_omnicore_last_result">No Result</string>
-    <string name="key_omnicore_last_command">No Command</string>
-    <string name="key_omnicore_last_commandstate">No Result</string>
-
-    <string name="key_omnicore_last_successful_result">No Result</string>
+    <string name="key_omnicore_failure_alerttype" translatable="false">omnicore_command_failure_alert_type</string>
+<string name="key_omnicore_last_successful_commandstate">No Command</string>
+        <string name="key_omnicore_last_commandstate">No Result</string>
+   <string name="key_omnicore_last_command">No Command</string>
+ <string name="key_omnicore_last_successful_result">No Result</string>
     <string name="key_omnicore_last_successful_command">No Command</string>
-    <string name="key_omnicore_last_successful_commandstate">No Command</string>
-    <string name="key_omnipod_currentpodid">omnipod_currentpodid</string>
-    <string name="key_omnipod_pod_start_time">omnipod_currentpodstart</string>
-    <string name="key_omnipod_pod_start_date">omnipod_currentpodstart_date</string>
-
-    <string name="omnipod_pod_status">Pod Status</string>
+   <string name="key_omnipod_pod_start_date">omnipod_currentpodstart_date</string>
+        <string name="omnipod_pod_status">Pod Status</string>
     <string name="omnipy_pod_status_clear_alerts">Clear Alerts</string>
     <string name="omnipod_pod_status_update_status">Update Status</string>
     <string name="omnipod_pod_status_radio_address"> Radio address: </string>
     <string name="omnipod_pod_status_status">Status: </string>
-    <string name="omnipod_pod_status_Not_yet_running">Not yet running</string>
-    <string name="omnipod_pod_status_Running">Running</string>
     <string name="omnipod_pod_status_Running_with_low_insulin_below50U">Running with low insulin (&lt;50U)</string>
-    <string name="omnipod_pod_status_Inactive">Inactive</string>
+    <string name="omnipod_pod_state_Pod_running_with_low_reservoir_less_than_50U">Pod running with low reservoir (less than 50U)</string>
+        <string name="omnipod_pod_status_Inactive">Inactive</string>
     <string name="omnipod_pod_status_POD_FAULTED">POD FAULTED</string>
     <string name="omnipod_pod_status_Total_insulin_delivered">Total insulin delivered: </string>
     <string name="omnipod_pod_status_Reservoir">Reservoir: </string>
@@ -1503,44 +1582,25 @@
     <string name="omnipod_pod_status_Pod_age">Pod age: </string>
     <string name="omnipod_pod_status_Status_updated">Status updated: </string>
     <string name="omnipod_pod_status_Status_unknown">Status unknown</string>
-
-
-    <string name="omnipod_pod_actions">Pod Actions</string>
+        <string name="omnipod_pod_actions">Pod Actions</string>
     <string name="omnipod_pod_actions_archive_pod">Archive</string>
     <string name="omnipod_pod_actions_activate_pod">1. Activate</string>
     <string name="omnipod_pod_actions_start_pod">2. Start</string>
     <string name="omnipod_pod_actions_deactivate_pod">Deactivate</string>
-
-    <string name="omnipod_pod_alerts_Auto_off">Auto-off</string>
+        <string name="omnipod_pod_alerts_Auto_off">Auto-off</string>
     <string name="omnipod_pod_alerts_Unknown">Unknown</string>
     <string name="omnipod_pod_alerts_Pod_expiring_soon">Pod will expire</string>
     <string name="omnipod_pod_alerts_Pod_expiring_soon_window">Pod expiring soon</string>
+        <string name="omnipod_pod_alerts_Replace_pod_soon">Replace pod soon</string>
+            <string name="omnipod_pod_state_No_pod_registered">No pod registered</string>
+    <string name="omnipod_pod_state_Pod_in_activation_progress">Pod in activation progress</string>
+     <string name="omnipod_pod_state_Pod_stopped">Pod stopped</string>
+    <string name="omnipod_pod_state_Pod_alert">Pod alert: </string>
 
-    <string name="omnipod_pod_alerts_Replace_pod_soon">Replace pod soon</string>
-    <string name="omnipod_pod_alerts_Low_reservoir">Low reservoir</string>
     <string name="omnipod_pod_alerts_Insulin_Suspended">Insulin Suspended</string>
     <string name="omnipod_pod_alerts_End_of_insulin_suspend">End of insulin suspend</string>
     <string name="omnipod_pod_alerts_Pod_expired">Pod expired</string>
-
-
-    <string name="omnipod_pod_state_POD_IDs_has_been_removed">Pod %s has been removed.</string>
-    <string name="omnipod_pod_state_No_pod_registered">No pod registered</string>
-    <string name="omnipod_pod_state_Pod_in_activation_progress">Pod in activation progress</string>
-    <string name="omnipod_pod_state_Pod_is_activated_and_running">Pod is activated and running</string>
-    <string name="omnipod_pod_state_Pod_running_with_low_reservoir_less_than_50U">Pod running with low reservoir (less than 50U)</string>
-    <string name="omnipod_pod_state_Pod_stopped">Pod stopped</string>
-    <string name="omnipod_pod_state_Pod_alert">Pod alert: </string>
-
-    <string name="omnipod_command_state_command_failed">%s Omnicore commands failed.</string>
-    <string name="omnipod_command_state_lastcommand_failed">Last failure: %s</string>
-    <string name="omnipod_command_bolus">Bolus  %1$.2fU</string>
-    <string name="omnipod_command_cancelbolus">Cancel Bolus</string>
-    <string name="omnipod_command_tbr">Temp Basal %1$.2fU/h for %2$.2fh</string>
-    <string name="omnipod_command_canceltbr">Cancel Temp Basal</string>
-    <string name="omnipod_command_setprofile">Set Profile</string>
-    <string name="omnipod_command_getstatus">Get Status</string>
-
-    <!-- <string name="omnipod_connection_settings">Connection Settings</string>
+    <string name="omnipod_connection_settings">Connection Settings</string>
      <string name="omnipy_set_http_password">Set password</string>
      <string name="omnipy_connection_settings">Omnipy Connection</string>
      <string name="omnipy_auto_detect_host">Auto detect address</string>

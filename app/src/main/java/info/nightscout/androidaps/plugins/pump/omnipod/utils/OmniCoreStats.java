@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.logging.L;
 import info.nightscout.androidaps.utils.SP;
@@ -21,24 +22,36 @@ public class OmniCoreStats {
     private long _lastSave = 0;
 
     public enum OmnicoreStatType {
-        TBRTOTAL,
-        TBRHIGH,
-        TBRLOW,
-        TBRZERO,
-        TBRCANCEL,
-        TBRTIME,
-        BOLUS,
-        BOLUSSMB,
-        BOLUSTIME,
-        BOLUSCANCEL,
-        POD,
-        PROFILESET,
-        PROFILESETTIME,
-        STARTDATE,
-        ENDDATE,
-        COMMANDFAIL,
-        TOTALTIME,
-        TOTALCOMMANDS
+        TBRTOTAL(R.string.omnicore_stat_tbrtotal),
+        TBRHIGH(R.string.omnicore_stat_tbrhigh),
+        TBRLOW(R.string.omnicore_stat_tbrlow),
+        TBRZERO(R.string.omnicore_stat_tbrzero),
+        TBRCANCEL(R.string.omnicore_stat_tbrcancel),
+        TBRTIME(R.string.omnicore_stat_tbrtime),
+        BOLUS(R.string.omnicore_stat_bolus),
+        BOLUSSMB(R.string.omnicore_stat_bolussmb),
+        BOLUSTIME(R.string.omnicore_stat_bolustime),
+        BOLUSCANCEL(R.string.omnicore_stat_boluscancel),
+        POD(R.string.omnicore_stat_pod),
+        PROFILESET(R.string.omnicore_stat_profileset),
+        PROFILESETTIME(R.string.omnicore_stat_profilesettime),
+        STARTDATE(R.string.omnicore_stat_startdate),
+        ENDDATE(R.string.omnicore_stat_enddate),
+        COMMANDFAIL(R.string.omnicore_stat_commandfail),
+        TOTALTIME(R.string.omnicore_stat_totaltime),
+        TBRFAIL(R.string.omnicore_stat_tbrfail),
+        BOLUSFAIL(R.string.omnicore_stat_bolusfail),
+        TOTALCOMMANDS(R.string.omnicore_stat_totalcommands);
+
+        private int resourceId;
+
+        OmnicoreStatType(int resourceId) {
+            this.resourceId = resourceId;
+        }
+
+        public String getDescription() {
+            return MainApp.gs(resourceId);
+        }
     }
 
 
@@ -59,17 +72,21 @@ public class OmniCoreStats {
 
     }
 
-    public long getStat(OmnicoreStatType stat) {
+    public long getStat(OmnicoreStatType key) {
         long retVal = 0;
         try {
-            Long val = _omnicoreStats.get(stat);
+            Long val = _omnicoreStats.get(key);
             retVal = (val != null) ? val : 0;
         }
         catch (Exception e) {
-            _log.debug("OmniCoreStats: Error getting value: " + stat);
+            _log.debug("OmniCoreStats: Error getting value for: " + key.toString());
             _log.debug(e.getMessage());
         }
         return retVal;
+    }
+
+    public String getKeyDescription(OmnicoreStatType key) {
+        return key.getDescription();
     }
 
 
@@ -84,7 +101,7 @@ public class OmniCoreStats {
             }
         }
         catch (Exception e) {
-            _log.debug("OmniCoreStats: Error putting value: " + value);
+            _log.debug("OmniCoreStats: Error putting value: " + value + " for key " + key.toString());
             _log.debug(e.getMessage());
         }
         return getStat(key);
@@ -147,10 +164,10 @@ public class OmniCoreStats {
         long hours = TimeUnit.MILLISECONDS.toHours(millis) % 24;
         long minutes = TimeUnit.MILLISECONDS.toMinutes(millis) % 60;
         long seconds = TimeUnit.MILLISECONDS.toSeconds(millis) % 60;
-        long milliseconds = millis % 1000;
+      //  long milliseconds = millis % 1000;
 
-        return String.format("%dd %dh %dm %ds %dms",
-                days, hours, minutes, seconds, milliseconds);
+        return String.format(MainApp.gs(R.string.omnicore_duration_format),
+                days, hours, minutes, seconds);
     }
 
     public Set<OmnicoreStatType> getKeys() {

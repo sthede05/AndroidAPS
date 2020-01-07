@@ -46,7 +46,7 @@ public class OmniCoreCommandHistory {
         }
 
 
-        if (!SP.getBoolean(R.string.key_omnicore_status_history,false) && (request.getRequestType() == "GetStatus")) {
+        if (!SP.getBoolean(R.string.key_omnicore_status_history,false) && (request.getRequestType().equals("GetStatus"))) {
             //@string/key_omnicore_status_history
         }
         else {

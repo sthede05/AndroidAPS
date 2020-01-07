@@ -14,14 +14,14 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-      <!--      <TextView
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginTop="20dp"
-                android:text="@string/omnicore_label"
+                android:text="@string/overview_omnicore"
                 android:textAppearance="?android:attr/textAppearanceLarge" />
--->
+
             <View
                 android:layout_width="fill_parent"
                 android:layout_height="2dip"
@@ -37,7 +37,7 @@
                 android:layout_weight="1"
                 android:gravity="end"
                 android:paddingRight="5dp"
-                android:text="Status"
+                android:text="@string/omnicore_tab_status"
                 android:textAlignment="center"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -46,7 +46,7 @@
                 android:id="@+id/omnicore_updatestatusbutton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Test Omnicore Connection" />
+                android:text="@string/omnicore_tab_test_connection_button" />
 
             <View
                 android:layout_width="fill_parent"
@@ -69,7 +69,7 @@
                     android:layout_weight="1"
                     android:gravity="end"
                     android:paddingRight="5dp"
-                    android:text="Omnicore State"
+                    android:text="@string/omnicore_tab_oc_state"
                     android:textSize="14sp" />
 
                 <TextView
@@ -113,7 +113,7 @@
                     android:layout_weight="1"
                     android:gravity="end"
                     android:paddingRight="5dp"
-                    android:text="Pod ID"
+                    android:text="@string/omnicore_tab_podid"
                     android:textSize="14sp" />
 
                 <TextView
@@ -158,7 +158,7 @@
                     android:layout_weight="1"
                     android:gravity="end"
                     android:paddingRight="5dp"
-                    android:text="Reservoir"
+                    android:text="@string/omnicore_tab_reservoir"
                     android:textSize="14sp" />
 
                 <TextView
@@ -203,7 +203,7 @@
                     android:layout_weight="1"
                     android:gravity="end"
                     android:paddingRight="5dp"
-                    android:text="Pod Expiration"
+                    android:text="@string/omnicore_tab_expiration"
                     android:textSize="14sp" />
 
                 <TextView
@@ -254,7 +254,7 @@
                     android:layout_weight="1"
                     android:gravity="end"
                     android:paddingRight="5dp"
-                    android:text="Change Pod By"
+                    android:text="@string/omnicore_tab_change_by"
                     android:textSize="14sp" />
 
                 <TextView
@@ -299,7 +299,7 @@
                     android:layout_weight="1"
                     android:gravity="end"
                     android:paddingRight="5dp"
-                    android:text="Last Status Update"
+                    android:text="@string/omnicore_tab_last_status"
                     android:textSize="14sp" />
 
                 <TextView
@@ -336,7 +336,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="vertical">
 
                 <TextView
                     android:layout_width="match_parent"
@@ -344,10 +344,11 @@
                     android:layout_weight="1"
                     android:gravity="end"
                     android:paddingRight="5dp"
-                    android:text="Stats: "
+                    android:text="Stats"
+                    android:textAlignment="center"
                     android:textSize="14sp" />
 
-                <TextView
+          <!--      <TextView
                     android:layout_width="5dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="0"
@@ -355,7 +356,7 @@
                     android:paddingEnd="2dp"
                     android:paddingStart="2dp"
                     android:text=":"
-                    android:textSize="14sp" />
+                    android:textSize="14sp" /> -->
 
                 <TextView
                     android:id="@+id/omnicorestatus_stats"
@@ -387,18 +388,16 @@
                 android:layout_weight="1"
                 android:gravity="end"
                 android:paddingRight="5dp"
-                android:text="Pump Actions"
+                android:text="@string/omnicore_tab_commands_header"
                 android:textAlignment="center"
                 android:textSize="16sp"
                 android:textStyle="bold" />
-
-
 
             <Button
                 android:id="@+id/omnicore_launchomnicorebutton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Launch Omnicore to Activate or Deactivate a Pod"/>
+                android:text="@string/omnicore_tab_launch_oc_button"/>
 
             <View
                 android:layout_width="fill_parent"
@@ -415,7 +414,7 @@
                 android:layout_weight="1"
                 android:gravity="end"
                 android:paddingRight="5dp"
-                android:text="Recent Commands"
+                android:text="@string/omnicore_tab_recent_commands"
                 android:textAlignment="center"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -440,7 +439,7 @@
                     android:layout_weight="1"
                     android:gravity="end"
                     android:paddingRight="5dp"
-                    android:text="Last Command"
+                    android:text="@string/omnicore_tab_last_command"
                     android:textSize="14sp" />
 
                 <TextView
@@ -486,7 +485,7 @@
                     android:layout_weight="1"
                     android:gravity="end"
                     android:paddingRight="5dp"
-                    android:text="Last Result"
+                    android:text="@string/omnicore_tab_last_result"
                     android:textSize="14sp" />
 
                 <TextView
@@ -510,7 +509,7 @@
 
             </LinearLayout>
 
-
+<!--
             <View
                 android:layout_width="fill_parent"
                 android:layout_height="2dip"
@@ -553,7 +552,7 @@
                     android:paddingLeft="5dp"
                     android:textSize="14sp" />
 
-            </LinearLayout>
+            </LinearLayout>-->
 
             <View
                 android:layout_width="fill_parent"
@@ -575,7 +574,7 @@
                     android:layout_weight="1"
                     android:gravity="end"
                     android:paddingRight="5dp"
-                    android:text="Last Successful Command"
+                    android:text="@string/omnicore_tab_last_successful_command"
                     android:textSize="14sp" />
 
                 <TextView
@@ -599,7 +598,7 @@
 
             </LinearLayout>
 
-            <View
+        <!--    <View
                 android:layout_width="fill_parent"
                 android:layout_height="2dip"
                 android:layout_marginBottom="5dp"
@@ -641,7 +640,7 @@
                     android:paddingLeft="5dp"
                     android:textSize="14sp" />
 
-            </LinearLayout>
+            </LinearLayout>-->
 
             <View
                 android:layout_width="fill_parent"
@@ -663,12 +662,12 @@
                     android:layout_weight="1"
                     android:gravity="end"
                     android:paddingRight="5dp"
-                    android:text="Command History"
+                    android:text="@string/omnicore_tab_command_history"
                     android:textAlignment="center"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
-                <TextView
+             <!--   <TextView
                     android:id="@+id/omnicorestatus_commandhistory"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -676,7 +675,7 @@
                     android:gravity="start"
                     android:paddingLeft="5dp"
                     android:textSize="14sp"
-                    android:visibility="gone" />
+                    android:visibility="gone" />-->
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/omnicorestatus_history_list"
@@ -686,99 +685,7 @@
 
             </LinearLayout>
 
-            <!-- Pump Type -->
-            <!--
-            <View
-                android:layout_width="fill_parent"
-                android:layout_height="2dip"
-                android:layout_marginBottom="5dp"
-                android:layout_marginLeft="20dp"
-                android:layout_marginRight="20dp"
-                android:layout_marginTop="5dp"
-                android:background="@color/listdelimiter" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="end"
-                    android:paddingRight="5dp"
-                    android:text="@string/omnicorepump_type"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:layout_width="5dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0"
-                    android:gravity="center_horizontal"
-                    android:paddingEnd="2dp"
-                    android:paddingStart="2dp"
-                    android:text=":"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/omnicorepump_type"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="start"
-                    android:paddingLeft="5dp"
-                    android:textSize="14sp" />
-
-            </LinearLayout>
--->
-            <!-- Pump Type -->
-            <!--
-            <View
-                android:layout_width="fill_parent"
-                android:layout_height="2dip"
-                android:layout_marginBottom="5dp"
-                android:layout_marginLeft="20dp"
-                android:layout_marginRight="20dp"
-                android:layout_marginTop="5dp"
-                android:background="@color/listdelimiter" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="end"
-                    android:paddingRight="5dp"
-                    android:text="@string/omnicorepump_definition"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:layout_width="5dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0"
-                    android:gravity="center_horizontal"
-                    android:paddingEnd="2dp"
-                    android:paddingStart="2dp"
-                    android:text=":"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/omnicorepump_type_def"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="start"
-                    android:paddingLeft="5dp"
-                    android:textSize="14sp" />
-
-            </LinearLayout>
-
--->
 
         </LinearLayout>
     </ScrollView>
