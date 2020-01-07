@@ -1578,8 +1578,8 @@ L\'ENSEMBLE DES RISQUES LIÉS À LA QUALITÉ ET À LA PERFORMANCE DU PROGRAMME S
     <string name="omnicore_low_reservoir_alert_prefs">Alerte réservoir bas</string>
     <string name="omnicore_low_reservoir_alert_refire_label">Re-alerter sur réservoir bas</string>
     <string name="omnicore_low_reservoir_alert_refire_summary">Re-alerter sur réservoir bas jusqu\'à expiration du pod</string>
-    <string name="omnicore_pod_change_window_ends">La fenêtre de changement de pod se termine dans %s</string>
-    <string name="omnicore_pod_will_expire">Le pod expire dans %s</string>
+    <string name="omnicore_pod_change_window_ends">La fenêtre de changement de pod se termine le %s</string>
+    <string name="omnicore_pod_will_expire">Le pod expire le %s</string>
     <string name="omnicore_reservoir_will_expire">Le réservoir sera vide dans %s</string>
     <string name="omnicore_stat_bolus">Total Bolus</string>
     <string name="omnicore_stat_boluscancel">Bolus annulés</string>
