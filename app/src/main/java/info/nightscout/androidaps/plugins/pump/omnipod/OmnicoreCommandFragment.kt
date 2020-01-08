@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import info.nightscout.androidaps.MainApp
 import info.nightscout.androidaps.R
+import info.nightscout.androidaps.events.EventTempBasalChange
 import info.nightscout.androidaps.logging.L
 import info.nightscout.androidaps.plugins.bus.RxBus
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipodUpdateGui
@@ -52,11 +53,11 @@ class OmnicoreCommandFragment : Fragment(){
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ updateGui() }, { FabricPrivacy.logException(it) })
         )
-        /*      disposable.add(RxBus
+              disposable.add(RxBus
                       .toObservable(EventTempBasalChange::class.java)
                       .observeOn(AndroidSchedulers.mainThread())
                       .subscribe({ updateGui() }, { FabricPrivacy.logException(it) })
-              )*/
+              )
 
         //   loopHandler.postDelayed(refreshLoop, T.mins(1).msecs())
         updateGui()

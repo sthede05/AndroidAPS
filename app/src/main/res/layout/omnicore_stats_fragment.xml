@@ -55,7 +55,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:visibility="visible">
+            android:visibility="gone">
 
             <TextView
                 android:id="@+id/omnicore_stats_start_label"
@@ -93,7 +93,8 @@
             android:id="@+id/omnicore_stats_end"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <TextView
                 android:id="@+id/omnicore_stats_end_label"
@@ -131,7 +132,8 @@
             android:id="@+id/omnicore_stats_pods"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <TextView
                 android:id="@+id/omnicore_stats_pods_label"
@@ -169,7 +171,8 @@
             android:id="@+id/omnicore_stats_commands"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <TextView
                 android:id="@+id/omnicore_stats_commands_label"
@@ -207,7 +210,8 @@
             android:id="@+id/omnicore_stats_failures"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <TextView
                 android:id="@+id/omnicore_stats_failures_label"
@@ -245,7 +249,8 @@
             android:id="@+id/omnicore_stats_totaltime"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <TextView
                 android:id="@+id/omnicore_stats_totaltime_label"
@@ -283,7 +288,8 @@
             android:id="@+id/omnicore_stats_tbr"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <TextView
                 android:id="@+id/omnicore_stats_tbr_label"
@@ -321,7 +327,8 @@
             android:id="@+id/omnicore_stats_tbrfail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <TextView
                 android:id="@+id/omnicore_stats_tbrfail_label"
@@ -360,7 +367,8 @@
             android:id="@+id/omnicore_stats_tbrtime"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <TextView
                 android:id="@+id/omnicore_stats_tbrtime_label"
@@ -399,7 +407,8 @@
             android:id="@+id/omnicore_stats_bolus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <TextView
                 android:id="@+id/omnicore_stats_bolus_label"
@@ -438,7 +447,8 @@
             android:id="@+id/omnicore_stats_bolussmb"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <TextView
                 android:id="@+id/omnicore_stats_bolussmb_label"
@@ -477,7 +487,8 @@
             android:id="@+id/omnicore_stats_bolusfail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <TextView
                 android:id="@+id/omnicore_stats_bolusfail_label"
@@ -516,7 +527,8 @@
             android:id="@+id/omnicore_stats_bolustime"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <TextView
                 android:id="@+id/omnicore_stats_bolustime_label"
@@ -555,7 +567,8 @@
             android:id="@+id/omnicore_stats_profile"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <TextView
                 android:id="@+id/omnicore_stats_profile_label"
@@ -594,7 +607,8 @@
             android:id="@+id/omnicore_stats_profiletime"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <TextView
                 android:id="@+id/omnicore_stats_profiletime_label"

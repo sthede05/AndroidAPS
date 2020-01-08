@@ -37,7 +37,7 @@ class OmnicoreFragment : Fragment() {
 
     init {
         refreshLoop = Runnable {
-            activity?.runOnUiThread { RxBus.send(EventOmnipodUpdateGui()) }
+            activity?.runOnUiThread { updateGui() }
             loopHandler.postDelayed(refreshLoop, T.mins(1).msecs())
         }
     }
