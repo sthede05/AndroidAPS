@@ -34,6 +34,7 @@
     <SwitchPreference
         android:title="@string/omnicore_log_failures_audible"
         android:key="@string/key_omnicore_failure_audible"
+        android:summary="@string/omnicore_log_failures_audible_summary"
         android:defaultValue="false"/>
 
     <SwitchPreference

@@ -1419,7 +1419,9 @@
     <string name="omnicore_button">OmniCore Button</string>
     <string name="omnicore_log_failures">Log Failures in NS</string>
     <string name="omnicore_log_failures_summary">Log Command Failures to Nightscout</string>
-    <string name="omnicore_log_failures_audible">Play Audible Alarm on Command Failure</string>
+    <string name="omnicore_log_failures_audible">Audible Alarm on Command Failure</string>
+    <string name="omnicore_log_failures_audible_summary">Play an audible alarm when alerting about failed commands</string>
+
     <string name="omnicore_log_status_requests">Record Status Requests</string>
     <string name="omnicore_log_status_request_summary">Record Status Requests in Command History</string>
     <string name="omnicore_log_pod_change_summary">Automatically Log Pod Changes to Care Portal</string>
@@ -1464,7 +1466,14 @@
     <string name="omnipod_command_setprofile">Set Basal Profile</string>
     <string name="omnipod_command_getstatus">Get Status</string>
     <string name="omnicore_tab_status">Omnicore Status</string>
+    <string name="omnicore_tab_stats">Omnicore Statistics</string>
+
     <string name="omnicore_tab_test_connection_button">Test Omnicore Connection</string>
+    <string name="omnicore_tab_reset_stats_button">Reset Stats</string>
+    <string name="omnicore_tab_reset_stats_confirmation">Are you sure you want to reset your statistics? This cannot be undone.</string>
+    <string name="omnicore_tab_resetpodstart_button">Set Pod Start Time</string>
+    <string name="omnicore_tab_resetpodstart_confirmation">Updated start time is %s. \n Set it?</string>
+
     <string name="omnicore_tab_oc_state">Omnicore State</string>
     <string name="omnicore_tab_podid">Pod ID</string>
     <string name="omnicore_tab_reservoir">Reservoir</string>
@@ -1481,6 +1490,9 @@
     <string name="omnicore_tab_last_result">Last Result</string>
     <string name="omnicore_tab_last_successful_command">Last Successful Command</string>
     <string name="omnicore_tab_command_history">Command History</string>
+    <string name="omnicore_tabtitle_status">Status</string>
+    <string name="omnicore_tabtitle_history">History</string>
+    <string name="omnicore_tabtitle_stats">Stats</string>
 
     <string name="omnicore_stat_tbrtotal">Total Temp Basals</string>
     <string name="omnicore_stat_tbrhigh">High Temp Basals</string>

@@ -109,7 +109,7 @@ android {
         targetSdkVersion 28
         multiDexEnabled true
         versionCode 1500
-        version "2.5.1.0001"
+        version "2.5.1.0002"
         buildConfigField "String", "VERSION", '"' + version + '"'
         buildConfigField "String", "VARIANT", '"OmniCore v1.0.0.702"'
         buildConfigField "String", "BUILDVERSION", '"' + generateGitBuild() + '-' + generateDate() + '"'

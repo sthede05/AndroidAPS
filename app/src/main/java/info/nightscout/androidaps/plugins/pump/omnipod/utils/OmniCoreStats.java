@@ -58,9 +58,10 @@ public class OmniCoreStats {
     public OmniCoreStats() {
         _log =  LoggerFactory.getLogger(L.PUMP);
 
-        _omnicoreStats = new EnumMap<>(OmnicoreStatType.class);
+     //   _omnicoreStats = new EnumMap<>(OmnicoreStatType.class);
 
         loadStats();
+
         if (getStat(OmnicoreStatType.STARTDATE) == 0) {
             putStat(OmnicoreStatType.STARTDATE,System.currentTimeMillis());
         }
@@ -118,6 +119,7 @@ public class OmniCoreStats {
     }
 
     private void loadStats() {
+        _omnicoreStats = new EnumMap<>(OmnicoreStatType.class);
         String savedStats = SP.getString(R.string.key_omnicore_stats,"");
         String[] nameValuePairs = savedStats.split("&");
         for (String nameValuePair : nameValuePairs) {
@@ -168,6 +170,13 @@ public class OmniCoreStats {
 
         return String.format(MainApp.gs(R.string.omnicore_duration_format),
                 days, hours, minutes, seconds);
+    }
+
+    public void resetStats() {
+        SP.putString(R.string.key_omnicore_stats,"");
+        _lastSave = 0;
+        loadStats();
+        putStat(OmnicoreStatType.STARTDATE,System.currentTimeMillis());
     }
 
     public Set<OmnicoreStatType> getKeys() {

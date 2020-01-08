@@ -12,7 +12,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 
 import info.nightscout.androidaps.BuildConfig;
@@ -72,7 +71,7 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
     public OmnipodPlugin() {
         super(new PluginDescription()
                 .mainType(PluginType.PUMP)
-                .fragmentClass(OmniCorePumpFragment.class.getName())
+                .fragmentClass(OmnicoreFragment.class.getName())
                 .pluginName(R.string.omnipod)
                 .shortName(R.string.omnipod_shortname)
                 .preferencesId(R.xml.pref_omnicore)

@@ -198,7 +198,8 @@ public class OmnipodPdm {
                         _log.debug("OMNICORE: This looks like a new Pod");
                     }
                     SP.putString(R.string.key_omnipod_currentpodid,result.PodId);
-                    SP.putLong(R.string.key_omnipod_pod_start_time,result.ResultDate);
+                    setPodStartTime(result.ResultDate);
+                  //  SP.putLong(R.string.key_omnipod_pod_start_time,result.ResultDate);
                     if (SP.getBoolean(R.string.key_omnicore_log_pod_change,false)) {
                         uploadCareportalEvent(result.ResultDate,CareportalEvent.INSULINCHANGE);
                         uploadCareportalEvent(result.ResultDate + 10000,CareportalEvent.SITECHANGE);
@@ -467,6 +468,10 @@ public class OmnipodPdm {
         return _lastResult.ReservoirLevel;
     }
 
+    public void setPodStartTime(long startTime) {
+        SP.putLong(R.string.key_omnipod_pod_start_time,startTime);
+    }
+
     public long getPodStartTime() {
         long podStart = 0;
         podStart =  SP.getLong(R.string.key_omnipod_pod_start_time, podStart);
@@ -562,6 +567,8 @@ public class OmnipodPdm {
     public OmniCoreStats getPdmStats() {
         return _pdmStats;
     }
+
+
 }
 
 
