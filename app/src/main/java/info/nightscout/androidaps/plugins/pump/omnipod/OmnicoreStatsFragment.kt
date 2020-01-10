@@ -36,6 +36,15 @@ class OmnicoreStatsFragment: Fragment() {
         return inflater.inflate(R.layout.omnicore_stats_fragment, container, false)
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+
+        omnicore_resetstatsbutton?.setOnClickListener {
+            if (L.isEnabled(L.PUMP))
+                log.debug("Omnicore reset")
+            resetStats()
+        }
+    }
+
     @Synchronized
     override fun onResume() {
         if (L.isEnabled(L.PUMP))
@@ -48,14 +57,7 @@ class OmnicoreStatsFragment: Fragment() {
         )
         updateGui()
     }
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
-        omnicore_resetstatsbutton?.setOnClickListener {
-            if (L.isEnabled(L.PUMP))
-                log.debug("Omnicore reset")
-            resetStats()
-        }
-    }
     @Synchronized
     override fun onPause() {
         if (L.isEnabled(L.PUMP))

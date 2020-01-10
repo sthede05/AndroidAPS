@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory
 import androidx.viewpager.widget.ViewPager
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
+import androidx.fragment.app.FragmentStatePagerAdapter
 
 
 class OmnicoreFragment : Fragment() {
@@ -47,7 +48,7 @@ class OmnicoreFragment : Fragment() {
         val view = inflater.inflate(R.layout.omnicore_fragment, container, false)
         tabLayout = view.findViewById(R.id.omnicore_tabs) as TabLayout
         viewPager = view.findViewById(R.id.omnicore_viewpager) as ViewPager
-        viewPager!!.setAdapter(TabViewAdapter(fragmentManager))
+        viewPager!!.setAdapter(TabViewAdapter(childFragmentManager))
         tabLayout!!.post(Runnable {tabLayout!!.setupWithViewPager(viewPager)})
         return view
     }
@@ -91,7 +92,7 @@ class OmnicoreFragment : Fragment() {
  //Nothing to do
     }
 
-    private inner class TabViewAdapter(fm: FragmentManager?) : FragmentPagerAdapter(fm!!, androidx.fragment.app.FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
+    private inner class TabViewAdapter(fm: FragmentManager?) : FragmentStatePagerAdapter(fm!!, androidx.fragment.app.FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
         private val tabs = 3
         private val log = LoggerFactory.getLogger(L.PUMP)
 

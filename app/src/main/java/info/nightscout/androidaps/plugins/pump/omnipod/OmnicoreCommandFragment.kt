@@ -43,6 +43,25 @@ class OmnicoreCommandFragment : Fragment(){
 
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        if (L.isEnabled(L.PUMP))
+            log.debug("Omnicore Command Fragment View Created")
+
+
+        val historyItemAdapter = ListAdapter(OmnipodPlugin.getPlugin().pdm.commandHistory.allHistory)
+        val historyItemlayoutManager = LinearLayoutManager(activity);
+        historyItemlayoutManager.reverseLayout = true
+        historyItemlayoutManager.stackFromEnd = true
+        omnicorestatus_history_list.apply{
+            layoutManager = historyItemlayoutManager
+            // set the custom adapter to the RecyclerView
+            adapter = historyItemAdapter
+        }
+        updateGui()
+
+    }
+
+
     @Synchronized
     override fun onResume() {
         if (L.isEnabled(L.PUMP))
@@ -53,11 +72,11 @@ class OmnicoreCommandFragment : Fragment(){
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ updateGui() }, { FabricPrivacy.logException(it) })
         )
-              disposable.add(RxBus
-                      .toObservable(EventTempBasalChange::class.java)
-                      .observeOn(AndroidSchedulers.mainThread())
-                      .subscribe({ updateGui() }, { FabricPrivacy.logException(it) })
-              )
+        disposable.add(RxBus
+                  .toObservable(EventTempBasalChange::class.java)
+                  .observeOn(AndroidSchedulers.mainThread())
+                  .subscribe({ updateGui() }, { FabricPrivacy.logException(it) })
+        )
 
         //   loopHandler.postDelayed(refreshLoop, T.mins(1).msecs())
         updateGui()
@@ -71,23 +90,6 @@ class OmnicoreCommandFragment : Fragment(){
         disposable.clear()
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        if (L.isEnabled(L.PUMP))
-            log.debug("Omnicore Command Fragment View Created")
-
-
-        var historyItemAdapter = ListAdapter(OmnipodPlugin.getPlugin().pdm.commandHistory.allHistory)
-        var historyItemlayoutManager = LinearLayoutManager(activity);
-        historyItemlayoutManager.reverseLayout = true
-        historyItemlayoutManager.stackFromEnd = true
-        omnicorestatus_history_list.apply{
-            layoutManager = historyItemlayoutManager
-            // set the custom adapter to the RecyclerView
-            adapter = historyItemAdapter
-        }
-        updateGui()
-
-    }
 
     @Synchronized
     private fun updateGui() {
