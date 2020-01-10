@@ -1480,6 +1480,7 @@
     <string name="omnicore_tab_expire_reservoir">%s - Reservoir Empty</string>
     <string name="omnicore_tab_expire_time">%s - Pod Timeout</string>
     <string name="omnicore_tab_expiration">Pod Expiration</string>
+    <string name="omnicore_tab_pod_started">Pod Started</string>
     <string name="omnicore_tab_change_by">Change Pod By</string>
     <string name="omnicore_tab_last_status">Last Status Update</string>
     <string name="omnicore_tab_last_status_never">Never</string>

@@ -128,9 +128,10 @@ class OmnicoreStatusFragment : Fragment(){
             val reservoir = omnicorePump.pdm.GetReservoirLevel()
             omnicorestatus_reservoir?.text = if (reservoir > 50)  "> 50U" else reservoir.toString() + "U"
             if (reservoir < SP.getInt(R.string.key_omnicore_alert_res_units, 20)) {
-                omnicorestatus_reservoir?.setTextColor(Color.RED);
+                omnicorestatus_reservoir?.setTextColor(Color.RED)
             }
             val defaultColor = omnicorestatus_connectionstatus?.textColors
+
             omnicorestatus_podage?.text = String.format(MainApp.gs(R.string.omnicore_tab_expire_time),DateUtil.dateAndTimeString(omnicorePump.pdm.expirationTime))
             if (omnicorePump.pdm.expirationTime - System.currentTimeMillis() < SP.getInt(R.string.key_omnicore_alert_prior_expire, 8) * 60 * 60 * 1000) {
                 omnicorestatus_podage?.setTextColor(Color.RED)
@@ -139,8 +140,9 @@ class OmnicoreStatusFragment : Fragment(){
                 omnicorestatus_podage?.setTextColor(defaultColor)
             }
 
+            omnicorestatus_podstarttime?.text = DateUtil.dateAndTimeString(omnicorePump.pdm.podStartTime)
 
-            omnicorestatus_reservoir_empty?.text =  String.format(MainApp.gs(R.string.omnicore_tab_expire_reservoir),DateUtil.dateAndTimeString(omnicorePump.pdm.expirationTime))
+            omnicorestatus_reservoir_empty?.text =  String.format(MainApp.gs(R.string.omnicore_tab_expire_reservoir),DateUtil.dateAndTimeString(omnicorePump.pdm.reservoirTime))
 
             if (omnicorePump.pdm.reservoirTime - System.currentTimeMillis() < SP.getInt(R.string.key_omnicore_alert_prior_expire, 8) * 60 * 60 * 1000) {
                 omnicorestatus_reservoir_empty?.setTextColor(Color.RED)
