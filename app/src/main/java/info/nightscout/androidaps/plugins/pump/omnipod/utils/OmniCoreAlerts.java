@@ -24,7 +24,7 @@ public class OmniCoreAlerts {
     private final Logger _log;
 
     private int _failedCommands = 0;
-    protected int _failedCommandThreshold = 3;
+//    protected int _failedCommandThreshold = 3;
     private Boolean _failedCommandSentToNS;
 
     private Boolean[] _changeBlackout = new Boolean[24];
@@ -139,7 +139,7 @@ public class OmniCoreAlerts {
                 _failedCommandSentToNS = false;
             }
 
-            if (_failedCommands >= _failedCommandThreshold) {
+            if (_failedCommands >= SP.getInt(R.string.key_omnicore_command_failures_threshold,3)) {
              //   int alertLevel = SP.getInt(R.string.key_omnicore_failure_alerttype,-1);
                 int alertLevel = Notification.NORMAL;
                 String alertText = String.format(MainApp.gs(R.string.omnipod_command_state_command_failed),  _failedCommands);

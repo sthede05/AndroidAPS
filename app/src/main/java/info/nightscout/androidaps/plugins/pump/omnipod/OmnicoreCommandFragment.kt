@@ -2,11 +2,13 @@ package info.nightscout.androidaps.plugins.pump.omnipod
 
 import android.graphics.Color
 import android.graphics.PorterDuff
+import android.opengl.Visibility
 import android.os.Bundle
 import android.text.SpannableString
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
@@ -22,12 +24,15 @@ import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipodUpdate
 import info.nightscout.androidaps.plugins.pump.omnipod.history.OmniCoreCommandHistory
 import info.nightscout.androidaps.plugins.pump.omnipod.history.OmniCoreCommandHistoryItem
 import info.nightscout.androidaps.plugins.pump.omnipod.history.OmnicoreCommandHistoryStatus
+import info.nightscout.androidaps.plugins.pump.omnipod.utils.OmniCoreStats
 import info.nightscout.androidaps.utils.DateUtil
 import info.nightscout.androidaps.utils.FabricPrivacy
+import info.nightscout.androidaps.utils.SP
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.omnicore_command_fragment.*
 import org.slf4j.LoggerFactory
+import kotlin.math.roundToInt
 
 
 class OmnicoreCommandFragment : Fragment(){
@@ -144,6 +149,8 @@ class OmnicoreCommandFragment : Fragment(){
         private var commandRssiPodVal: TextView? = null
         private var commandRssiRlChart: ProgressBar? = null
         private var commandRssiPodChart: ProgressBar? = null
+        private var commandRunTimeChart: ProgressBar? = null
+        private var commandRunTimeWrapper: LinearLayout? = null
 
 
 
@@ -157,6 +164,8 @@ class OmnicoreCommandFragment : Fragment(){
             commandRssiPodVal = itemView.findViewById(R.id.omnicore_history_rssi_pod_value)
             commandRssiRlChart = itemView.findViewById(R.id.omnicore_history_rssi_rl_chart)
             commandRssiPodChart = itemView.findViewById(R.id.omnicore_history_rssi_pod_chart)
+            commandRunTimeChart = itemView.findViewById(R.id.omnicore_history_runtime_chart)
+            commandRunTimeWrapper = itemView.findViewById(R.id.omnicore_runtime_wrapper)
             itemView.setOnLongClickListener(this)
 
         }
@@ -196,6 +205,8 @@ class OmnicoreCommandFragment : Fragment(){
         fun bind(historyItem: OmniCoreCommandHistoryItem) {
             commandName?.text = historyItem.request.requestDetails
             commandStatus?.text = historyItem.status.description
+            val commandStats = OmnipodPlugin.getPlugin().pdm.pdmStats
+
             when (historyItem.status) {
                 OmnicoreCommandHistoryStatus.PENDING -> commandStatus?.setTextColor(Color.YELLOW)
                 OmnicoreCommandHistoryStatus.SUCCESS -> commandStatus?.setTextColor(Color.GREEN)
@@ -204,6 +215,62 @@ class OmnicoreCommandFragment : Fragment(){
             }
             commandTime?.text = DateUtil.dateAndTimeString(historyItem.request.requested)
             commandRunTime?.text = historyItem.runTime.toString() + "ms"
+
+            //Runtime Chart
+            if (SP.getBoolean(R.string.key_omnicore_history_show_timing,false)) {
+                var timeKey = OmniCoreStats.OmnicoreStatType.TOTALTIME
+                var countKey = OmniCoreStats.OmnicoreStatType.TOTALCOMMANDS
+                try {
+               when (historyItem.request.requestType) {
+                    "Bolus" -> {
+                        timeKey = OmniCoreStats.OmnicoreStatType.BOLUSTIME
+                        countKey =OmniCoreStats.OmnicoreStatType.BOLUS
+                    }
+                    "CancelBolus" -> {
+                        timeKey = OmniCoreStats.OmnicoreStatType.BOLUSTIME
+                        countKey = OmniCoreStats.OmnicoreStatType.BOLUS
+                    }
+                    "CancelTempBasal" -> {
+                        timeKey = OmniCoreStats.OmnicoreStatType.TBRTIME
+                        countKey = OmniCoreStats.OmnicoreStatType.TBRTOTAL
+                    }
+                    "SetProfile" -> {
+                        timeKey = OmniCoreStats.OmnicoreStatType.PROFILESET
+                        countKey = OmniCoreStats.OmnicoreStatType.PROFILESETTIME
+                    }
+                    "GetStatus" -> {
+                        timeKey = OmniCoreStats.OmnicoreStatType.TOTALTIME
+                        countKey = OmniCoreStats.OmnicoreStatType.TOTALCOMMANDS
+                    }
+                    "SetTempBasal" -> {
+                        timeKey = OmniCoreStats.OmnicoreStatType.TBRTIME
+                        countKey = OmniCoreStats.OmnicoreStatType.TBRTOTAL
+                    }
+                }
+                    val avgRunTime = commandStats.getStat(timeKey) * 1.0 / commandStats.getStat(countKey)
+                    val max = avgRunTime * 1.1
+                    val reportedTime = minOf(max.toInt(),historyItem.runTime.toInt())
+                    commandRunTimeChart?.max = max.roundToInt()
+                    commandRunTimeChart?.progress = reportedTime
+                    when  {
+                        reportedTime/max < 0.85 -> commandRunTimeChart?.progressDrawable?.setColorFilter(Color.GREEN, PorterDuff.Mode.SRC_IN)
+                        reportedTime/max > 0.95 -> commandRunTimeChart?.progressDrawable?.setColorFilter(Color.RED, PorterDuff.Mode.SRC_IN)
+                        else -> {
+                            commandRunTimeChart?.progressDrawable?.setColorFilter(Color.YELLOW, PorterDuff.Mode.SRC_IN)
+                        }
+                    }
+                }
+                catch (e: Exception) {
+                    commandRunTimeChart?.visibility = View.GONE
+                }
+
+            }
+            else {
+                commandRunTimeChart?.visibility = View.GONE
+
+            }
+
+
             val rndRssiRl = historyItem.rssiRl
             val rndRssiPod =historyItem.rssiPod
             commandRssiRlVal?.text = "-" + rndRssiRl.toString()

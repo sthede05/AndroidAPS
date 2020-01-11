@@ -24,6 +24,16 @@
         android:summary="@string/omnicore_log_pod_change_summary"
         android:title="@string/omnicore_log_pod_change_title" />
 
+    <EditTextPreference
+        android:defaultValue="3"
+        android:key="@string/key_omnicore_command_failures_threshold"
+        android:title="@string/omnicore_log_failures_threshold_summary"
+        android:inputType="number"
+        android:selectAllOnFocus="true"
+        android:singleLine="false"
+        />
+
+
     <SwitchPreference
         android:defaultValue="true"
         android:key="@string/key_omnicore_log_failures"
@@ -41,6 +51,12 @@
         android:title="@string/omnicore_log_status_requests"
         android:summary="@string/omnicore_log_status_request_summary"
         android:key="@string/key_omnicore_status_history"
+        android:defaultValue="false"/>
+
+    <SwitchPreference
+        android:title="Show Timing Graph"
+        android:summary="Show graph of command time relative to average command time"
+        android:key="@string/key_omnicore_history_show_timing"
         android:defaultValue="false"/>
 
   <!--  <ListPreference
