@@ -74,6 +74,7 @@ class OmnicoreStatsFragment: Fragment() {
         builder.setMessage(R.string.omnicore_tab_reset_stats_confirmation)
         builder.setPositiveButton(R.string.yes, DialogInterface.OnClickListener { dialog, id ->
             dialog.dismiss()
+            //TODO:Null Check
             OmnipodPlugin.getPlugin().pdm.pdmStats.resetStats()
         })
         builder.setNegativeButton(R.string.no, DialogInterface.OnClickListener { dialog, id -> dialog.dismiss() })
@@ -86,6 +87,7 @@ class OmnicoreStatsFragment: Fragment() {
     private fun updateGui() {
         if (L.isEnabled(L.PUMP))
             log.debug("Omnicore Stats Fragment updateGUI")
+        //TODO: null check
         val omnicorePump = OmnipodPlugin.getPlugin()
         val stats =   omnicorePump.pdm.pdmStats
 

@@ -24,7 +24,7 @@ public class OmniCoreAlerts {
     private final Logger _log;
 
     private int _failedCommands = 0;
-    protected int _failedCommandThreshold = 2;
+    protected int _failedCommandThreshold = 3;
     private Boolean _failedCommandSentToNS;
 
     private Boolean[] _changeBlackout = new Boolean[24];
@@ -70,7 +70,7 @@ public class OmniCoreAlerts {
     public void processExpirationAlerts(long reservoirExpiration, long podExpiration) {
         long soonestExpire = Math.min(reservoirExpiration, podExpiration);
         long currentTime = System.currentTimeMillis();
-
+//TODO: I don't like this.
         try {
             //Check Urgent Alarm
             if ((soonestExpire - currentTime) < (SP.getInt(R.string.key_omnicore_alert_urgent_expire,30) * 60 * 1000)) {
@@ -139,7 +139,7 @@ public class OmniCoreAlerts {
                 _failedCommandSentToNS = false;
             }
 
-            if (_failedCommands > _failedCommandThreshold) {
+            if (_failedCommands >= _failedCommandThreshold) {
              //   int alertLevel = SP.getInt(R.string.key_omnicore_failure_alerttype,-1);
                 int alertLevel = Notification.NORMAL;
                 String alertText = String.format(MainApp.gs(R.string.omnipod_command_state_command_failed),  _failedCommands);

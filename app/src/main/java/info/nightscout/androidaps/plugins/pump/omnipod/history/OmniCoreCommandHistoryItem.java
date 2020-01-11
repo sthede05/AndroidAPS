@@ -143,6 +143,7 @@ public class OmniCoreCommandHistoryItem {
                 else {
                     this._status = OmnicoreCommandHistoryStatus.FAILED;
                 }
+                //Todo: Null check
                 OmnipodPlugin.getPlugin().getPdm().getAlertProcessor().processCommandAlerts(this);
 
             }
@@ -162,6 +163,7 @@ public class OmniCoreCommandHistoryItem {
 
     public void countStats() {
         if (!this._counted && isFinished()) {
+            //Todo: null check
             OmniCoreStats stats = OmnipodPlugin.getPlugin().getPdm().getPdmStats();
             if (stats != null) {
                 stats.addToStat(OmniCoreStats.OmnicoreStatType.TOTALTIME,getRunTime());

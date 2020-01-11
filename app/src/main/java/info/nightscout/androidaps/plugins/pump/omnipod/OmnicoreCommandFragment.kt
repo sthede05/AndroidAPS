@@ -19,6 +19,7 @@ import info.nightscout.androidaps.events.EventTempBasalChange
 import info.nightscout.androidaps.logging.L
 import info.nightscout.androidaps.plugins.bus.RxBus
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipodUpdateGui
+import info.nightscout.androidaps.plugins.pump.omnipod.history.OmniCoreCommandHistory
 import info.nightscout.androidaps.plugins.pump.omnipod.history.OmniCoreCommandHistoryItem
 import info.nightscout.androidaps.plugins.pump.omnipod.history.OmnicoreCommandHistoryStatus
 import info.nightscout.androidaps.utils.DateUtil
@@ -47,7 +48,7 @@ class OmnicoreCommandFragment : Fragment(){
         if (L.isEnabled(L.PUMP))
             log.debug("Omnicore Command Fragment View Created")
 
-
+//TODO:Null check
         val historyItemAdapter = ListAdapter(OmnipodPlugin.getPlugin().pdm.commandHistory.allHistory)
         val historyItemlayoutManager = LinearLayoutManager(activity);
         historyItemlayoutManager.reverseLayout = true
@@ -95,6 +96,7 @@ class OmnicoreCommandFragment : Fragment(){
     private fun updateGui() {
         if (L.isEnabled(L.PUMP))
             log.debug("Omnicore Command Fragment updateGUI")
+        //TODO:Null check
         val omnicorePump = OmnipodPlugin.getPlugin()
         val lastResult = omnicorePump.pdm.commandHistory.lastCommand
         val lastSuccessfulResult = omnicorePump.pdm.commandHistory.lastSuccess

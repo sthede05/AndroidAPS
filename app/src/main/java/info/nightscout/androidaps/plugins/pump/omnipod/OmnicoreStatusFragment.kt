@@ -47,6 +47,7 @@ class OmnicoreStatusFragment : Fragment(){
         omnicore_updatestatusbutton?.setOnClickListener {
             if (L.isEnabled(L.PUMP))
                 log.debug("Omnicore Status Button clicked")
+            //TODO: Null check
             OmnipodPlugin.getPlugin().pdm.getPodStatus()
         }
 
@@ -95,6 +96,7 @@ class OmnicoreStatusFragment : Fragment(){
                     builder.setMessage(String.format(MainApp.gs(R.string.omnicore_tab_resetpodstart_confirmation), DateUtil.dateAndTimeString(date.time)))
                     builder.setPositiveButton(R.string.yes, DialogInterface.OnClickListener { dialog, id ->
                         dialog.dismiss()
+                        //ToDo: Null check
                         OmnipodPlugin.getPlugin().pdm.podStartTime=date.timeInMillis
                         RxBus.send(EventOmnipodUpdateGui())
 

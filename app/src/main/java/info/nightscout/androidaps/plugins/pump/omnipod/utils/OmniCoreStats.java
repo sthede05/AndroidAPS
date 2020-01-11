@@ -159,7 +159,7 @@ public class OmniCoreStats {
 
     public String getDurationAsString(OmnicoreStatType key) {
         long millis = getStat(key);
-        if(millis <= 0) {
+        if(millis < 0) {
             throw new IllegalArgumentException("Duration must be greater than zero!");
         }
         long days = TimeUnit.MILLISECONDS.toDays(millis);
