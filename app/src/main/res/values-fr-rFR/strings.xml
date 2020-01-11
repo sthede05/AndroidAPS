@@ -1625,4 +1625,19 @@ L\'ENSEMBLE DES RISQUES LIÉS À LA QUALITÉ ET À LA PERFORMANCE DU PROGRAMME S
     <string name="omnicore_urgent_expiration_alert_refire_label">Relancer l\'alerte d\'expiration imminente</string>
     <string name="omnicore_urgent_expiration_alert_refire_summary">Relancer l\'alerte d\'expiration imminente toutes les 20min jsuqu\'à l\'expiration du pod</string>
     <string name="key_no_pod">AUCUN POD</string>
+    <string name="omnicore_duration_format">%dd %dh %dm %ds</string>
+    <string name="overview_omnicore">OmniCore</string>
+    <string name="omnicore_tab_reset_stats_confirmation">Êtes-vous sûr(e) de vouloir effacer vos statistiques ?\\n Vous ne pourrez pas revenir en arrière.</string>
+    <string name="omnicore_tab_resetpodstart_button">Définir l\'heure de démarrage du pod</string>
+    <string name="omnicore_log_failures_audible_summary">Jouer un son lors d\'alertes sur erreur de commande</string>
+    <string name="omnicore_tab_reset_stats_button">Effacer les statistiques</string>
+    <string name="omnicore_tab_pod_started">Pod démarré</string>
+    <string name="omnicore_tab_resetpodstart_confirmation">L\'heure de démarrage actualisée est %s. [...]</string>
+    <string name="omnicore_tab_stats">Statistiques OmniCore</string>
+    <string name="omnicore_tabtitle_history">Historique</string>
+    <string name="omnicore_tabtitle_stats">Statistiques</string>
+    <string name="omnicore_tabtitle_status">État</string>
+    <string name="omnicore_log_status_request_summary">Enregistrer l\'état des requêtes dans l\'historique des commandes</string>
+    <string name="omnicore_log_status_requests">Enregistrer l\'état des requêtes</string>
+    <string name="omncore_blackout_window_prefs">Définir les créneaux de changement de pod</string>
 </resources>
