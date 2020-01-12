@@ -145,7 +145,7 @@ class OmnicoreStatusFragment : Fragment(){
                 omnicorestatus_podage?.setTextColor(defaultColor)
             }
 
-            omnicorestatus_podstarttime?.text = DateUtil.dateAndTimeString(omnicorePump.pdm.podStartTime)
+            omnicorestatus_podstarttime?.text = DateUtil.dateAndTimeRelativeString(omnicorePump.pdm.podStartTime)
 
             omnicorestatus_reservoir_empty?.text =  String.format(MainApp.gs(R.string.omnicore_tab_expire_reservoir),DateUtil.dateAndTimeRelativeString(omnicorePump.pdm.reservoirTime))
 
