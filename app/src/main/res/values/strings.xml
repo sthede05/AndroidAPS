@@ -2008,5 +2008,8 @@
     <string name="common_on">On</string>
     <string name="common_off">Off</string>
     <string name="key_no_pod">NO POD</string>
+    <string name="today">Today</string>
+    <string name="tomorrow">Tomorrow</string>
+    <string name="yesterday">Yesterday</string>
 
 </resources>

@@ -23,7 +23,9 @@ import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.data.PumpEnactResult;
 import info.nightscout.androidaps.db.ExtendedBolus;
 import info.nightscout.androidaps.db.TemporaryBasal;
+import info.nightscout.androidaps.events.EventAppExit;
 import info.nightscout.androidaps.events.EventNetworkChange;
+import info.nightscout.androidaps.events.EventPreferenceChange;
 import info.nightscout.androidaps.interfaces.Constraint;
 import info.nightscout.androidaps.interfaces.PluginBase;
 import info.nightscout.androidaps.interfaces.PluginDescription;
@@ -42,10 +44,15 @@ import info.nightscout.androidaps.plugins.general.overview.events.EventOverviewB
 import info.nightscout.androidaps.plugins.general.overview.notifications.Notification;
 import info.nightscout.androidaps.plugins.pump.common.defs.PumpType;
 import info.nightscout.androidaps.plugins.pump.omnipod.api.rest.OmniCoreResult;
+import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipodGetStatus;
 import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipodUpdateGui;
 import info.nightscout.androidaps.plugins.treatments.TreatmentsPlugin;
 import info.nightscout.androidaps.utils.DateUtil;
+import info.nightscout.androidaps.utils.FabricPrivacy;
 import info.nightscout.androidaps.utils.SP;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.schedulers.Schedulers;
 
 
 import org.json.JSONException;
@@ -56,6 +63,8 @@ import java.util.List;
 
 public class OmnipodPlugin extends PluginBase implements PumpInterface {
     private final Logger log = LoggerFactory.getLogger(L.PUMP);
+    private CompositeDisposable disposable = new CompositeDisposable();
+
 
 
     private static OmnipodPlugin instance = null;
@@ -94,6 +103,11 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
         super.onStart();
     //    MainApp.bus().register(this);
         log.debug("OMNIPOD_PLUGIN onstart");
+        disposable.add(RxBus.INSTANCE
+                .toObservable(EventOmnipodGetStatus.class)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(event -> {getPumpStatus();}, FabricPrivacy::logException)
+        );
         _pdm.OnStart();
     }
 
@@ -102,7 +116,9 @@ public class OmnipodPlugin extends PluginBase implements PumpInterface {
         super.onStop();
         log.debug("OMNIPOD_PLUGIN onstop");
         _pdm.OnStop();
-    //    MainApp.bus().unregister(this);
+        disposable.clear();
+
+        //    MainApp.bus().unregister(this);
     }
 
 //    @Subscribe

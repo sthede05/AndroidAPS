@@ -272,6 +272,8 @@ public class OmnipodPdm {
     }
 
     public void UpdateStatus() {
+        _log.debug("OMNIPOD_PLUGIN update status");
+
         if (IsConnected() && IsInitialized() && !IsBusy()) {
             long t0 = System.currentTimeMillis();
             if (t0 - _lastStatusRequest > 60000) {
@@ -333,6 +335,8 @@ public class OmnipodPdm {
 }
 
     public OmniCoreResult getPodStatus() {
+        _log.debug("Omnipod PDM getPodStatus");
+
         OmniCoreStatusRequest request = new OmniCoreStatusRequest();
         _commandHistory.addOrUpdateHistory(request,null);
 

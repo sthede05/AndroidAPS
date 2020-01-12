@@ -3,6 +3,7 @@ package info.nightscout.androidaps.utils;
 import androidx.collection.LongSparseArray;
 
 import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -119,6 +120,24 @@ public class DateUtil {
         return df.format(mills);
     }
 
+    public static String dateStringRelative(Date date) {
+        LocalDate lDate = LocalDate.fromDateFields(date);
+        LocalDate nowDate = LocalDate.now();
+
+        if (lDate.dayOfYear().equals(nowDate.dayOfYear())) {
+            return MainApp.gs(R.string.today);
+        }
+        else if (lDate.dayOfYear().equals(nowDate.minusDays(1).dayOfYear())) {
+            return MainApp.gs(R.string.yesterday);
+        }
+        else if (lDate.dayOfYear().equals(nowDate.plusDays(1).dayOfYear())) {
+            return MainApp.gs(R.string.tomorrow);
+        }
+        else {
+            return dateString(date);
+        }
+    }
+
     public static String timeString(Date date) {
         String format = "hh:mma";
         if (android.text.format.DateFormat.is24HourFormat(MainApp.instance())) {
@@ -141,6 +160,10 @@ public class DateUtil {
 
     public static String dateAndTimeString(Date date) {
         return dateString(date) + " " + timeString(date);
+    }
+
+    public static String dateAndTimeRelativeString(long mills) {
+        return dateStringRelative(new Date(mills)) + " " + timeString(mills);
     }
 
     public static String dateAndTimeRangeString(long start, long end) {

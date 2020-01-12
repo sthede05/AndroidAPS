@@ -25,6 +25,7 @@ import android.widget.DatePicker
 import android.app.DatePickerDialog
 import android.content.DialogInterface
 import androidx.appcompat.app.AlertDialog
+import info.nightscout.androidaps.plugins.pump.omnipod.events.EventOmnipodGetStatus
 
 
 class OmnicoreStatusFragment : Fragment(){
@@ -48,7 +49,9 @@ class OmnicoreStatusFragment : Fragment(){
             if (L.isEnabled(L.PUMP))
                 log.debug("Omnicore Status Button clicked")
             //TODO: Null check
-            OmnipodPlugin.getPlugin().pdm.getPodStatus()
+         //   OmnipodPlugin.getPlugin().pdm.getPodStatus()
+            RxBus.send( EventOmnipodGetStatus())
+
         }
 
         omnicore_setpodtime_button?.setOnClickListener {
@@ -134,7 +137,7 @@ class OmnicoreStatusFragment : Fragment(){
             }
             val defaultColor = omnicorestatus_connectionstatus?.textColors
 
-            omnicorestatus_podage?.text = String.format(MainApp.gs(R.string.omnicore_tab_expire_time),DateUtil.dateAndTimeString(omnicorePump.pdm.expirationTime))
+            omnicorestatus_podage?.text = String.format(MainApp.gs(R.string.omnicore_tab_expire_time),DateUtil.dateAndTimeRelativeString(omnicorePump.pdm.expirationTime))
             if (omnicorePump.pdm.expirationTime - System.currentTimeMillis() < SP.getInt(R.string.key_omnicore_alert_prior_expire, 8) * 60 * 60 * 1000) {
                 omnicorestatus_podage?.setTextColor(Color.RED)
             }
@@ -144,7 +147,7 @@ class OmnicoreStatusFragment : Fragment(){
 
             omnicorestatus_podstarttime?.text = DateUtil.dateAndTimeString(omnicorePump.pdm.podStartTime)
 
-            omnicorestatus_reservoir_empty?.text =  String.format(MainApp.gs(R.string.omnicore_tab_expire_reservoir),DateUtil.dateAndTimeString(omnicorePump.pdm.reservoirTime))
+            omnicorestatus_reservoir_empty?.text =  String.format(MainApp.gs(R.string.omnicore_tab_expire_reservoir),DateUtil.dateAndTimeRelativeString(omnicorePump.pdm.reservoirTime))
 
             if (omnicorePump.pdm.reservoirTime - System.currentTimeMillis() < SP.getInt(R.string.key_omnicore_alert_prior_expire, 8) * 60 * 60 * 1000) {
                 omnicorestatus_reservoir_empty?.setTextColor(Color.RED)
@@ -152,7 +155,7 @@ class OmnicoreStatusFragment : Fragment(){
             else {
                 omnicorestatus_reservoir_empty?.setTextColor(defaultColor)
             }
-            omnicorestatus_podchange?.text = DateUtil.dateAndTimeString(omnicorePump.pdm.blackoutExpirationTime)
+            omnicorestatus_podchange?.text = DateUtil.dateAndTimeRelativeString(omnicorePump.pdm.blackoutExpirationTime)
             if (omnicorePump.pdm.blackoutExpirationTime - System.currentTimeMillis() < SP.getInt(R.string.key_omnicore_alert_prior_expire, 8) * 60 * 60 * 1000) {
                 omnicorestatus_podchange?.setTextColor(Color.RED)
             }
