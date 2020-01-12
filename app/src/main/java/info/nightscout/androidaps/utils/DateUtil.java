@@ -108,14 +108,14 @@ public class DateUtil {
     }
 
     public static String dateString(Date date) {
-     //   DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT);
-        DateFormat df = DateFormat.getDateInstance(DateFormat.MEDIUM,Locale.getDefault());
+        DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT);
+//        DateFormat df = DateFormat.getDateInstance(DateFormat.MEDIUM,Locale.getDefault());
         return df.format(date);
     }
 
     public static String dateString(long mills) {
-       // DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT);
-        DateFormat df = DateFormat.getDateInstance(DateFormat.MEDIUM,Locale.getDefault());
+        DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT);
+//        DateFormat df = DateFormat.getDateInstance(DateFormat.MEDIUM,Locale.getDefault());
         return df.format(mills);
     }
 
