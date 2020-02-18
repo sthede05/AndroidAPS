@@ -55,8 +55,8 @@ public class SafetyPlugin extends PluginBase implements ConstraintsInterface {
      **/
     @Override
     public Constraint<Boolean> isLoopInvocationAllowed(Constraint<Boolean> value) {
-        if (!ConfigBuilderPlugin.getPlugin().getActivePump().getPumpDescription().isTempBasalCapable)
-            value.set(false, MainApp.gs(R.string.pumpisnottempbasalcapable), this);
+//        if (!ConfigBuilderPlugin.getPlugin().getActivePump().getPumpDescription().isTempBasalCapable)
+//            value.set(false, MainApp.gs(R.string.pumpisnottempbasalcapable), this);
         return value;
     }
 
@@ -65,14 +65,14 @@ public class SafetyPlugin extends PluginBase implements ConstraintsInterface {
         String mode = SP.getString(R.string.key_aps_mode, "open");
         if (!mode.equals("closed"))
             value.set(false, MainApp.gs(R.string.closedmodedisabledinpreferences), this);
-
-        if (!MainApp.isEngineeringModeOrRelease()) {
-            if (value.value()) {
-                Notification n = new Notification(Notification.TOAST_ALARM, MainApp.gs(R.string.closed_loop_disabled_on_dev_branch), Notification.NORMAL);
-                RxBus.INSTANCE.send(new EventNewNotification(n));
-            }
-            value.set(false, MainApp.gs(R.string.closed_loop_disabled_on_dev_branch), this);
-        }
+//
+//        if (!MainApp.isEngineeringModeOrRelease()) {
+//            if (value.value()) {
+//                Notification n = new Notification(Notification.TOAST_ALARM, MainApp.gs(R.string.closed_loop_disabled_on_dev_branch), Notification.NORMAL);
+//                RxBus.INSTANCE.send(new EventNewNotification(n));
+//            }
+//            value.set(false, MainApp.gs(R.string.closed_loop_disabled_on_dev_branch), this);
+//        }
 
         return value;
     }
