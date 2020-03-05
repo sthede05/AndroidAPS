@@ -1486,7 +1486,7 @@
     <string name="omnicore_tab_status">Omnicore Status</string>
     <string name="omnicore_tab_stats">Omnicore Statistics</string>
 
-    <string name="omnicore_tab_test_connection_button">Test Omnicore Connection</string>
+    <string name="omnicore_tab_test_connection_button">Refresh Omnicore Status</string>
     <string name="omnicore_tab_reset_stats_button">Reset Stats</string>
     <string name="omnicore_tab_reset_stats_confirmation">Are you sure you want to reset your statistics? This cannot be undone.</string>
     <string name="omnicore_tab_resetpodstart_button">Set Pod Start Time</string>
