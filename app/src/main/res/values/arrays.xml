@@ -10,6 +10,15 @@
         <item>open</item>
     </string-array>
 
+    <string-array name="unitsArray">
+        <item>mg/dL</item>
+        <item>mmol/L</item>
+    </string-array>
+    <string-array name="unitsValues" translatable="false">
+        <item>mg/dl</item>
+        <item>mmol</item>
+    </string-array>
+
     <string-array name="languagesArray">
         <item>@string/en_GB_lang</item>
         <item>@string/en_lang</item>
@@ -208,6 +217,16 @@
         <item>2</item>
         <item>3</item>
         <item>4</item>
+    </string-array>
+    <string-array name="smbMaxMinutes">
+        <item>15</item>
+        <item>30</item>
+        <item>45</item>
+        <item>60</item>
+        <item>75</item>
+        <item>90</item>
+        <item>105</item>
+        <item>120</item>
     </string-array>
 
     key_medtronic_bolus_debug

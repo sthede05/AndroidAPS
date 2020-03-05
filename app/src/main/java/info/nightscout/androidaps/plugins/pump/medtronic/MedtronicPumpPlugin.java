@@ -44,7 +44,7 @@ import info.nightscout.androidaps.plugins.common.ManufacturerType;
 import info.nightscout.androidaps.plugins.configBuilder.ConfigBuilderPlugin;
 import info.nightscout.androidaps.plugins.general.actions.defs.CustomAction;
 import info.nightscout.androidaps.plugins.general.actions.defs.CustomActionType;
-import info.nightscout.androidaps.plugins.general.overview.dialogs.ErrorHelperActivity;
+import info.nightscout.androidaps.activities.ErrorHelperActivity;
 import info.nightscout.androidaps.plugins.general.overview.events.EventNewNotification;
 import info.nightscout.androidaps.plugins.general.overview.notifications.Notification;
 import info.nightscout.androidaps.plugins.pump.common.PumpPluginAbstract;
@@ -375,7 +375,7 @@ public class MedtronicPumpPlugin extends PumpPluginAbstract implements PumpInter
             refreshAnyStatusThatNeedsToBeRefreshed();
         }
 
-       RxBus.INSTANCE.send(new EventMedtronicPumpValuesChanged());
+        RxBus.INSTANCE.send(new EventMedtronicPumpValuesChanged());
     }
 
 
@@ -389,7 +389,7 @@ public class MedtronicPumpPlugin extends PumpPluginAbstract implements PumpInter
 
         RileyLinkServiceState rileyLinkServiceState = MedtronicUtil.getServiceState();
 
-        if (rileyLinkServiceState==null) {
+        if (rileyLinkServiceState == null) {
             LOG.error("RileyLink unreachable. RileyLinkServiceState is null.");
             return false;
         }
@@ -747,13 +747,13 @@ public class MedtronicPumpPlugin extends PumpPluginAbstract implements PumpInter
 
         ClockDTO clock = MedtronicUtil.getPumpTime();
 
-        if (clock==null) { // retry
+        if (clock == null) { // retry
             medtronicUIComm.executeCommand(MedtronicCommandType.GetRealTimeClock);
 
             clock = MedtronicUtil.getPumpTime();
         }
 
-        if (clock==null)
+        if (clock == null)
             return;
 
         int timeDiff = Math.abs(clock.timeDifference);
@@ -869,6 +869,11 @@ public class MedtronicPumpPlugin extends PumpPluginAbstract implements PumpInter
                     }).start();
                 }
 
+                long now = System.currentTimeMillis();
+
+                detailedBolusInfo.date = now;
+                detailedBolusInfo.deliverAt = now; // not sure about that one
+
                 TreatmentsPlugin.getPlugin().addToHistoryTreatment(detailedBolusInfo, true);
 
                 // we subtract insulin, exact amount will be visible with next remainingInsulin update.
@@ -880,7 +885,7 @@ public class MedtronicPumpPlugin extends PumpPluginAbstract implements PumpInter
 
                 // calculate time for bolus and set driver to busy for that time
                 int bolusTime = (int) (detailedBolusInfo.insulin * 42.0d);
-                long time = System.currentTimeMillis() + (bolusTime * 1000);
+                long time = now + (bolusTime * 1000);
 
                 this.busyTimestamps.add(time);
                 setEnableCustomAction(MedtronicCustomActionType.ClearBolusBlock, true);
@@ -1068,10 +1073,10 @@ public class MedtronicPumpPlugin extends PumpPluginAbstract implements PumpInter
     @Override
     public PumpEnactResult setTempBasalPercent(Integer percent, Integer durationInMinutes, Profile profile,
                                                boolean enforceNew) {
-        if (percent==0) {
+        if (percent == 0) {
             return setTempBasalAbsolute(0.0d, durationInMinutes, profile, enforceNew);
         } else {
-            double absoluteValue = profile.getBasal() * (percent /100.0d);
+            double absoluteValue = profile.getBasal() * (percent / 100.0d);
             getMDTPumpStatus();
             absoluteValue = pumpStatusLocal.pumpType.determineCorrectBasalSize(absoluteValue);
             LOG.warn("setTempBasalPercent [MedtronicPumpPlugin] - You are trying to use setTempBasalPercent with percent other then 0% (%d). This will start setTempBasalAbsolute, with calculated value (%.3f). Result might not be 100% correct.", percent, absoluteValue);

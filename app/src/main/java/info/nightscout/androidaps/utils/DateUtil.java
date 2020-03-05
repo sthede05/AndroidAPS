@@ -94,15 +94,15 @@ public class DateUtil {
     }
 
     public static int toSeconds(String hh_colon_mm) {
-        Pattern p = Pattern.compile("(\\d+):(\\d+)( a.m.| p.m.| AM | PM|)");
+        Pattern p = Pattern.compile("(\\d+):(\\d+)( a.m.| p.m.| AM| PM|AM|PM|)");
         Matcher m = p.matcher(hh_colon_mm);
         int retval = 0;
 
         if (m.find()) {
             retval = SafeParse.stringToInt(m.group(1)) * 60 * 60 + SafeParse.stringToInt(m.group(2)) * 60;
-            if ((m.group(3).equals(" a.m.") || m.group(3).equals(" AM")) && m.group(1).equals("12"))
+            if ((m.group(3).equals(" a.m.") || m.group(3).equals(" AM") || m.group(3).equals("AM")) && m.group(1).equals("12"))
                 retval -= 12 * 60 * 60;
-            if ((m.group(3).equals(" p.m.") || m.group(3).equals(" PM")) && !(m.group(1).equals("12")))
+            if ((m.group(3).equals(" p.m.") || m.group(3).equals(" PM") || m.group(3).equals("PM")) && !(m.group(1).equals("12")))
                 retval += 12 * 60 * 60;
         }
         return retval;
@@ -110,13 +110,11 @@ public class DateUtil {
 
     public static String dateString(Date date) {
         DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT);
-//        DateFormat df = DateFormat.getDateInstance(DateFormat.MEDIUM,Locale.getDefault());
         return df.format(date);
     }
 
     public static String dateString(long mills) {
         DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT);
-//        DateFormat df = DateFormat.getDateInstance(DateFormat.MEDIUM,Locale.getDefault());
         return df.format(mills);
     }
 
@@ -138,6 +136,14 @@ public class DateUtil {
         }
     }
 
+    public static String dateStringShort(long mills) {
+        String format = "MM/dd";
+        if (android.text.format.DateFormat.is24HourFormat(MainApp.instance())) {
+            format = "dd/MM";
+        }
+        return new DateTime(mills).toString(DateTimeFormat.forPattern(format));
+    }
+
     public static String timeString(Date date) {
         String format = "hh:mma";
         if (android.text.format.DateFormat.is24HourFormat(MainApp.instance())) {
@@ -150,6 +156,14 @@ public class DateUtil {
         String format = "hh:mma";
         if (android.text.format.DateFormat.is24HourFormat(MainApp.instance())) {
             format = "HH:mm";
+        }
+        return new DateTime(mills).toString(DateTimeFormat.forPattern(format));
+    }
+
+    public static String timeStringWithSeconds(long mills) {
+        String format = "hh:mm:ssa";
+        if (android.text.format.DateFormat.is24HourFormat(MainApp.instance())) {
+            format = "HH:mm:ss";
         }
         return new DateTime(mills).toString(DateTimeFormat.forPattern(format));
     }
@@ -173,6 +187,11 @@ public class DateUtil {
     public static String dateAndTimeString(long mills) {
         if (mills == 0) return "";
         return dateString(mills) + " " + timeString(mills);
+    }
+
+    public static String dateAndTimeAndSecondsString(long mills) {
+        if (mills == 0) return "";
+        return dateString(mills) + " " + timeStringWithSeconds(mills);
     }
 
     public static String dateAndTimeFullString(long mills) {
@@ -210,7 +229,7 @@ public class DateUtil {
         long remainingTimeMinutes = timeInMillis / (1000 * 60);
         long remainingTimeHours = remainingTimeMinutes / 60;
         remainingTimeMinutes = remainingTimeMinutes % 60;
-        return "(" + ((remainingTimeHours > 0) ? (remainingTimeHours + "h ") : "") + remainingTimeMinutes + "')";
+        return "(" + ((remainingTimeHours > 0) ? (remainingTimeHours + MainApp.gs(R.string.shorthour) + " ") : "") + remainingTimeMinutes + "')";
     }
 
     public static String sinceString(long timestamp) {
@@ -232,6 +251,11 @@ public class DateUtil {
     public static boolean isCloseToNow(long date) {
         long diff = Math.abs(date - now());
         return diff < T.mins(2).msecs();
+    }
+
+    public static boolean isOlderThan(long date, long minutes) {
+        long diff = now() - date;
+        return diff > T.mins(minutes).msecs();
     }
 
     public static GregorianCalendar gregorianCalendar() {
