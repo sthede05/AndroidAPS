@@ -26,6 +26,10 @@
             validate:maxNumber="50"
             validate:minNumber="0"
             validate:testType="numericRange" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="key_ignore_all_constraints"
+            android:title="Ignore all constraints" />
 
     </PreferenceCategory>
 </PreferenceScreen>
