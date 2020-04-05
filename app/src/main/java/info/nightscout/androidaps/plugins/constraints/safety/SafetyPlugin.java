@@ -67,13 +67,13 @@ public class SafetyPlugin extends PluginBase implements ConstraintsInterface {
         if (!mode.equals("closed"))
             value.set(false, MainApp.gs(R.string.closedmodedisabledinpreferences), this);
 
-        if (!MainApp.isEngineeringModeOrRelease()) {
-            if (value.value()) {
-                Notification n = new Notification(Notification.TOAST_ALARM, MainApp.gs(R.string.closed_loop_disabled_on_dev_branch), Notification.NORMAL);
-                RxBus.INSTANCE.send(new EventNewNotification(n));
-            }
-            value.set(false, MainApp.gs(R.string.closed_loop_disabled_on_dev_branch), this);
-        }
+//        if (!MainApp.isEngineeringModeOrRelease()) {
+//            if (value.value()) {
+//                Notification n = new Notification(Notification.TOAST_ALARM, MainApp.gs(R.string.closed_loop_disabled_on_dev_branch), Notification.NORMAL);
+//                RxBus.INSTANCE.send(new EventNewNotification(n));
+//            }
+//            value.set(false, MainApp.gs(R.string.closed_loop_disabled_on_dev_branch), this);
+//        }
         PumpInterface pump = ConfigBuilderPlugin.getPlugin().getActivePump();
         if (pump != null && !pump.isFakingTempsByExtendedBoluses() && TreatmentsPlugin.getPlugin().isInHistoryExtendedBoluslInProgress()) {
             value.set(false, MainApp.gs(R.string.closed_loop_disabled_with_eb), this);
