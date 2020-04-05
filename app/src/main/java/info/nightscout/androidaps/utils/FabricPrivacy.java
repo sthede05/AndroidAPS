@@ -14,7 +14,7 @@ import info.nightscout.androidaps.BuildConfig;
 import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.logging.L;
 import info.nightscout.androidaps.plugins.configBuilder.ConfigBuilderPlugin;
-import info.nightscout.androidaps.plugins.constraints.signatureVerifier.SignatureVerifierPlugin;
+//import info.nightscout.androidaps.plugins.constraints.signatureVerifier.SignatureVerifierPlugin;
 
 /**
  * Created by jamorham on 21/02/2018.
@@ -128,22 +128,22 @@ public class FabricPrivacy {
         MainApp.getFirebaseAnalytics().setUserProperty("Version", BuildConfig.VERSION);
         MainApp.getFirebaseAnalytics().setUserProperty("HEAD", BuildConfig.HEAD);
         MainApp.getFirebaseAnalytics().setUserProperty("Remote", remote);
-        List<String> hashes = SignatureVerifierPlugin.getPlugin().shortHashes();
-        if (hashes.size() >= 1)
-            MainApp.getFirebaseAnalytics().setUserProperty("Hash", hashes.get(0));
-
-        if (ConfigBuilderPlugin.getPlugin().getActivePump() != null)
-            MainApp.getFirebaseAnalytics().setUserProperty("Pump", ConfigBuilderPlugin.getPlugin().getActivePump().getClass().getSimpleName());
-        if (ConfigBuilderPlugin.getPlugin().getActiveAPS() != null)
-            MainApp.getFirebaseAnalytics().setUserProperty("Aps", ConfigBuilderPlugin.getPlugin().getActiveAPS().getClass().getSimpleName());
-        if (ConfigBuilderPlugin.getPlugin().getActiveBgSource() != null)
-            MainApp.getFirebaseAnalytics().setUserProperty("BgSource", ConfigBuilderPlugin.getPlugin().getActiveBgSource().getClass().getSimpleName());
-        if (ConfigBuilderPlugin.getPlugin().getActiveProfileInterface() != null)
-            MainApp.getFirebaseAnalytics().setUserProperty("Profile", ConfigBuilderPlugin.getPlugin().getActiveProfileInterface().getClass().getSimpleName());
-        if (ConfigBuilderPlugin.getPlugin().getActiveSensitivity() != null)
-            MainApp.getFirebaseAnalytics().setUserProperty("Sensitivity", ConfigBuilderPlugin.getPlugin().getActiveSensitivity().getClass().getSimpleName());
-        if (ConfigBuilderPlugin.getPlugin().getActiveInsulin() != null)
-            MainApp.getFirebaseAnalytics().setUserProperty("Insulin", ConfigBuilderPlugin.getPlugin().getActiveInsulin().getClass().getSimpleName());
+//        List<String> hashes = SignatureVerifierPlugin.getPlugin().shortHashes();
+//        if (hashes.size() >= 1)
+//            MainApp.getFirebaseAnalytics().setUserProperty("Hash", hashes.get(0));
+//
+//        if (ConfigBuilderPlugin.getPlugin().getActivePump() != null)
+//            MainApp.getFirebaseAnalytics().setUserProperty("Pump", ConfigBuilderPlugin.getPlugin().getActivePump().getClass().getSimpleName());
+//        if (ConfigBuilderPlugin.getPlugin().getActiveAPS() != null)
+//            MainApp.getFirebaseAnalytics().setUserProperty("Aps", ConfigBuilderPlugin.getPlugin().getActiveAPS().getClass().getSimpleName());
+//        if (ConfigBuilderPlugin.getPlugin().getActiveBgSource() != null)
+//            MainApp.getFirebaseAnalytics().setUserProperty("BgSource", ConfigBuilderPlugin.getPlugin().getActiveBgSource().getClass().getSimpleName());
+//        if (ConfigBuilderPlugin.getPlugin().getActiveProfileInterface() != null)
+//            MainApp.getFirebaseAnalytics().setUserProperty("Profile", ConfigBuilderPlugin.getPlugin().getActiveProfileInterface().getClass().getSimpleName());
+//        if (ConfigBuilderPlugin.getPlugin().getActiveSensitivity() != null)
+//            MainApp.getFirebaseAnalytics().setUserProperty("Sensitivity", ConfigBuilderPlugin.getPlugin().getActiveSensitivity().getClass().getSimpleName());
+//        if (ConfigBuilderPlugin.getPlugin().getActiveInsulin() != null)
+//            MainApp.getFirebaseAnalytics().setUserProperty("Insulin", ConfigBuilderPlugin.getPlugin().getActiveInsulin().getClass().getSimpleName());
     }
 
 }
